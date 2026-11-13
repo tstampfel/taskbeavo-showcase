@@ -47,7 +47,7 @@ docker compose exec redis sh -c "redis-cli --scan --pattern 'taskbeavo:1:email-c
 
 ## The walkthrough
 
-Screenshots are from the web app at phone width, and for checkout also from the iOS app, taken from a freshly seeded demo.
+Screenshots are from the web app at phone width, and for checkout, the booking, the day of the job and cancelling also from the iOS app, taken from a freshly seeded demo.
 
 ### 1. Post a task (GraphiQL)
 
@@ -111,7 +111,7 @@ Accept an offer. Checkout shows the price, the 12% service fee and the two conse
 
 <img src="web/04-funds-held.png" width="300" alt="Payment held, the helper has been notified"> <img src="web/05-booking.png" width="300" alt="Booking page with the payment held">
 
-The same flow on the iOS app (a development build in the simulator, started with `EXPO_PUBLIC_DEMO_PAYMENTS=1`): the offers, checkout, the demo card dialog and the payment held. The steps below are shown on the web only.
+The same flow on the iOS app (a development build in the simulator, started with `EXPO_PUBLIC_DEMO_PAYMENTS=1`): the offers, checkout, the demo card dialog and the payment held. The booking itself, the day of the job and cancelling follow in steps 5 and 7.
 
 <img src="mobile/01-offers.png" width="200" alt="Offers on the phone"> <img src="mobile/02-checkout.png" width="200" alt="Checkout on the phone"> <img src="mobile/03-demo-card.png" width="200" alt="The demo card dialog: Demo payment, no real money"> <img src="mobile/04-funds-held.png" width="200" alt="Payment held on the phone">
 
@@ -120,6 +120,10 @@ The same flow on the iOS app (a development build in the simulator, started with
 Sign in as Ivo and open the seeded **on-my-way** booking's "Day of the job" page (`/bookings/<id>/arrival`). Its job starts 2 hours after the seed, inside the 6 hours before the start when these buttons open. Pick an arrival time and tap **On my way**; Mara sees it live.
 
 <img src="web/06-helper-day-of-job.png" width="300" alt="The helper's day-of-the-job panel"> <img src="web/07-helper-on-my-way.png" width="300" alt="The helper is on the way"> <img src="web/08-poster-sees-on-the-way.png" width="300" alt="The poster sees the helper is on the way">
+
+On the iOS app, Ivo opens the booking, then "Day of the job", picks an arrival time and taps **On my way**:
+
+<img src="mobile/05-booking.png" width="200" alt="The booking on the phone: the exact address, shown to the helper only while booked"> <img src="mobile/06-day-of-job.png" width="200" alt="The day of the job on the phone, with the arrival times"> <img src="mobile/07-on-my-way.png" width="200" alt="The helper is on the way, on the phone">
 
 ### 6. Request and release payment (seeded)
 
@@ -132,6 +136,10 @@ The **Request payment** and **Release payment** buttons arrive with BEAV-116 to 
 Open "Cancel or withdraw" on a held booking and pick a reason: the page shows what happens to the money before you confirm. The seeded **late-cancel** booking (Klaus) starts under 24 hours away, so the helper keeps 25% of the price (€5 minimum) and TaskBeavo 12% of that. The **funds-held** booking (Claire) is 3 days away: a full refund, and since its helper is a registered business, the 14-day withdrawal right as well. The **cancelled** booking was cancelled by the seed and refunded through the stand-in's charge.refunded event.
 
 <img src="web/11-late-cancel-preview.png" width="300" alt="Late cancel: the helper keeps €5"> <img src="web/12-free-cancel-preview.png" width="300" alt="Free cancel: a full refund">
+
+The same late cancel on the iOS app, signed in as Klaus: the reasons, then what happens to the money before he confirms.
+
+<img src="mobile/08-cancel.png" width="200" alt="Cancel booking on the phone: why are you cancelling?"> <img src="mobile/09-late-cancel-preview.png" width="200" alt="Late cancel on the phone: the helper keeps €5">
 
 ### 8. A contested no-show
 

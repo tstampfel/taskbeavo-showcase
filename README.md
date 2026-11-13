@@ -164,6 +164,8 @@ Sign in at `localhost:3000/en/sign-in` as a demo poster or helper (the seed prin
 <img src="docs/demo/web/07-helper-on-my-way.png" width="200" alt="The helper is on the way">
 <img src="docs/demo/web/11-late-cancel-preview.png" width="200" alt="A late cancel: the helper keeps €5">
 <img src="docs/demo/mobile/03-demo-card.png" width="200" alt="The demo card dialog on the iOS app">
+<img src="docs/demo/mobile/07-on-my-way.png" width="200" alt="The helper is on the way, on the iOS app">
+<img src="docs/demo/mobile/09-late-cancel-preview.png" width="200" alt="A late cancel on the iOS app: the helper keeps €5">
 </p>
 
 Payments in the demo go through a demo stub, `DEMO_PAYMENTS=1`: an in-process stand-in for Stripe behind the real gateway. Bookings still become paid only through the real webhook handler. Settings refuse it in production and next to a live key.
