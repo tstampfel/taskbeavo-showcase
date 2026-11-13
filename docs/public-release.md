@@ -2,29 +2,40 @@
 
 The project is published as a portfolio showcase (user decision, 2026-11-09). The code is for viewing only: see `NOTICE` (all rights reserved, no licence).
 
-**How:** development stays in the private repository `tstampfel/taskbeavo`. It stays private and is never rewritten or force-pushed. The public repository is a new, empty one, filled by **copying files** from an export of `develop` (`git archive`), with no history: one commit, authored by the owner with the GitHub noreply address. Nothing from the private history, pull requests or hidden refs carries over.
+## Where development happens
 
-The public repository is never made with `git clone` of the private one, never as a GitHub fork of it, and never with the private repository added as a remote. Any of those would carry the private history across.
+Development happens here, in the public repository `tstampfel/taskbeavo-showcase`. Everything pushed to it is published the moment it is pushed, an unmerged branch as much as `develop`.
 
-Run the checklist after BEAV-197 is merged into `develop`: the export needs its `NOTICE`, `.gitleaks.toml` and `.gitattributes`.
+The private repository `tstampfel/taskbeavo`, where development ran until the move on 2026-11-13, is archived and stays private. It is never rewritten or force-pushed, never added as a remote of this repository, and its history is never pushed here. This repository started with no history from it: one commit made from an export (steps 0–5 below, kept as the record of that one-time move).
 
-## Checklist
+`develop` here is never rewritten or force-pushed either. Rewriting can't unpublish a pushed value anyway: if a secret is ever pushed, rotate it, then remove it in a new commit.
 
-1. [ ] Create `~/taskbeavo-private/identifiers.txt` outside the repository, one value per line (step 0). Never put these values in the repository.
-2. [ ] Export `develop` into an empty directory by copying files (step 1).
-3. [ ] Delete the excluded paths (step 2).
-4. [ ] Every verification in step 3 prints `PASS` on the export, including 3g: no OIB or IBAN that could be real, only the synthetic ones, and no email address outside the reserved example domains.
-5. [ ] Create the new, empty repository, make one commit with the noreply address, push (step 4).
-6. [ ] Set branch protection and the security settings (step 5).
-7. [ ] Only then: make the new repository public.
+Two nets check every push:
+
+| Net | Where | What it checks |
+| --- | --- | --- |
+| Pre-push hook | The owner's machine; not committed, because it reads a private file outside the repository | Every pushed commit: secrets, the private identifiers list (3c), A4 content, Stripe account IDs, internal URLs and local paths, synthetic identifiers, build output, the noreply author |
+| CI, `Public tree` job | Every pull request and every push to `develop` (`docs/ci.md`) | gitleaks over the tree (3a) and over the new commits, then `scripts/check_public_tree.sh` (3d, 3e, 3f, 3h) and its tests. The `Backend` job runs 3g (`scripts/check_synthetic_identifiers.py`) |
+
+Only 3c needs private input, so only the hook runs it. A push is never made with `--no-verify` or any other way around the hook: when it blocks a push, fix the commits and push again.
+
+## Checklist of the move (done 2026-11-13)
+
+1. [x] Create the private identifiers list, a private file outside the repository, one value per line (step 0). Never put these values in the repository.
+2. [x] Export `develop` into an empty directory by copying files (step 1).
+3. [x] Delete the excluded paths (step 2).
+4. [x] Every verification in step 3 prints `PASS` on the export, including 3g: no OIB or IBAN that could be real, only the synthetic ones, and no email address outside the reserved example domains.
+5. [x] Create the new, empty repository, make one commit with the noreply address, push (step 4).
+6. [x] Set branch protection and the security settings (step 5).
+7. [x] Only then: make the new repository public.
 
 ## The script
 
-Run it from a clone of the private repository. `PUB` is a scratch directory outside the clone.
+It ran from a clone of the private repository. `PUB` is a scratch directory outside the clone.
 
 ### 0. Private inputs (once)
 
-Create `~/taskbeavo-private/identifiers.txt`, outside every repository, with one real value per line that must never be published. Check 3c fails while the file is missing or empty. The repository only ever holds the placeholders below, never the values:
+Create the private identifiers list, a private file outside every repository, with one real value per line that must never be published. Check 3c fails while the file is missing or empty. The repository only ever holds the placeholders below, never the values:
 
 ```text
 <the owner's personal email address>
@@ -45,8 +56,7 @@ The Stripe and account values are in the private repository's history before BEA
 ### 1. Export
 
 ```bash
-PUB=~/taskbeavo-public-export
-rm -rf "$PUB" && mkdir -p "$PUB"
+PUB=$(mktemp -d)
 git fetch origin
 git archive --format=tar origin/develop | tar -x -C "$PUB"
 cd "$PUB"
@@ -79,7 +89,7 @@ gitleaks dir . --config .gitleaks.toml --redact --no-banner && echo PASS
 test ! -e docs/decisions/A4-private-helper-payer && test ! -e .reviews && echo PASS
 
 # 3c. No real personal value or account ID (fails while the private list is missing or empty)
-IDS=~/taskbeavo-private/identifiers.txt
+IDS=<the private identifiers list>
 if test -s "$IDS" && grep -q '[^[:space:]]' "$IDS"; then
   grep -rlaF -f <(grep -v '^[[:space:]]*$' "$IDS") .; rc=$?
   case $rc in 1) echo PASS ;; 0) echo "FAIL: the values above are in the export" ;; *) echo "FAIL: grep error $rc" ;; esac
@@ -87,35 +97,26 @@ else
   echo "FAIL: $IDS is missing or empty; create it first (step 0)"
 fi
 
-# 3d. No A4 content
-! grep -rnIiE 'A4-private-helper-payer|binding-opinion-request|jamac platac|Pitanje [1-4]\.' . \
-    --exclude=public-release.md --exclude=.gitattributes && echo PASS
-
-# 3e. Only placeholder Stripe account and configuration IDs
-! grep -rhoIE '\b(acct|pmc)_[A-Za-z0-9]{8,}' . \
-  | grep -vxE 'acct_1(032D82eZvKYlo2C|HelperSandbox00|PlatformSandbox0|NotTheirs|SomebodyElse|SomeoneElse|TestHelper|TestHelperExpress|TheHelpersOwn)' \
-  && echo PASS
-
-# 3f. No internal URLs or local paths, in text and binary files
-! grep -rlaE 'atlassian\.net|sentry\.io/(organizations|settings|issues)|ui\.honeycomb\.io|dashboard\.(render|stripe)\.com|vercel\.com/[a-z0-9-]+/[a-z0-9-]+|expo\.dev/(accounts|@)|/Users/|/home/[a-z]+|\.claude/projects' . \
-    --exclude=public-release.md && echo PASS
+# 3d, 3e, 3f, 3h: A4 content, Stripe IDs, internal URLs and local paths, build output
+scripts/check_public_tree.sh . && echo PASS
 
 # 3g. Only synthetic OIBs and IBANs, and emails on reserved domains (the same check CI runs)
 python3 scripts/check_synthetic_identifiers.py --root . && echo PASS
-
-# 3h. No build output, OS files, local databases or logs; lists the binary files to look at
-bad=$(find . \( -name __pycache__ -o -name '*.pyc' -o -name .DS_Store -o -name '*.sqlite' \
-  -o -name '*.sqlite3' -o -name '*.db' -o -name '*.log' \) -print)
-if [ -n "$bad" ]; then
-  printf '%s\n' "$bad"; echo "FAIL: build output or local data in the export"
-else
-  comm -23 <(find . -type f -size +0 | sort) <(grep -rlI '' . | sort); echo PASS
-fi
 ```
 
-`gitleaks` comes from a release binary (`gh release download -R gitleaks/gitleaks`) or Docker (`zricethezav/gitleaks`). 3d and 3f skip this file, which names the patterns, and 3d skips `.gitattributes`, which names the excluded folder. 3c and 3f also read binary files (`grep -a`), because a compiled or generated file can embed a local path or a value, and print only the names of the files that match. 3h fails on `__pycache__`, `.pyc`, `.DS_Store`, SQLite, `.db` and `.log` files, and otherwise lists every binary file in the export (images, fonts, compiled translations) so you can check each one is meant to be public. 3g fails on any 11-digit number with a valid OIB check digit that doesn't start with `00000000`, on any IBAN with valid check digits whose account part isn't zeros and a counter, and on any email address (with `@` or the fullwidth `＠`) whose domain RFC 2606 doesn't reserve: only `example.com`, `example.org`, `example.net` and their subdomains, and names under `.test`, `.example`, `.invalid` and `.localhost` pass. The user part of a URL (a Sentry DSN, a database URL) isn't an address, and spelled-out addresses (`marko (at) example (dot) com`) aren't read, so keep those on example domains by hand. Tests, fixtures, the demo seed, docs and mockups take their OIBs and IBANs from `backend/core/synthetic_identifiers.py` and their addresses from the reserved domains, and each exception (the noreply author address in step 4, the SSH user of the remote URL in step 4, the product's own sender address) is listed with its reason in `scripts/synthetic-identifiers-allowlist.txt`. 3e allowlists the placeholder IDs the tests use and Stripe's documentation example; a new test placeholder means adding it here.
+`gitleaks` comes from a release binary (`gh release download -R gitleaks/gitleaks`) or Docker (`zricethezav/gitleaks`); CI pins 8.30.1 and checks the tarball's sha256.
 
-Run the blocks in bash or zsh (3c and 3h use process substitution). 3c prints `PASS` only when grep ran and found nothing; a missing or blank list, a match or a grep error prints `FAIL`.
+`scripts/check_public_tree.sh [DIR]` holds the patterns of 3d, 3e, 3f and 3h, so CI, these steps and the pre-push hook share one definition. In a git checkout it reads the tracked files; in a plain directory such as `$PUB`, every file. It prints `PASS` or `FAIL` per check and, for a failure, only the names of the files that match, never the values. It exits 1 when a check fails and 2 on an error. `scripts/test_check_public_tree.sh` plants each kind of value in a temp directory and expects a failure.
+
+- **3d** fails on a reference to the A4 folder or its content (the binding opinion request, its questions).
+- **3e** fails on a Stripe account (`acct_`) or payment method configuration (`pmc_`) ID outside the allowlist of placeholder IDs the tests use and Stripe's documentation example; a new test placeholder means adding it to the script.
+- **3f** fails on internal URLs (the Jira site, Sentry, Honeycomb, Render, Stripe, Vercel and Expo dashboards) and local paths (home directories, agent session folders).
+- 3d and 3f skip this file (`docs/public-release.md`), which names the folder and the paths; 3d also skips the root `.gitattributes`, which names the excluded folder. Only those exact paths are skipped: a file with the same name elsewhere is checked. The script checks itself: it writes such patterns with a one-character class (`paye[r]`), which matches the same text but keeps the literal out of its source. 3c and 3f also read binary files (`grep -a`), because a compiled or generated file can embed a local path or a value, and print only the names of the files that match.
+- **3h** fails on `__pycache__`, `.pyc`, `.DS_Store`, SQLite, `.db` and `.log` files, and otherwise lists every binary file in the export (images, fonts, compiled translations) so you can check each one is meant to be public.
+
+3g fails on any 11-digit number with a valid OIB check digit that doesn't start with `00000000`, on any IBAN with valid check digits whose account part isn't zeros and a counter, and on any email address (with `@` or the fullwidth `＠`) whose domain RFC 2606 doesn't reserve: only `example.com`, `example.org`, `example.net` and their subdomains, and names under `.test`, `.example`, `.invalid` and `.localhost` pass. The user part of a URL (a Sentry DSN, a database URL) isn't an address, and spelled-out addresses (`marko (at) example (dot) com`) aren't read, so keep those on example domains by hand. Tests, fixtures, the demo seed, docs and mockups take their OIBs and IBANs from `backend/core/synthetic_identifiers.py` and their addresses from the reserved domains, and each exception (the noreply author address in step 4, the SSH user of the remote URL in step 4, the product's own sender address) is listed with its reason in `scripts/synthetic-identifiers-allowlist.txt`.
+
+Run the blocks in bash or zsh (3c uses process substitution). 3c prints `PASS` only when grep ran and found nothing; a missing or blank list, a match or a grep error prints `FAIL`.
 
 **Dry run (2026-11-09, BEAV-197):** steps 1–3 ran on an export of the BEAV-197 branch in a scratch directory, and every block printed `PASS`. 3c was also run three ways: with no identifiers file it printed `FAIL` (missing or empty); with a scratch list of planted fake values it printed `FAIL` and listed each match; with a scratch list of values not in the tree it printed `PASS`.
 
@@ -137,7 +138,7 @@ git push -u origin develop
 
 Then on GitHub: set `develop` as the default branch, look through the files once, and make the repository public.
 
-**Later updates:** repeat steps 1–3 into a fresh `$PUB`, copy the public clone's `.git` into it (`cp -R <public-clone>/.git "$PUB"/`), check the diff with `git status`, commit with the same name and noreply address, and push. Never push the private history to the public repository.
+**Later updates:** there are no more exports. Changes are made in this repository on a branch and merged into `develop` through a pull request, as described in "Where development happens". Never push the private history to the public repository.
 
 On GitHub, under Settings → Emails, also turn on "Keep my email addresses private" and "Block command line pushes that expose my email".
 
@@ -147,7 +148,7 @@ On GitHub, under Settings → Emails, also turn on "Keep my email addresses priv
 - **Branch protection** is available on the free plan for public repositories. Under Settings → Branches (or Rules → Rulesets) for `develop`, as in `docs/ci.md`:
   - Require a pull request before merging.
   - Require status checks to pass, and require branches to be up to date before merging.
-  - Required checks, exactly as the jobs are named: `Backend`, `JS`, `GraphQL drift`, `Web e2e`. A check appears in the picker only after it has run once, so open one pull request first.
+  - Required checks, exactly as the jobs are named: `Backend`, `JS`, `GraphQL drift`, `Web e2e`, `Public tree`. A check appears in the picker only after it has run once, so open one pull request first.
   - Block force pushes and deletion of `develop`.
 - **Secret scanning and push protection** are free on public repositories: turn both on under Settings → Code security.
 - **Issues, Discussions and Wiki:** turn off what isn't used.

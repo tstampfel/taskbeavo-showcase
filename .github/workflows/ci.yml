@@ -138,6 +138,68 @@ jobs:
       - name: schema.graphql and generated types match the backend
         run: pnpm --filter @taskbeavo/graphql check:generated
 
+  # The repository is public: everything pushed is published. This is the second net behind
+  # the owner's local pre-push hook, for every check that needs no private input
+  # (docs/public-release.md, step 3).
+  public-tree:
+    name: Public tree
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: '8.30.1'
+      # sha256 of gitleaks_8.30.1_linux_x64.tar.gz, as in the release's checksums file.
+      GITLEAKS_SHA256: '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The whole history, so gitleaks can read every commit of the pull request.
+          fetch-depth: 0
+      - name: Install gitleaks
+        working-directory: ${{ runner.temp }}
+        run: |
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          sums="gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          curl -fsSLO "$base/$tarball"
+          curl -fsSLO "$base/$sums"
+          # The tarball must match both the release's checksums file and the pinned hash.
+          grep -qx "${GITLEAKS_SHA256}  ${tarball}" "$sums"
+          echo "${GITLEAKS_SHA256}  ${tarball}" | sha256sum -c -
+          mkdir gitleaks-bin && tar -xzf "$tarball" -C gitleaks-bin gitleaks
+          echo "$PWD/gitleaks-bin" >> "$GITHUB_PATH"
+      - name: Secrets in the tree (3a)
+        run: gitleaks dir . --config .gitleaks.toml --redact --no-banner
+      # A secret committed and deleted in a later commit is still published, so gitleaks also
+      # reads every new commit: the pull request's (base..head), or the pushed ones.
+      - name: Secrets in the new commits
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          case "$EVENT" in
+            pull_request) range="$PR_BASE..$PR_HEAD" ;;
+            push)
+              if [ -z "$PUSH_BEFORE" ] || [ "$PUSH_BEFORE" = 0000000000000000000000000000000000000000 ]; then
+                range="$SHA"
+              else
+                range="$PUSH_BEFORE..$SHA"
+              fi
+              ;;
+            *) range="$SHA" ;; # workflow_dispatch: the whole history
+          esac
+          echo "Scanning $range"
+          gitleaks git . --config .gitleaks.toml --redact --no-banner --log-opts="$range"
+      - name: A4 content, Stripe IDs, internal URLs and local paths, build output (3d, 3e, 3f, 3h)
+        run: scripts/check_public_tree.sh
+      - name: Tests for these checks
+        run: bash scripts/test_check_public_tree.sh
+        env:
+          REQUIRE_GITLEAKS: '1'
+
   web-e2e:
     name: Web e2e
     runs-on: ubuntu-24.04
