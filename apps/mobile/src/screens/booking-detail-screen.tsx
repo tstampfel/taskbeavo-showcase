@@ -101,7 +101,7 @@ export function BookingDetailScreen({ bookingId, onOpen }: BookingDetailScreenPr
   const poster = view.role === 'poster';
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" style={[textStyle('h1'), styles.title]}>
           {current.task.title}

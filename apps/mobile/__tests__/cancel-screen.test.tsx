@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Observable } from 'rxjs';
 import { i18n } from '../src/i18n';
 import { CancelScreen } from '../src/screens/cancel-screen';
+import { topSafeAreaEdge } from '../src/testing/safe-area';
 
 const metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -469,4 +470,11 @@ it('shows the poster the credit and re-opens the task after a helper cancel', as
 
   await waitFor(() => expect(variables.ReopenTask).toEqual({ bookingId: 'booking-1' }));
   await screen.findByText(en.done.reopened);
+});
+
+// BEAV-201: the stack header is hidden, so the title must clear the status bar and notch.
+it('keeps the title below the status bar', async () => {
+  await renderCancel({ BookingCancellation: () => ({ booking: booking() }) });
+  const title = await screen.findByRole('header', { name: en.title });
+  expect(topSafeAreaEdge(title)).toBe('additive');
 });

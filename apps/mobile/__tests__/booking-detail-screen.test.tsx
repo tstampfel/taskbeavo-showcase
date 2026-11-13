@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Observable, type Subscriber } from 'rxjs';
 import { i18n } from '../src/i18n';
 import { BookingDetailScreen } from '../src/screens/booking-detail-screen';
+import { topSafeAreaEdge } from '../src/testing/safe-area';
 
 const metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -267,4 +268,11 @@ it.each(['hr', 'de', 'fr'] as const)('speaks %s', async (locale) => {
     catalogues[locale].bookingDetail.status.FUNDS_HELD,
   );
   expect(screen.getByText(catalogues[locale].bookingDetail.place.whileBooked)).toBeOnTheScreen();
+});
+
+// BEAV-201: the stack header is hidden, so the title must clear the status bar and notch.
+it('keeps the title below the status bar', async () => {
+  await renderDetail(booking('user-1'));
+  const title = screen.getByRole('header', { name: 'Grocery run for Mama' });
+  expect(topSafeAreaEdge(title)).toBe('additive');
 });

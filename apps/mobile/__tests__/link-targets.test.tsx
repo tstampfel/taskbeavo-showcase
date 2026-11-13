@@ -1,4 +1,5 @@
 import { catalogues, locales } from '@taskbeavo/i18n';
+import { Stack } from 'expo-router';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 import NotFound from '../app/+not-found';
@@ -12,6 +13,7 @@ import TaskDetail from '../app/tasks/[id]/index';
 import Checkout from '../app/tasks/[id]/offers/[offerId]/checkout';
 import { i18n } from '../src/i18n';
 import { appPathFromLink } from '../src/links/routes';
+import { topSafeAreaEdge } from '../src/testing/safe-area';
 
 const routes = {
   index: () => <Text testID="home">home</Text>,
@@ -94,4 +96,16 @@ describe('screens opened by links', () => {
     expect(screen.getByTestId('not-found')).toBeOnTheScreen();
     expect(screen.getByRole('header')).toHaveTextContent(catalogues.de.notFound.title);
   });
+
+  // BEAV-201: the app's stack hides the header, so every title must clear the status bar and
+  // notch. The layout mirrors app/_layout.tsx: without one, expo-router's default navigator
+  // wraps every screen in a SafeAreaView and would hide a missing inset.
+  it.each(['/bookings/7/release', '/tasks/42/offers/7/checkout', '/nowhere'])(
+    'keeps the title of %s below the status bar',
+    async (path) => {
+      const layout = () => <Stack screenOptions={{ headerShown: false }} />;
+      await renderRouter({ ...routes, _layout: layout }, { initialUrl: path });
+      expect(topSafeAreaEdge(screen.getByRole('header'))).toBe('additive');
+    },
+  );
 });

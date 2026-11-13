@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Observable } from 'rxjs';
 import { i18n } from '../src/i18n';
 import { ArrivalScreen } from '../src/screens/arrival-screen';
+import { topSafeAreaEdge } from '../src/testing/safe-area';
 
 const metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -256,4 +257,13 @@ it('never shows a side when the viewer is unknown', async () => {
   });
   await screen.findByText(en.loadError);
   expect(screen.queryByTestId('arrival-on-my-way')).toBeNull();
+});
+
+// BEAV-201: the stack header is hidden, so the title must clear the status bar and notch.
+it('keeps the title below the status bar', async () => {
+  await renderArrival({
+    BookingArrival: () => ({ booking: booking('user-1', { canTap: true }) }),
+  });
+  const title = await screen.findByRole('header', { name: en.title });
+  expect(topSafeAreaEdge(title)).toBe('additive');
 });

@@ -1,6 +1,7 @@
 import { colors, spacing } from '@taskbeavo/ui-tokens';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../fonts';
 import { Button } from './ui';
 
@@ -8,13 +9,13 @@ import { Button } from './ui';
 export function ErrorScreen({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
   return (
-    <View accessibilityRole="alert" style={styles.container}>
+    <SafeAreaView accessibilityRole="alert" style={styles.container}>
       <Text accessibilityRole="header" style={styles.title}>
         {t('errorBoundary.title')}
       </Text>
       <Text style={styles.body}>{t('errorBoundary.body')}</Text>
       <Button label={t('errorBoundary.retry')} onPress={onRetry} />
-    </View>
+    </SafeAreaView>
   );
 }
 

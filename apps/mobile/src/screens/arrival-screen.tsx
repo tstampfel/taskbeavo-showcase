@@ -113,7 +113,7 @@ export function ArrivalScreen({ bookingId, onBack }: ArrivalScreenProps) {
   const vars = { bookingId };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" style={[textStyle('h1'), styles.title]}>
           {t('arrival.title')}
