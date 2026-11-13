@@ -2,7 +2,6 @@ import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { fonts } from '../../fonts';
 import { textStyle } from './text-style';
 
 /**
@@ -76,16 +75,9 @@ export function TopBar({
           style={({ pressed }) => [styles.iconButton, styles.round, pressed && styles.pressed]}
           testID="screen-back"
         >
-          <Text
-            style={styles.chevron}
-            allowFontScaling={false}
-            // Decorative: only the labelled button is announced, not a bare "‹".
-            accessible={false}
-            importantForAccessibility="no"
-            accessibilityElementsHidden
-          >
-            ‹
-          </Text>
+          {/* Drawn, not a "‹" glyph: iOS listed a glyph as its own element beside the
+              labelled button, and a drawing stays the same size at large text. */}
+          <View style={styles.chevron} />
         </Pressable>
       ) : (
         <View style={styles.iconButton} />
@@ -101,6 +93,9 @@ export function TopBar({
     </View>
   );
 }
+
+const CHEVRON_SIZE = 11;
+const CHEVRON_STROKE = 2.5;
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.offWhite },
@@ -125,13 +120,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   pressed: { opacity: 0.85 },
-  // The glyph keeps its size at large text: it is an icon, and the button stays 44pt.
+  // A left chevron: two sides of a square, turned 45°, nudged right to look centred.
   chevron: {
-    fontFamily: fonts.bold,
-    fontSize: 28,
-    lineHeight: 32,
-    color: colors.ink,
-    marginTop: -spacing.xs,
+    width: CHEVRON_SIZE,
+    height: CHEVRON_SIZE,
+    marginLeft: CHEVRON_SIZE / 3,
+    borderLeftWidth: CHEVRON_STROKE,
+    borderBottomWidth: CHEVRON_STROKE,
+    borderColor: colors.ink,
+    transform: [{ rotate: '45deg' }],
   },
   title: { ...textStyle('button'), flex: 1, textAlign: 'center', color: colors.ink },
   body: { flexGrow: 1, gap: spacing.lg, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },

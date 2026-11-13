@@ -6,7 +6,7 @@ import {
   inputColors,
   minTapTarget,
 } from '@taskbeavo/ui-tokens';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import { Dimensions, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -193,9 +193,11 @@ describe('Screen', () => {
         <Text>body</Text>
       </Screen>,
     );
-    // VoiceOver stopped on a bare "‹" next to the button (review R1-4).
-    const chevron = screen.getByText('‹', { includeHiddenElements: true });
-    expect(chevron.props.accessible).toBe(false);
+    // VoiceOver stopped on a bare "‹" next to the button (review R1-4): the chevron is drawn,
+    // not a text glyph, so there is nothing to announce but the button's label.
+    expect(screen.queryByText('‹', { includeHiddenElements: true })).toBeNull();
+    const back = screen.getByRole('button', { name: 'Back' });
+    expect(within(back).queryAllByText(/./, { includeHiddenElements: true })).toHaveLength(0);
   });
 
   it('pins the footer outside the scrolling body', async () => {
