@@ -36,6 +36,8 @@ interface Shared {
   status: ArrivalStatus;
   /** The helper's latest estimate, an ISO date-time; null if none. */
   etaAt: string | null;
+  /** When the helper tapped On my way, an ISO date-time; null before. */
+  setOffAt: string | null;
   earlyStartPending: boolean;
   earlyStartConfirmed: boolean;
   noShow: NoShowState | null;
@@ -81,6 +83,7 @@ export function arrivalView(booking: ArrivalBooking, role: ArrivalRole): Arrival
   const shared: Shared = {
     status: a.arrivedAt ? 'arrived' : a.lateReportedAt ? 'late' : a.onMyWayAt ? 'onMyWay' : 'none',
     etaAt: iso(a.etaAt),
+    setOffAt: iso(a.onMyWayAt),
     earlyStartPending: a.earlyStartPending,
     earlyStartConfirmed: a.earlyStartConfirmedAt != null,
     noShow:
@@ -116,6 +119,30 @@ export function arrivalView(booking: ArrivalBooking, role: ArrivalRole): Arrival
     canAnswerEarlyStart: a.canAnswerEarlyStart,
     earlyStartWithdrawal: a.earlyStartWithdrawal,
   };
+}
+
+/** The `arrival.statusHelper.*` / `arrival.statusPoster.*` key for the status line. */
+export type ArrivalStatusKey = ArrivalStatus | 'onMyWayNoEta';
+
+/**
+ * The status line and the time it shows (BEAV-202). On my way takes an optional ETA: with
+ * one the line says when the helper expects to arrive, without one it says when they set
+ * off, so it never reads "arriving" with no time. A late report always carries an ETA.
+ */
+export function arrivalStatusMessage(view: Pick<Shared, 'status' | 'etaAt' | 'setOffAt'>): {
+  key: ArrivalStatusKey;
+  at: string | null;
+} {
+  switch (view.status) {
+    case 'onMyWay':
+      return view.etaAt
+        ? { key: 'onMyWay', at: view.etaAt }
+        : { key: 'onMyWayNoEta', at: view.setOffAt };
+    case 'late':
+      return { key: 'late', at: view.etaAt };
+    default:
+      return { key: view.status, at: null };
+  }
 }
 
 /** Whole minutes from `now` until an ISO date-time, rounded up, never below 0. */

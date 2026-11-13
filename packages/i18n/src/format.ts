@@ -28,6 +28,13 @@ export function formatDateTime(
   }).format(new Date(value));
 }
 
+/** The clock time in Zagreb, for a time on the day of the job ("10:42"). */
+export function formatTime(value: Date | string, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale, { timeStyle: 'short', timeZone: TASK_TIME_ZONE }).format(
+    new Date(value),
+  );
+}
+
 /** The calendar day in Zagreb. */
 export function formatDate(
   value: Date | string,

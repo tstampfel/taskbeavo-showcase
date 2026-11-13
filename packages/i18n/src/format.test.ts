@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatDateTime, formatMoney, formatPercent, TASK_TIME_ZONE } from './format';
+import {
+  formatDate,
+  formatDateTime,
+  formatMoney,
+  formatPercent,
+  formatTime,
+  TASK_TIME_ZONE,
+} from './format';
 
 // Intl separates numbers from units with no-break spaces; compare with plain spaces.
 const plain = (text: string) => text.replace(/[\u00a0\u202f]/g, ' ');
@@ -24,6 +31,16 @@ describe('formatPercent', () => {
     expect(plain(formatPercent(12, 'hr'))).toBe('12 %');
     expect(plain(formatPercent(12, 'de'))).toBe('12 %');
     expect(plain(formatPercent(12, 'fr'))).toBe('12 %');
+  });
+});
+
+describe('formatTime', () => {
+  it('shows only the Zagreb clock time, for a time on the day of the job', () => {
+    const at = '2026-11-08T09:42:00Z';
+    expect(plain(formatTime(at, 'hr'))).toBe('10:42');
+    expect(plain(formatTime(at, 'de'))).toBe('10:42');
+    expect(plain(formatTime(at, 'fr'))).toBe('10:42');
+    expect(plain(formatTime(new Date(at), 'en'))).toBe('10:42 AM');
   });
 });
 

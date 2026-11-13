@@ -811,3 +811,10 @@ Until BEAV-200 these keys held the English text in the languages listed, so Germ
 ## Business details settings (BEAV-199)
 
 DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check. The `businessDetails.*` keys are the Settings → Business details screen on web and mobile. None of it is legal text: `businessDetails.confirmBody` explains the BEAV-195 rule (a business poster books registered businesses only, and private helpers' open offers are withdrawn) in plain words, and `invalidOib` / `invalidObrtOib` replace the helper-onboarding wording of `errors.INVALID_OIB` and `errors.INVALID_BUSINESS_OIB` on this screen. de and fr explain "obrt" once in `kind.OBRT` ("Einzelunternehmen", "entreprise individuelle"); the translator may prefer another gloss.
+
+## On my way without an ETA (BEAV-202)
+
+DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check. When the helper taps On my way without an arrival time, the status line shows when they set off instead of "arriving" with no time.
+
+- `arrival.statusHelper.onMyWayNoEta`, `arrival.statusPoster.onMyWayNoEta`
+- Backend push body for `booking.helper_on_my_way`: `Your helper set off. Open TaskBeavo to follow their arrival.` (it no longer promises an arrival time the helper may not have given)

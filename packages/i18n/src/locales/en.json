@@ -721,12 +721,14 @@
     "statusHelper": {
       "none": "Let the poster know when you set off.",
       "onMyWay": "You're on your way · arriving {time}",
+      "onMyWayNoEta": "You're on your way · set off at {time}",
       "late": "You're running late · arriving {time}",
       "arrived": "You've arrived."
     },
     "statusPoster": {
       "none": "Your helper hasn't said they're on their way yet.",
       "onMyWay": "Your helper is on the way · arriving {time}",
+      "onMyWayNoEta": "Your helper is on the way · set off at {time}",
       "late": "Your helper is running late · new arrival time {time}",
       "arrived": "Your helper has arrived."
     },

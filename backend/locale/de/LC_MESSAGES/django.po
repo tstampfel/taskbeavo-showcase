@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taskbeavo-backend\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-09 10:16+0100\n"
+"POT-Creation-Date: 2026-11-13 15:50+0100\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -89,58 +89,58 @@ msgstr "Erstattung noch nicht bestätigt"
 msgid "Refused by Stripe"
 msgstr "Von Stripe abgelehnt"
 
-#: bookings/admin.py:203
+#: bookings/admin.py:212
 msgid "Note added."
 msgstr "Notiz hinzugefügt."
 
-#: bookings/admin.py:219
+#: bookings/admin.py:228
 msgid "No withdrawal waits for a share on this booking."
 msgstr "Bei dieser Buchung wartet kein Widerruf auf einen Anteil."
 
-#: bookings/admin.py:223
+#: bookings/admin.py:232
 msgid "Share saved. The settlement is being sent to Stripe."
 msgstr "Anteil gespeichert. Die Abwicklung wird an Stripe gesendet."
 
-#: bookings/admin.py:240
+#: bookings/admin.py:249
 msgid "No no-fault request waits for a decision here."
 msgstr "Hier wartet kein Antrag ohne Verschulden auf eine Entscheidung."
 
-#: bookings/admin.py:243 bookings/admin.py:271
+#: bookings/admin.py:252 bookings/admin.py:280
 msgid "Decision saved."
 msgstr "Entscheidung gespeichert."
 
-#: bookings/admin.py:258
+#: bookings/admin.py:267
 msgid "No no-show waits for a decision here."
 msgstr "Hier wartet kein Nichterscheinen auf eine Entscheidung."
 
-#: bookings/admin.py:267
+#: bookings/admin.py:276
 msgid "Settling failed again. The money stays held; ask engineering."
 msgstr ""
 "Die Abrechnung ist erneut fehlgeschlagen. Das Geld bleibt zurückgehalten; "
 "wenden Sie sich an die Technik."
 
-#: bookings/admin.py:301
+#: bookings/admin.py:310
 #, python-format
 msgid "Booking %(id)s"
 msgstr "Buchung %(id)s"
 
-#: bookings/admin.py:373
+#: bookings/admin.py:382
 msgid "Faults"
 msgstr "Selbst verschuldete Absagen"
 
-#: bookings/admin.py:377
+#: bookings/admin.py:386
 msgid "Bookings"
 msgstr "Buchungen"
 
-#: bookings/admin.py:381
+#: bookings/admin.py:390
 msgid "Reliability (%)"
 msgstr "Zuverlässigkeit (%)"
 
-#: bookings/admin.py:385
+#: bookings/admin.py:394
 msgid "Mark reviewed"
 msgstr "Als geprüft markieren"
 
-#: bookings/admin.py:390
+#: bookings/admin.py:399
 msgid "Marked reviewed."
 msgstr "Als geprüft markiert."
 
@@ -611,7 +611,10 @@ msgstr "Ihr Angebot wurde zurückgezogen"
 msgid ""
 "This task now takes offers from registered businesses only, so your offer "
 "was withdrawn. Open TaskBeavo to find more tasks."
-msgstr "Diese Aufgabe nimmt jetzt nur noch Angebote von registrierten Unternehmen an, daher wurde Ihr Angebot zurückgezogen. Öffnen Sie TaskBeavo, um weitere Aufgaben zu finden."
+msgstr ""
+"Diese Aufgabe nimmt jetzt nur noch Angebote von registrierten Unternehmen "
+"an, daher wurde Ihr Angebot zurückgezogen. Öffnen Sie TaskBeavo, um weitere "
+"Aufgaben zu finden."
 
 #: notifications/kinds.py:96
 msgid "Your offer was accepted"
@@ -897,10 +900,8 @@ msgid "Your helper is on the way"
 msgstr "Ihr Helfer ist unterwegs"
 
 #: notifications/kinds.py:395
-msgid "Your helper set off. Open TaskBeavo to see when they expect to arrive."
-msgstr ""
-"Ihr Helfer ist losgefahren. Öffnen Sie TaskBeavo, um zu sehen, wann er "
-"ankommen will."
+msgid "Your helper set off. Open TaskBeavo to follow their arrival."
+msgstr "Ihr Helfer ist losgefahren. Verfolgen Sie seine Ankunft in TaskBeavo."
 
 #: notifications/kinds.py:402
 msgid "Your helper is running late"

@@ -46,3 +46,11 @@ def test_routes_are_linked_app_paths(key: str) -> None:
 def test_payment_requested_opens_the_release_screen() -> None:
     # The screen only opens: releasing still needs the poster's tap and the server's checks.
     assert KINDS["booking.payment_requested"].route == "/bookings/{id}/release"
+
+
+def test_on_my_way_push_never_promises_an_arrival_time() -> None:
+    # The ETA on "On my way" is optional (BEAV-202): the push must read right without one,
+    # so it says the helper set off and leaves the time to the app.
+    with translation.override("en"):
+        body = str(KINDS["booking.helper_on_my_way"].body)
+    assert body == "Your helper set off. Open TaskBeavo to follow their arrival."

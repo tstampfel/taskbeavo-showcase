@@ -392,7 +392,7 @@ _ARRIVAL_KINDS = (
         Category.BOOKING,
         EmailRule.NEVER,
         _("Your helper is on the way"),
-        _("Your helper set off. Open TaskBeavo to see when they expect to arrive."),
+        _("Your helper set off. Open TaskBeavo to follow their arrival."),
         "/bookings/{id}/arrival",
     ),
     Kind(
