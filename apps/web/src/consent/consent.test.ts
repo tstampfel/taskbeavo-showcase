@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  clearPostHogStorage,
   createAnalytics,
   EU_HOST,
   postHogConfig,
   withoutQuery,
+  type BrowserStorage,
   type PostHogClient,
 } from './analytics';
 import { CONSENT_COOKIE, parseConsent, serializeConsent, visitorId } from './consent-cookie';
@@ -25,7 +27,7 @@ function fakePostHog() {
 describe('analytics before consent', () => {
   it('never loads PostHog without consent', async () => {
     const { load } = fakePostHog();
-    const analytics = createAnalytics({ key: 'phc_test', load });
+    const analytics = createAnalytics({ key: 'phc_test', load, clearStorage: vi.fn() });
 
     await analytics.apply(false);
     await analytics.apply(false);
@@ -35,7 +37,7 @@ describe('analytics before consent', () => {
 
   it('loads and starts PostHog EU only once the visitor agrees', async () => {
     const { client, load } = fakePostHog();
-    const analytics = createAnalytics({ key: 'phc_test', load });
+    const analytics = createAnalytics({ key: 'phc_test', load, clearStorage: vi.fn() });
 
     await analytics.apply(true);
     await analytics.apply(true);
@@ -47,13 +49,13 @@ describe('analytics before consent', () => {
 
   it('stays off without a project key, even with consent', async () => {
     const { load } = fakePostHog();
-    await createAnalytics({ key: undefined, load }).apply(true);
+    await createAnalytics({ key: undefined, load, clearStorage: vi.fn() }).apply(true);
     expect(load).not.toHaveBeenCalled();
   });
 
   it('opts out and forgets the anonymous id when consent is withdrawn', async () => {
     const { client, load } = fakePostHog();
-    const analytics = createAnalytics({ key: 'phc_test', load });
+    const analytics = createAnalytics({ key: 'phc_test', load, clearStorage: vi.fn() });
 
     await analytics.apply(true);
     await analytics.apply(false);
@@ -85,6 +87,73 @@ describe('analytics before consent', () => {
         event: 'kept',
       },
     });
+  });
+});
+
+/**
+ * A browser's cookie jar and localStorage, enough to see what PostHog leaves behind. A cookie
+ * is deleted only by an expiring assignment with the same domain it was set with.
+ */
+function fakeBrowser(hostname: string, cookies: Record<string, string | undefined>) {
+  // name -> domain it was set with ('' = host-only)
+  const jar = new Map(Object.entries(cookies).map(([name, domain]) => [name, domain ?? '']));
+  const local = new Map<string, string>([
+    ['ph_phc_test_posthog', '{"distinct_id":"anon-1"}'],
+    ['__ph_opt_in_out_phc_test', '0'],
+    ['taskbeavo.termsUpdateShownTo', 'u1:v1'],
+  ]);
+  const browser: BrowserStorage = {
+    hostname,
+    cookieNames: () => [...jar.keys()],
+    expireCookie: (name, domain) => {
+      if (jar.get(name) === (domain ?? '')) jar.delete(name);
+    },
+    localStorageKeys: () => [...local.keys()],
+    removeLocalStorage: (key) => void local.delete(key),
+  };
+  return { browser, jar, local };
+}
+
+describe('withdrawing analytics', () => {
+  it('turns off PostHog persistence when opted out', () => {
+    expect(postHogConfig(EU_HOST)).toMatchObject({ opt_out_persistence_by_default: true });
+  });
+
+  it('stops PostHog, then removes its cookies and storage', async () => {
+    const { client, load } = fakePostHog();
+    const clear = vi.fn();
+    const analytics = createAnalytics({ key: 'phc_test', load, clearStorage: clear });
+
+    await analytics.apply(true);
+    expect(clear).not.toHaveBeenCalled();
+    await analytics.apply(false);
+
+    expect(client.opt_out_capturing).toHaveBeenCalledTimes(1);
+    expect(clear).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes what an earlier visit left, without loading PostHog', async () => {
+    const { load } = fakePostHog();
+    const clear = vi.fn();
+
+    await createAnalytics({ key: 'phc_test', load, clearStorage: clear }).apply(false);
+
+    expect(load).not.toHaveBeenCalled();
+    expect(clear).toHaveBeenCalledTimes(1);
+  });
+
+  it('deletes ph_ cookies set on the host or a parent domain, and ph_ storage keys', () => {
+    const { browser, jar, local } = fakeBrowser('www.taskbeavo.example', {
+      ph_phc_test_posthog: '.taskbeavo.example',
+      __ph_opt_in_out_phc_test: undefined,
+      tb_consent: undefined,
+      NEXT_LOCALE: undefined,
+    });
+
+    clearPostHogStorage(browser);
+
+    expect([...jar.keys()].sort()).toEqual(['NEXT_LOCALE', 'tb_consent']);
+    expect([...local.keys()]).toEqual(['taskbeavo.termsUpdateShownTo']);
   });
 });
 

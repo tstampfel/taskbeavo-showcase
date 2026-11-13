@@ -44,6 +44,8 @@ export function postHogConfig(host: string): Record<string, unknown> {
     capture_pageleave: false,
     disable_session_recording: true,
     disable_surveys: true,
+    // Opted out, PostHog keeps nothing in cookies or storage (reset() would write a new id).
+    opt_out_persistence_by_default: true,
     person_profiles: 'identified_only',
     before_send: withoutQuery,
   };
@@ -54,24 +56,88 @@ export interface Analytics {
   apply(granted: boolean): Promise<void>;
 }
 
+/** The parts of the browser PostHog stores in, so the cleanup can be tested without one. */
+export interface BrowserStorage {
+  hostname: string;
+  cookieNames(): string[];
+  /** Expires `name` as set for `domain`, or as a host-only cookie without one. */
+  expireCookie(name: string, domain?: string): void;
+  localStorageKeys(): string[];
+  removeLocalStorage(key: string): void;
+}
+
+// posthog-js names its storage ph_<project key>_posthog and __ph_opt_in_out_<project key>.
+const POSTHOG_NAME = /^_{0,2}ph_/;
+
+/**
+ * Deletes PostHog's cookies and localStorage keys. A cookie is only deleted with the domain
+ * it was set with, and PostHog sets it on the parent domain to share it across subdomains,
+ * so each name is expired host-only and on every parent of the hostname.
+ */
+export function clearPostHogStorage(browser: BrowserStorage): void {
+  const labels = browser.hostname.split('.');
+  const domains = labels.slice(0, -1).map((_, i) => labels.slice(i).join('.'));
+  for (const name of browser.cookieNames().filter((cookie) => POSTHOG_NAME.test(cookie))) {
+    browser.expireCookie(name);
+    for (const domain of domains) browser.expireCookie(name, `.${domain}`);
+  }
+  for (const key of browser.localStorageKeys().filter((item) => POSTHOG_NAME.test(item))) {
+    browser.removeLocalStorage(key);
+  }
+}
+
+/** The real browser's storage; empty when cookies or storage are blocked. */
+export function documentStorage(): BrowserStorage {
+  return {
+    hostname: window.location.hostname,
+    cookieNames: () =>
+      document.cookie
+        .split(';')
+        .map((part) => part.split('=')[0]?.trim() ?? '')
+        .filter(Boolean),
+    expireCookie: (name, domain) => {
+      document.cookie = `${name}=; Path=/; Max-Age=0${domain ? `; Domain=${domain}` : ''}`;
+    },
+    localStorageKeys: () => {
+      try {
+        return Object.keys(window.localStorage);
+      } catch {
+        return [];
+      }
+    },
+    removeLocalStorage: (key) => {
+      try {
+        window.localStorage.removeItem(key);
+      } catch {
+        // Storage blocked: nothing was stored there either.
+      }
+    },
+  };
+}
+
 export function createAnalytics({
   key,
   host = EU_HOST,
   load,
+  clearStorage,
 }: {
   key: string | undefined;
   host?: string;
   load: PostHogLoader;
+  /** Deletes PostHog's cookies and storage; runs on every no. */
+  clearStorage: () => void;
 }): Analytics {
   let client: Promise<PostHogClient> | null = null;
   return {
     async apply(granted) {
       if (!granted) {
-        // Never loaded means nothing was ever captured: nothing to stop.
-        if (!client) return;
-        const loaded = await client;
-        loaded.opt_out_capturing();
-        loaded.reset();
+        if (client) {
+          const loaded = await client;
+          loaded.opt_out_capturing();
+          loaded.reset();
+        }
+        // Also when never loaded on this page: an earlier page may have stored an id.
+        clearStorage();
         return;
       }
       if (!key) return;
@@ -95,4 +161,5 @@ export const analytics = createAnalytics({
   key: process.env.NEXT_PUBLIC_POSTHOG_KEY,
   host: process.env.NEXT_PUBLIC_POSTHOG_HOST || EU_HOST,
   load: () => import('posthog-js').then((module) => module.default as PostHogClient),
+  clearStorage: () => clearPostHogStorage(documentStorage()),
 });
