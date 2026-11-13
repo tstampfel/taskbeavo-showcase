@@ -2,10 +2,12 @@
 
 import os
 
-os.environ.setdefault("APP_ENV", "production")
+from config.env import env, setdefault_env
 
-from config.settings.base import *  # noqa: F403
-from config.settings.base import ALLOWED_HOSTS, DATABASES, MIDDLEWARE
+setdefault_env("APP_ENV", "production")
+
+from config.settings.base import *  # noqa: E402, F403 (after the env defaults)
+from config.settings.base import ALLOWED_HOSTS, DATABASES, MIDDLEWARE  # noqa: E402
 
 DEBUG = False
 
@@ -16,12 +18,12 @@ if render_host := os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
 # Staging and production both sit behind Render's proxy, where REMOTE_ADDR is the proxy;
 # trusting its X-Forwarded-For entry keeps anonymous clients in separate mutation
 # rate-limit buckets (config/graphql_limits.py).
-GRAPHQL_TRUSTED_PROXY_COUNT = int(os.environ.get("GRAPHQL_TRUSTED_PROXY_COUNT", "1"))
+GRAPHQL_TRUSTED_PROXY_COUNT = int(env("GRAPHQL_TRUSTED_PROXY_COUNT", "1"))
 
 # Render's health check sends a Host header outside ALLOWED_HOSTS (core/middleware.py).
 MIDDLEWARE = ["core.middleware.HealthCheckMiddleware", *MIDDLEWARE]
 
-DATABASES["default"]["CONN_MAX_AGE"] = int(os.environ.get("DB_CONN_MAX_AGE", "60"))
+DATABASES["default"]["CONN_MAX_AGE"] = int(env("DB_CONN_MAX_AGE", "60"))
 DATABASES["default"].setdefault("OPTIONS", {})["sslmode"] = "require"
 # Neon's pooled connection is PgBouncer in transaction mode, which breaks server-side cursors.
 DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True

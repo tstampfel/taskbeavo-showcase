@@ -226,6 +226,9 @@ def test_runbook_lists_every_dashboard_variable() -> None:
 def test_env_example_lists_every_deploy_variable() -> None:
     lines = (BACKEND_DIR / ".env.example").read_text().splitlines()
     keys = {line.split("=", 1)[0] for line in lines if "=" in line and not line.startswith("#")}
+    # Listed commented out: an empty value would hide the entry points' default (BEAV-217).
+    assert "# DJANGO_SETTINGS_MODULE=config.settings.local" in lines
+    keys.add("DJANGO_SETTINGS_MODULE")
     assert BLUEPRINT_GROUP_KEYS | DASHBOARD_VARIABLES | {"REDIS_URL", "OTEL_SERVICE_NAME"} <= keys
 
 

@@ -22,3 +22,13 @@ def env_bool(name: str, default: bool = False) -> bool:
 
 def env_list(name: str, default: str | object = _UNSET) -> list[str]:
     return [item.strip() for item in env(name, default).split(",") if item.strip()]
+
+
+def setdefault_env(name: str, default: str) -> None:
+    """Like os.environ.setdefault, but an empty value counts as unset.
+
+    docker compose passes every `KEY=` line of backend/.env as an empty variable, which
+    os.environ.setdefault would keep, hiding the settings module's default.
+    """
+    if not os.environ.get(name):
+        os.environ[name] = default

@@ -2,20 +2,25 @@
 
 import os
 
-os.environ.setdefault("APP_ENV", "test")
-os.environ.setdefault("SECRET_KEY", "test-only-not-secret")
-os.environ.setdefault("JWT_SIGNING_KEY", "test-only-jwt-key-not-secret-0123456789")
-os.environ.setdefault("DATABASE_URL", "postgis://taskbeavo:taskbeavo@localhost:55432/taskbeavo")
-os.environ.setdefault("REDIS_URL", "redis://localhost:6379/15")
-# Tests swap in a fake R2 client (uploads/tests/fakes.py); these only name the buckets.
-os.environ.setdefault("R2_ACCOUNT_ID", "test-account")
-os.environ.setdefault("R2_ACCESS_KEY_ID", "test-key-id")
-os.environ.setdefault("R2_SECRET_ACCESS_KEY", "test-secret-not-secret")
-os.environ.setdefault("R2_PRIVATE_BUCKET", "taskbeavo-private-test")
-os.environ.setdefault("R2_PUBLIC_BUCKET", "taskbeavo-public-test")
-os.environ.setdefault("R2_PUBLIC_BASE_URL", "https://photos.test.taskbeavo.invalid")
+from config.env import setdefault_env
 
-from config.settings.base import *  # noqa: F403
+setdefault_env("APP_ENV", "test")
+setdefault_env("SECRET_KEY", "test-only-not-secret")
+setdefault_env("JWT_SIGNING_KEY", "test-only-jwt-key-not-secret-0123456789")
+setdefault_env("DATABASE_URL", "postgis://taskbeavo:taskbeavo@localhost:55432/taskbeavo")
+setdefault_env("REDIS_URL", "redis://localhost:6379/15")
+# Tests assert the local default; FEE_VAT=NOT_CHARGED from a copied backend/.env (compose
+# env_file) must not change it. Tests that need a variant override the setting.
+os.environ["FEE_VAT"] = "UNDECIDED"
+# Tests swap in a fake R2 client (uploads/tests/fakes.py); these only name the buckets.
+setdefault_env("R2_ACCOUNT_ID", "test-account")
+setdefault_env("R2_ACCESS_KEY_ID", "test-key-id")
+setdefault_env("R2_SECRET_ACCESS_KEY", "test-secret-not-secret")
+setdefault_env("R2_PRIVATE_BUCKET", "taskbeavo-private-test")
+setdefault_env("R2_PUBLIC_BUCKET", "taskbeavo-public-test")
+setdefault_env("R2_PUBLIC_BASE_URL", "https://photos.test.taskbeavo.invalid")
+
+from config.settings.base import *  # noqa: E402, F403 (after the env defaults)
 
 DEBUG = False
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
