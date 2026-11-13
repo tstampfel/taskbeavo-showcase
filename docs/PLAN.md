@@ -505,17 +505,17 @@ Sources: [Airtasker: How do I cancel a task (UK)](https://support.airtasker.com/
 
 **TaskBeavo pays a modest call-out, but never automatically.** Helpers are often students and retirees travelling across Dubrovnik, and an unpaid wasted trip is the fastest way to lose them. The call-out is deliberately smaller than in earlier drafts (25%, min €5, max €15 instead of 50%), because it is only travel compensation and a larger amount invites false "no access" claims.
 
-**No phone calls through TaskBeavo at launch.** The poster always has the app, so in-app chat and push notifications reach them instantly and for free, with a written record that doubles as evidence. The only person without the app is often the on-site contact, an elderly parent, and the poster is the best bridge to them: Ana calls her own mother from her own phone, at no cost to TaskBeavo, and is far more likely to get through than a stranger. Masked calling stays an optional later feature (see the architecture section).
+**TaskBeavo places no phone calls at launch.** The poster always has the app, so in-app chat and push notifications reach them instantly and for free, with a written record that doubles as evidence. The only person without the app is often the on-site contact, an elderly parent. The on-site contact's phone is an access detail: the helper of the active booking sees it with a **Call** link and can ring from their own phone, and the poster remains the best bridge, because Ana calling her own mother is far more likely to get through than a stranger. Masked calling stays an optional later feature (see the architecture section).
 
 **Preventing it in the first place:**
-- **Access details at posting time.** The post-task wizard asks for the name on the doorbell, floor or flat number, gate or entry code, where a key is kept, and the best phone number for the poster to reach the on-site contact. These are shown to the helper only after the offer is accepted.
+- **Access details at posting time.** The post-task wizard asks for the name on the doorbell, floor or flat number, gate or entry code, where a key is kept, and the on-site contact's phone number. These are shown only to the helper of the accepted booking, and only while it is active (hard rule e; the phone rule is in `backend/care_contacts/policy.py`).
 - **Reminder the evening before.** A push to the poster: "Marko comes tomorrow at 9:00. Please remind Mama." On-site contacts who use the app get a push too. Only those marked "doesn't use a smartphone" get **one SMS**, the single paid message in this flow.
 
 The flow on the day:
 1. **On site, the helper taps "Couldn't do the job?"** and picks a reason: "No one opened the door", "No access to the garden/building", "Task not as described", or "Other".
 2. **The app alerts the poster, who acts as the bridge.**
    - An automatic chat message and push notification go to the poster: "Marko is at Mama's door and can't get in. Please call her or reply here."
-   - The poster calls the on-site contact from their own phone and answers in chat: "She's coming down" or "She's at the doctor, let's reschedule".
+   - The poster calls the on-site contact from their own phone and answers in chat: "She's coming down" or "She's at the doctor, let's reschedule". The helper can also call the contact with the Call link in the booking.
    - **A 15-minute wait timer starts.** The helper can't request call-out pay until it ends, unless the poster replies in chat that nobody is home.
 3. **The helper adds evidence:** a photo at the door taken in the app (not from the gallery), with automatic timestamp and GPS. The GPS must be within about 100 m of the task address; outside that, the request goes to manual review. The trusted timestamp is the time the server received the photo, and evidence uploads from the web are refused (BEAV-63); the location check is BEAV-125.
 4. **The helper submits "Request call-out pay"** (€7.50 on a €30 task).
@@ -549,7 +549,7 @@ flowchart LR
     end
     subgraph TB["TaskBeavo"]
         B0["Access details and evening-before reminder"] --> B1["Helper can't get in"]
-        B1 --> B2["Chat and push to poster, poster calls Mama from own phone, 15 min wait"]
+        B1 --> B2["Chat and push to poster, poster or helper calls Mama from own phone, 15 min wait"]
         B2 --> B2a{"Door opened?"}
         B2a -->|Yes| B2b["Task continues"]
         B2a -->|No| B3["In-app photo with GPS and timestamp"]
@@ -575,7 +575,7 @@ sequenceDiagram
     Note over P,OC: Evening before: push to Ana, one SMS to Mama Kata (no smartphone)
     H->>APP: Couldn't do the job: No one opened the door
     APP->>P: Chat message and push: Marko is at Mama's door, please call her
-    P->>OC: Ana calls her mother from her own phone (free for TaskBeavo)
+    P->>OC: Ana calls her mother from her own phone (Marko may also call with the Call link)
     Note over H,APP: 15-minute wait timer
     alt Mama answers and opens the door
         P->>APP: Chat: She's coming down
@@ -820,7 +820,7 @@ flowchart TD
     P3 -->|"No: rides, medical or personal care, illegal, contact details in text"| P3a["Blocked with explanation, or held for review"]
     P3 -->|Yes| P4["Where and who: address in service area, on-site contact, access details"]
     P4 --> P5["When: date and time window, max 60 days ahead"]
-    P5 --> P6["Budget suggestion and review"]
+    P5 --> P6["Budget the poster sets, and review"]
     P6 --> P7["Task open, helpers in the area notified"]
     P7 --> Q["Public questions and answers, contact details filtered"]
     P7 --> O{"Offers arrive?"}
@@ -855,7 +855,7 @@ Three small features help tasks get booked instead of quietly expiring:
 1. **Longer lifetimes** (above): tasks stay open until their date or 30 days for flexible ones, and offers last 7 days.
 2. **A nudge when helpers look but don't offer.**
    - **Trigger:** at least 5 different helpers opened the task, there are no offers, and 24 hours have passed since posting.
-   - **Message to the poster** (push and in-app card): "8 helpers looked at your task but nobody has offered yet. Similar tasks in Dubrovnik usually pay €30–40. Want to raise the budget or add more detail?" Buttons: **Edit price**, **Edit description**, **Add photos**.
+   - **Message to the poster** (push and in-app card): "8 helpers looked at your task but nobody has offered yet. You decide whether to change anything." TaskBeavo never names a price or a price range (hard rule k). Buttons: **Edit price**, **Edit description**, **Add photos**.
    - **At most twice:** once at 24 hours and, if still no offers, once more after 3 days. Never more.
    - **Counts only:** the poster sees how many helpers looked, never who.
 3. **"Not for me" with an optional reason.**
@@ -863,16 +863,16 @@ Three small features help tasks get booked instead of quietly expiring:
    - It then asks once, with a **Skip** option: *Price too low · Not enough detail · Too far · Date or time doesn't suit me · Not my kind of task*.
    - **Always optional:** helpers are free to ignore any task without explaining. That keeps the helper experience light and fits the platform-work rules (no pressure to accept or justify refusals).
    - **Shared only in aggregate:** once 3 or more helpers give a reason, the nudge includes it, for example "Helpers say the price may be too low" or "Helpers asked for more detail". Single answers are never shown to the poster.
-   - **Also used for price suggestions:** reasons and accepted prices by category and area improve the "Similar tasks usually pay" range.
+   - **Never turned into a price:** the reasons are not used to suggest a price, and accepted prices are not collected into a "similar tasks pay" range (hard rule k).
 
-**Simple MVP scope:** view counting, the nudge with two sends, the "Not for me" button with five reasons, and the price range from accepted offers. No machine learning or A/B testing is needed at launch.
+**Simple MVP scope:** view counting, the nudge with two sends, and the "Not for me" button with five reasons. No machine learning or A/B testing is needed at launch.
 
 ```mermaid
 flowchart TD
     A["Task posted"] --> B["Helpers browse; each unique helper view is counted"]
     B --> C{"Offers received?"}
     C -->|Yes| D["Poster compares offers"]
-    C -->|"No, after 24 h, and 5+ helper views"| E["Nudge 1 to poster: helpers looked, similar tasks pay €30–40"]
+    C -->|"No, after 24 h, and 5+ helper views"| E["Nudge 1 to poster: helpers looked, no offers yet"]
     B --> NF["Helper taps Not for me: task hidden for them"]
     NF --> NR{"Gives a reason?"}
     NR -->|Skip| NS["Nothing stored except hide"]
@@ -1042,7 +1042,7 @@ Examples: the parent has fallen or seems unwell, the helper is injured, property
 - **Blind:** reviews are hidden until both are written or 7 days pass, then they can't be edited.
 - **Content:** 1–5 stars, quick tags and an optional comment. The same contact-detail filter applies.
 - **Reporting:** either side can report a review as abusive, false or containing personal data. Support decides, and removal is explained to both sides. A poor but honest review is never removed.
-- **Display:** rating with count, and a completion rate over the last 20 jobs. Ratings never deactivate anyone automatically.
+- **Display:** rating with count. Posters see no completion rate, response time, jobs-done count or other stat that steers work to particular helpers (hard rule k; BEAV-144 decides what else a profile may show). Ratings never deactivate anyone automatically.
 
 ```mermaid
 flowchart LR
@@ -1219,9 +1219,9 @@ The Directive's definition of a platform requires the "organisation of work perf
 
 The product design therefore doubles as legal design, and TaskBeavo commits to it in the helper terms:
 
-- Helpers set their own prices, with no binding "recommended price".
+- Helpers set their own prices. TaskBeavo never sets or suggests a price: no recommended price, no price range, no "similar tasks pay" figure.
 - Posters choose the helper. There is no dispatch algorithm.
-- The default offer sort is disclosed, and so are the main ranking parameters (also a ZZP marketplace duty).
+- Offers are listed newest first, or by lowest price when the poster switches the sort; open offers come before withdrawn or expired ones. Nothing else changes the order (not ratings, history, acceptance rate, availability or response time), and nobody pays for placement. The `/ranking` page ("How offers are ordered") says so, which is also the ZZP duty to explain the main ranking parameters.
 - Declining a task carries no penalty, and there are no acceptance-rate thresholds.
 - There are no uniforms, scripts or exclusivity, and helpers may use their own tools.
 - Ratings inform and never deactivate anyone automatically.
@@ -1366,7 +1366,7 @@ flowchart LR
 - **Marketing emails and pushes are opt-in,** separate from booking messages, and can be switched off in settings or by the unsubscribe link at any time. Booking and payment messages can't be switched off, because they're part of the service.
 - **Cookies and analytics on the website:** under ePrivacy rules, non-essential cookies need consent. The web app shows a consent banner (Accept, Reject, Settings, with Reject as easy as Accept). PostHog analytics runs only after consent, or in cookieless mode. Login cookies and security cookies need no consent. Sentry error tracking collects no personal data (PII scrubbing), so it runs as part of the service.
 - **In the app:** an analytics toggle in settings, off until the user agrees in onboarding. No cross-app tracking, so no iOS tracking prompt is needed.
-- **Objection:** users can object to non-essential processing, such as analytics or price-suggestion statistics, from settings or by email.
+- **Objection:** users can object to non-essential processing, such as analytics, from settings or by email.
 - **Every consent is logged** with version and time (`CONSENT` rows), so TaskBeavo can prove it.
 
 ```mermaid
@@ -1436,7 +1436,7 @@ The checklist is ordered by when each item blocks launch. "Opinion" means a writ
 | 9 | Before launch | **Terms of service:** the task contract is poster ↔ helper; TaskBeavo is a disclosed intermediary and agent; helpers give written authority for TaskBeavo to instruct Stripe; helpers set their own prices, may refuse freely, have no exclusivity and pay no fee; ranking explained; dispute and suspension procedure with reasons and appeal; Croatian law for non-mandatory matters; a German version reviewed against German and Austrian consumer law, and a French version reviewed before any French-language marketing | Lawyer | [Stripe FAQ](https://stripe.com/sv-fi/guides/frequently-asked-questions-about-stripe-connect-and-psd2); [Rome I](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32008R0593) |
 | 9a | Before launch (no real users or payments before this) | **Legal pages and acceptance:** publish lawyer-approved Terms and conditions, Helper terms, Privacy notice, Cancellation and refund policy, Cookie policy and Company information (imprint) in HR/EN/DE/FR; required unticked terms checkbox at sign-up (also enforced on the server); helper terms in onboarding; versioned `LEGAL_DOCUMENT` and `TERMS_ACCEPTANCE` records; 30-day notice and re-acceptance screen for material changes | Lawyer, founder | Terms section in User journeys |
 | 10 | Before launch | **Consumer flow:** pre-contract information; the NN 105/2026 model withdrawal notice; a required express-request and acknowledgement tick box; an online withdrawal button (BEAV-122); the withdrawal information, model form and tick-box text in the CANCELLATION document (BEAV-39); confirmation on a durable medium (the contract confirmation email, BEAV-110); a consent log with the version of the text shown | Founder, lawyer | [Pravilnik NN 105/2026](https://www.zakon.hr/c/podzakonski-propis/1420974/nn-105-2026-%2818.9.2026.%29%2C-pravilnik-o-sadrzaju-i-obliku-obavijesti-o-pravu-potrosaca-na-jednostrani-raskid-ugovora-sklopljenih-na-daljinu-i-ugovora-sklopljenih-izvan-poslovnih-prostorija); [CRD](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02011L0083-20220528) |
-| 11 | Before launch | **Marketplace disclosures:** a "Trader / Private individual" label on every offer and profile, from the helper's own declaration; a notice that consumer law does not apply to private helpers; a "How offers are ranked" page. A registered business (obrt or company) shows its business name and OIB on its public profile and on each offer, as a trader must (CRD Art. 6(1)(b)–(c), ZZP čl. 60 and 61(1), P2B Art. 3(5); BEAV-192). Its geographic business address goes only to the signed-in poster of a task it offered on, on the offer and at checkout; the public profile shows only the town, because many obrts are registered at the owner's home (user decision 2026-11-07, lawyer confirmation asked on BEAV-39). In-app chat is the rapid means of contact. Nothing changes for private helpers | Founder | [zakon.hr ZZP Art. 36](https://www.zakon.hr/z/193/zakon-o-zastiti-potrosaca) |
+| 11 | Before launch | **Marketplace disclosures:** a "Trader / Private individual" label on every offer and profile, from the helper's own declaration; a notice that consumer law does not apply to private helpers; a "How offers are ordered" page (`/ranking`). A registered business (obrt or company) shows its business name and OIB on its public profile and on each offer, as a trader must (CRD Art. 6(1)(b)–(c), ZZP čl. 60 and 61(1), P2B Art. 3(5); BEAV-192). Its geographic business address goes only to the signed-in poster of a task it offered on, on the offer and at checkout; the public profile shows only the town, because many obrts are registered at the owner's home (user decision 2026-11-07, lawyer confirmation asked on BEAV-39). In-app chat is the rapid means of contact. Nothing changes for private helpers | Founder | [zakon.hr ZZP Art. 36](https://www.zakon.hr/z/193/zakon-o-zastiti-potrosaca) |
 | 12 | Before first helper is onboarded | **Onboarding data collection:** legal name, address, OIB or foreign tax number with check-digit validation, date of birth, IBAN, VAT ID if any, country of residence; Stripe KYC and Stripe Identity | Founder | [NN 151/2022](https://narodne-novine.nn.hr/clanci/sluzbeni/2022_12_151_2338.html) |
 | 13 | Before first helper is onboarded | **Helper status declaration:** private individual, obrt or company, pensioner, or student (joins as a private individual). Route each status to its tax guide; obrt helpers agree to issue fiscalized invoices; earnings statements by payer country | Founder, tax adviser | [TEB](https://www.teb.hr/novosti/2025/drugi-dohodak-od-fizicke-osobe/); [gov.hr](https://www.gov.hr/hr/studentski-poslovi/1982) |
 | 14 | **Within 8 days** of becoming an operator (first helper contract) | **DAC7 registration** at dac7.porezna-uprava.hr | Founder | [Porezna DAC7](https://porezna-uprava.gov.hr/hr/obveze-za-operatere-platformi-dac7/4733) |
@@ -1551,7 +1551,7 @@ Money never moves from a client mutation alone. `acceptOffer` creates the Stripe
 
 **Rules that keep the GraphQL API safe:**
 - Every subscription checks permissions on connect and on each event, so a user only receives events for their own tasks, bookings and conversations.
-- Exact addresses, phone numbers and helper OIB/IBAN are never exposed through fields that other users can query. The one exception is a trader helper's business name and business OIB on its public profile and offers, and its registered business address for the poster of a task it offered on (the public profile shows only the town; BEAV-192); never a private helper's.
+- Exact addresses, phone numbers and helper OIB/IBAN are never exposed through fields that other users can query. The exceptions are the exact address, access details and on-site contact's phone for the helper of an accepted booking while it is active (hard rule e), and a trader helper's business name and business OIB on its public profile and offers, and its registered business address for the poster of a task it offered on (the public profile shows only the town; BEAV-192); never a private helper's.
 - Query depth and complexity limits, plus rate limits on mutations such as `makeOffer` and `sendMessage`.
 - Persisted or allow-listed queries in production, since the only clients are TaskBeavo's own apps.
 - Introspection off in production.
@@ -1581,13 +1581,14 @@ sequenceDiagram
 
 ### Contacting people on the day: chat and push at launch, masked calling later
 
-**At launch, TaskBeavo does no phone calls at all.**
+**At launch, TaskBeavo itself places no phone calls.**
 - **Helper ↔ poster** talk through in-app chat, with push notifications. This is free, instant, and creates a written record for disputes. Posters abroad are reached exactly the same way as local ones.
-- **The on-site contact** (often an elderly parent without a smartphone) is reached **by the poster**, who calls them from their own phone after a push from TaskBeavo. The poster is the person the parent trusts and is most likely to answer.
+- **The on-site contact** (often an elderly parent without a smartphone) is reached **by the poster**, who calls them from their own phone after a push from TaskBeavo, or **by the helper**, from the helper's own phone. The poster is the person the parent trusts and is most likely to answer.
+- **The on-site contact's phone is an access detail** (hard rule e, `backend/care_contacts/policy.py`). Only the poster who owns the contact and the helper of an accepted booking for that contact see it, the helper only while the booking is active, shown with a **Call** link next to the exact address and access details. Helpers who only sent an offer, other users and the helper after the booking closes never see it.
 - **The only paid messages** are SMS to on-site contacts marked "doesn't use a smartphone": one reminder the evening before, and at most one alert per booking. At $0.1379 per SMS to Croatia ([Twilio SMS pricing Croatia](https://www.twilio.com/en-us/sms/pricing/hr)), 300 bookings with a third of contacts on SMS cost roughly **$15–30 a month**, usually less. A monthly SMS budget with an alert at 80% keeps it capped.
-- **Real phone numbers are never shown** to the other side, so there is no off-platform leakage and parents' numbers stay private.
+- **Users' own phone numbers are never shown** to the other side: the helper never sees the poster's number, and the poster never sees the helper's, so there is no off-platform leakage between them.
 
-**Add masked calling later only if needed**, for example if no-access cases turn out to be common and posters often can't reach their parents. The design below is ready for that.
+**Add masked calling later only if needed**, for example if no-access cases turn out to be common, or to stop showing the on-site contact's real number to the helper. The design below is ready for that.
 
 #### Optional later feature: masked calling
 
@@ -1640,7 +1641,7 @@ Against about €2.10 kept per €30 task, in-app calling costs roughly 3% of th
 With these rules, masked calling would cost around **$20–60 a month at 300–1,000 bookings**, and never more than the set budget. Until it is added, telephony is just the SMS budget above.
 
 **Privacy (GDPR):**
-- Real numbers are stored once, encrypted, and are only ever sent to the telephony provider, never to another user's app.
+- With masked calling, real numbers are stored once, encrypted, and are only ever sent to the telephony provider, never to another user's app. (Until then, the on-site contact's phone is shown to the helper of an active booking, as above.)
 - Calls are not recorded. Only call metadata is kept, and it is deleted with the booking's chat data under the retention rules.
 - The privacy notice lists the telephony provider as a processor, and the on-site contact form tells the poster that Mama Kata may receive calls from helpers through TaskBeavo numbers.
 
@@ -2246,9 +2247,9 @@ Language: copy in English, but layouts must fit German (~30% longer) and Croatia
 
 Data: realistic sample data from Croatia — Dubrovnik (Gruž, Lapad, Stari Grad, Mokošica, Konavle), Split, Zagreb; posters abroad in München, Wien, Stuttgart, Dublin; euro prices like €25, €35, €15/h; names like Ana K., Marko P., Ivana M., Luka, Petra, Stjepan, Mama Kata (avoid real people).
 
-Trust patterns: "Verified ID" badge (green shield), star ratings with count, completion rate, "Payment protected · held via Stripe" lock badge, optional photo proof with the payment request. Never use the words "escrow" or "held by TaskBeavo".
+Trust patterns: "Verified ID" badge (green shield), star ratings with count (no completion rate, response time or jobs-done stats; hard rule k), "Payment protected · held via Stripe" lock badge, optional photo proof with the payment request. Never use the words "escrow" or "held by TaskBeavo".
 
-Legal patterns: every offer and helper profile shows a small neutral label "Private individual" or "Registered business" (the helper's own declaration). Any sort called "Recommended" has an "How offers are ranked" info link. Checkout shows the cancellation summary, a "Withdrawal information" link and a required consent checkbox. Receipts mention "Fiscalized receipt for the service fee".
+Legal patterns: every offer and helper profile shows a small neutral label "Private individual" or "Registered business" (the helper's own declaration). The offer sort chips (Newest, Lowest price) have a "How offers are ranked" info link to the `/ranking` text. There is no "Recommended" or "Top rated" sort, and TaskBeavo never suggests a price. Checkout shows the cancellation summary, a "Withdrawal information" link and a required consent checkbox. Receipts mention "Fiscalized receipt for the service fee".
 
 Out of scope (never show): rides or driving people, medical or personal care tasks.
 
@@ -2278,7 +2279,7 @@ Constraints: iPhone 390x844, follow guidelines.md colors/type, off-white backgro
 ```text
 Task: Build the Home screen with a nearby task feed.
 Context: Main tab. Helpers browse open tasks near them; posters see their active tasks on top and helpers nearby.
-Elements: header with greeting "Hi, Ana", location chip "Lapad, Dubrovnik ▾", bell icon with orange dot. Search bar "What do you need help with?". Horizontal category chips with icons: Garden, Groceries & pharmacy, Repairs, Cleaning, Check-in visit, Holiday rentals, Pets. Toggle "List | Map". Task cards: category icon, title ("Mow lawn & trim hedge"), approx distance "1.2 km · Gruž", date "Sat, 9:00", budget "€35" in orange, offers count "3 offers", poster avatar + rating 4.9 (23), small tag "Booked from München" on diaspora tasks, and a small "Not for me" text button on each card (helper view) that hides the card and opens a one-question bottom sheet: "Why isn't this for you? (optional)" with chips Price too low · Not enough detail · Too far · Date or time doesn't suit me · Not my kind of task, and "Skip". A "Your active task" banner card for posters showing status "2 new offers", plus a nudge card variant: "8 helpers looked, no offers yet. Similar tasks in Dubrovnik pay €30–40. Helpers say the price may be too low." with buttons Edit price · Edit description · Add photos. Bottom tab bar with raised green + button.
+Elements: header with greeting "Hi, Ana", location chip "Lapad, Dubrovnik ▾", bell icon with orange dot. Search bar "What do you need help with?". Horizontal category chips with icons: Garden, Groceries & pharmacy, Repairs, Cleaning, Check-in visit, Holiday rentals, Pets. Toggle "List | Map". Task cards: category icon, title ("Mow lawn & trim hedge"), approx distance "1.2 km · Gruž", date "Sat, 9:00", budget "€35" in orange, offers count "3 offers", poster avatar + rating 4.9 (23), small tag "Booked from München" on diaspora tasks, and a small "Not for me" text button on each card (helper view) that hides the card and opens a one-question bottom sheet: "Why isn't this for you? (optional)" with chips Price too low · Not enough detail · Too far · Date or time doesn't suit me · Not my kind of task, and "Skip". A "Your active task" banner card for posters showing status "2 new offers", plus a nudge card variant: "8 helpers looked, no offers yet. Helpers say the price may be too low. You decide whether to change anything." (no price or price range from TaskBeavo) with buttons Edit price · Edit description · Add photos. Bottom tab bar with raised green + button.
 Behavior: tapping a chip filters the feed; Map toggle swaps to a full-width map with green pins and a bottom sheet of cards; pull-to-refresh; empty state with beaver holding a sign "No tasks nearby yet — be the first to post!".
 Constraints: 390x844, cards radius 16 on white over #F5F4EF, use 8 sample tasks. Done = list view, map view and empty state.
 ```
@@ -2293,7 +2294,7 @@ Step 1 What: category grid (7 tiles) + title input with suggestions ("Grocery ru
 Step 2 Details: description textarea with helper text, add up to 5 photos (camera/gallery tiles), optional "Helper should bring tools" toggle.
 Step 3 Where & who: segmented "At my place | For a family member". For family: pick saved contact card "Mama Kata · Gruž · +385…" or "Add on-site contact" (name, phone, language HR/EN/DE/FR, "Doesn't use a smartphone" toggle). Address search field limited to Croatia, small map with draggable pin; if the address is outside the service area, show an inline state with the beaver holding a map: "TaskBeavo currently works only in Croatia (Dubrovnik first)" or "We're not in Osijek yet", an email field and "Join the waitlist" button. Then an "Access details" card: name on the doorbell, floor/flat, gate or entry code, where a key is kept, and a free-text note ("Ring twice, Mama is hard of hearing"). Note "Helpers only see the approximate area until you accept an offer. Access details are shared only with the helper you choose."
 Step 4 When: chips "Today", "This week", "Pick a date" + time window; "Flexible" option; note "You can book up to 60 days ahead."
-Step 5 Budget: segmented control "Fixed price | Ask for offers"; euro input with suggested range "Similar tasks in Dubrovnik: €25–40"; note "You pay only when you accept an offer. Payment is held securely via Stripe until you release it."
+Step 5 Budget: segmented control "Fixed price | Ask for offers"; euro input with the hint "You set the budget. Helpers send their own price." (no suggested range); note "You pay only when you accept an offer. Payment is held securely via Stripe until you release it."
 Review screen: summary card with edit links per section, primary button "Post task".
 Success screen: beaver celebrating, "Your task is live! We'll notify you when offers arrive." buttons "View task" / "Back home".
 Behavior: Next disabled until required fields filled; inline validation; steps clickable from review.
@@ -2305,7 +2306,7 @@ Constraints: 390x844, guidelines.md. Done = all steps navigable with mock state,
 ```text
 Task: Design the Offers screen where a poster compares helper bids for one task.
 Context: Poster (in München) opened "Mow lawn & trim hedge for Mama — €35 budget" which has 4 offers.
-Elements: task summary header (title, date, budget, on-site contact "Mama Kata"). Sort chips: "Recommended" (with a small ⓘ "How offers are ranked" link opening a sheet: "Offers are ordered by match to your budget, rating, completed tasks and response time. No helper pays for placement."), "Lowest price", "Top rated", "Nearest". Offer cards: helper photo, name "Marko P.", Verified ID badge, small neutral status label "Private individual" (one card shows "Registered business · obrt"), rating 4.8 (41), "92% completion", distance 2 km, languages "HR · DE", offer price "€30" large in orange, short message preview, availability "Can come Sat 9:00", buttons "Chat" (outline) and "Accept" (green). Optional "Compare" mode: select 2–3 offers and show a side-by-side table (price, rating, jobs done, response time, ID verified, private/business, earliest time).
+Elements: task summary header (title, date, budget, on-site contact "Mama Kata"). Sort chips: "Newest" (default) and "Lowest price", with a small ⓘ "How offers are ranked" link opening a sheet with the `/ranking` text: "Open offers come first. By default they are listed newest first; you can switch to Lowest price. Nothing else changes the order. Helpers pay nothing for their place in the list." Offer cards: helper photo, name "Marko P.", Verified ID badge, small neutral status label "Private individual" (one card shows "Registered business · obrt"), rating 4.8 (41), distance 2 km, languages "HR · DE", offer price "€30" large in orange, short message preview, availability "Can come Sat 9:00", buttons "Chat" (outline) and "Accept" (green). Optional "Compare" mode: select 2–3 offers and show a side-by-side table (total incl. fee, helper's price, rating, private/business, open until).
 Behavior: Accept opens a bottom sheet confirming: agreed price €30.00, TaskBeavo service fee €3.60, total €33.60, "Payment held securely via Stripe until you release it", a one-line note "Your agreement for the task is with Marko. TaskBeavo arranges it and collects payment on his behalf.", primary "Continue to payment". Declined/withdrawn offers greyed.
 Constraints: 390x844, guidelines.md. Done = list, ranking info sheet, compare table, accept bottom sheet.
 ```
@@ -2315,7 +2316,7 @@ Constraints: 390x844, guidelines.md. Done = list, ranking info sheet, compare ta
 ```text
 Task: Create the Task detail screen with an embedded chat thread for an assigned task.
 Context: Offer accepted; poster (abroad) and helper coordinate.
-Elements: top status stepper: Offer accepted → Payment held → Payment requested → Released → Reviewed (current = Payment held, green). Task card (title, date, exact address now visible, map thumbnail with "Directions", on-site contact "Mama Kata" with access details: doorbell name, floor, gate code; no call button). Helper/poster mini profile with "Private individual" label. Tabs "Chat | Details | Proof". Chat: bubbles (mine green #1F5C46 with white text, theirs white), timestamps, read ticks, image message, system messages in centered pills ("€33.60 paid · held via Stripe until you release it", "Marko requested payment · 3 photos"). Proof tab: before/after photo grid, payment status and a "Service fee receipt" row with a download icon. Composer with attach photo, text field, send button. Safety banner: "Keep payment and chat in TaskBeavo to stay protected."
+Elements: top status stepper: Offer accepted → Payment held → Payment requested → Released → Reviewed (current = Payment held, green). Task card (title, date, exact address now visible, map thumbnail with "Directions", on-site contact "Mama Kata" with access details: doorbell name, floor, gate code, and the contact's phone with a "Call" link, shown to the helper only while the booking is active). Helper/poster mini profile with "Private individual" label. Tabs "Chat | Details | Proof". Chat: bubbles (mine green #1F5C46 with white text, theirs white), timestamps, read ticks, image message, system messages in centered pills ("€33.60 paid · held via Stripe until you release it", "Marko requested payment · 3 photos"). Proof tab: before/after photo grid, payment status and a "Service fee receipt" row with a download icon. Composer with attach photo, text field, send button. Safety banner: "Keep payment and chat in TaskBeavo to stay protected."
 Behavior: tab switching; typing indicator; helper side shows "Request payment (add photos)"; poster side shows a green "Release payment" button once payment is requested; "Report a problem" and "Cancel or withdraw" in overflow menu.
 Constraints: 390x844, keyboard-safe composer. Done = poster view and helper view variants.
 ```
@@ -2349,7 +2350,7 @@ Constraints: 390x844, accessible large targets. Done = helper request, helper wa
 ```text
 Task: Design a public Helper profile.
 Context: Seen by posters from offers or search; also a shareable web page.
-Elements: cover band in deep green with subtle beaver-tooth pattern, avatar, name "Ivana M.", location "Mokošica, Dubrovnik", status label "Private individual" (neutral grey pill, with ⓘ "What this means": "Ivana offers help as a private person, not a business. EU consumer law doesn't apply to your agreement with her; TaskBeavo's refund policy does."), badges (Verified ID, Fast responder, 50+ jobs), rating 4.9 ★ (58 reviews), stats row (jobs done, completion rate, member since, languages HR · EN · DE · FR). About text. Skills chips with prices Ivana set herself ("Gardening from €15/h", "Grocery run from €12"). Photo gallery of past work. Availability mini calendar. Reviews section preview (3 cards, one from "Daughter in Wien") + "See all". Sticky bottom CTA "Invite to my task" (mobile) / right sidebar card (web). Variant: a business helper "Stjepan — Obrt Stjepan Popravci" with "Registered business" label, OIB and the town of its registered business address shown.
+Elements: cover band in deep green with subtle beaver-tooth pattern, avatar, name "Ivana M.", location "Mokošica, Dubrovnik", status label "Private individual" (neutral grey pill, with ⓘ "What this means": "Ivana offers help as a private person, not a business. EU consumer law doesn't apply to your agreement with her; TaskBeavo's refund policy does."), badge Verified ID, rating 4.9 ★ (58 reviews), member since, languages HR · EN · DE · FR (no completion rate, "Fast responder" or jobs-done badge; hard rule k). About text. Skills chips with prices Ivana set herself ("Gardening from €15/h", "Grocery run from €12"). Photo gallery of past work. Availability mini calendar. Reviews section preview (3 cards, one from "Daughter in Wien") + "See all". Sticky bottom CTA "Invite to my task" (mobile) / right sidebar card (web). Variant: a business helper "Stjepan — Obrt Stjepan Popravci" with "Registered business" label, OIB and the town of its registered business address shown.
 Constraints: mobile 390x844 and web 1440 two-column layout (main 760 + sidebar 360). Done = both breakpoints and both status variants.
 ```
 
@@ -2405,7 +2406,7 @@ Refund preview card that changes with timing and reason, e.g. "More than 24 h be
 Confirm: full-refund cases cancel immediately ("Cancelled · €33.60 refunded"); late or no-fault cases show "Send cancellation request to Marko" with note "If Marko doesn't reply within 48 h, it's cancelled automatically."
 Helper side: notification "Ana asked to cancel · reason: Weather", buttons "Agree" / "I disagree" (opens text field, "Our team will review"), and a helper-initiated cancel screen with warning "Cancelling affects your reliability score. Ana will get a full refund and a €5 credit from TaskBeavo."
 Status states: "Cancellation pending (47 h left)", "Cancelled · €33.60 refunded", "Under review by TaskBeavo".
-Also a "No access" helper flow: "Couldn't do the job?" → reason list ("No one opened the door", "No access to the garden/building", "Task not as described", "Other") → "We've let Ana know" screen showing the auto-sent chat message ("Marko is at Mama's door and can't get in. Please call her or reply here."), live chat replies from Ana, the access details from the booking (doorbell name, floor, gate code), and a 15-minute countdown; no call buttons → in-app camera photo at the door with timestamp and GPS chip ("Sat 9:07 · Gruž · 40 m from address") → "Request call-out pay (€7.50)". Poster side: card "Marko couldn't get in" with the photo, call attempts and three buttons: "Reschedule (no fee)" (primary), "Accept call-out (€7.50)", "Dispute"; note "If you don't respond within 48 h, the call-out is accepted." Result screen: "€25.20 refunded · Marko gets €7.50 call-out · service fee €0.90 · you paid €33.60".
+Also a "No access" helper flow: "Couldn't do the job?" → reason list ("No one opened the door", "No access to the garden/building", "Task not as described", "Other") → "We've let Ana know" screen showing the auto-sent chat message ("Marko is at Mama's door and can't get in. Please call her or reply here."), live chat replies from Ana, the access details from the booking (doorbell name, floor, gate code, and Mama Kata's phone with a "Call" link), and a 15-minute countdown → in-app camera photo at the door with timestamp and GPS chip ("Sat 9:07 · Gruž · 40 m from address") → "Request call-out pay (€7.50)". Poster side: card "Marko couldn't get in" with the photo and three buttons: "Reschedule (no fee)" (primary), "Accept call-out (€7.50)", "Dispute"; note "If you don't respond within 48 h, the call-out is accepted." Result screen: "€25.20 refunded · Marko gets €7.50 call-out · service fee €0.90 · you paid €33.60".
 Constraints: 390x844, guidelines.md, calm reassuring tone, refund amounts in tabular figures. Done = poster reason, preview (private and business variants), confirm, pending, helper response, no-access flow, withdrawal entry.
 ```
 
