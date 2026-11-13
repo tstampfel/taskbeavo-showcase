@@ -389,6 +389,15 @@ function helperActions({
           disabled={busy}
           onPress={() => set({ eta: null, reportingLate: false })}
         />
+        {/* A helper who reaches the door mid-report can still say so in one tap. */}
+        <Button
+          variant="ghost"
+          size="sm"
+          label={t('arrival.arrived')}
+          disabled={busy}
+          onPress={onArrived}
+          testID="arrival-arrived"
+        />
       </>
     );
   } else if (view.canTap) {
