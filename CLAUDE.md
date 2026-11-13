@@ -120,7 +120,7 @@ Rows marked "(planned)" don't run yet. When you scaffold something, make it answ
 | Dev, all JS apps | `pnpm dev` (`turbo run dev`) |
 | Web dev | `pnpm --filter @taskbeavo/web dev` |
 | Mobile dev | `pnpm --filter @taskbeavo/mobile start` (`expo start --dev-client`) |
-| Mobile local dev build | `pnpm --filter @taskbeavo/mobile ios` (`expo run:ios`, needs Xcode) or `android` (`expo run:android`, needs the Android SDK) |
+| Mobile local dev build | `pnpm --filter @taskbeavo/mobile ios` (`scripts/run-ios.mjs`: prebuild, then `expo run:ios` on the booted simulator, needs Xcode; without a code signing certificate it builds the simulator app unsigned, with Sign in with Apple and universal links off; pass `--device "<name>"` to pick another) or `android` (`expo run:android`, needs the Android SDK) |
 | Backend dev | `cd backend && uv run python manage.py runserver` (or the `django` compose service) |
 | Celery | `cd backend && uv run celery -A config worker -l info` and `uv run celery -A config beat -l info` |
 | Backend tests | `cd backend && uv run pytest` |
