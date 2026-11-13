@@ -3,6 +3,7 @@ import { ApolloProvider } from '@apollo/client/react';
 import { typePolicies } from '@taskbeavo/graphql';
 import { catalogues, formatMoney } from '@taskbeavo/i18n';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Observable } from 'rxjs';
 import { i18n } from '../src/i18n';
@@ -162,6 +163,14 @@ it('shows the server preview and cancels with the chosen reason', async () => {
   expect(
     screen.getByText(en.done.refunding.replace('{amount}', formatMoney(2_520, 'en'))),
   ).toBeTruthy();
+});
+
+it('keeps the radio circles full size when a reason wraps at large text', async () => {
+  await renderCancel({ BookingCancellation: () => ({ booking: booking() }) });
+  await screen.findByText(en.cases.LATE);
+  // A long label must not squeeze the 24pt circle (seen at the largest accessibility size).
+  const dot = screen.getByTestId('cancel-reason-dot-NO_LONGER_NEEDED');
+  expect(StyleSheet.flatten(dot.props.style)).toMatchObject({ width: 24, flexShrink: 0 });
 });
 
 it('keeps the withdrawal button after the start while the cancel is refused', async () => {

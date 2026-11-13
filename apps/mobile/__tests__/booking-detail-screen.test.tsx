@@ -202,6 +202,10 @@ it.each([
     await renderDetail(booking('helper-9', { status: 'PAYMENT_REQUESTED' }));
     const style = StyleSheet.flatten(screen.getByTestId('booking-steps').props.style);
     expect(style.flexDirection ?? 'column').toBe(direction);
+    // Beside a wrapping label the dot keeps its size.
+    expect(
+      StyleSheet.flatten(screen.getByTestId('booking-step-dot-held').props.style),
+    ).toMatchObject({ width: 20, flexShrink: 0 });
   } finally {
     dimensions.mockRestore();
   }

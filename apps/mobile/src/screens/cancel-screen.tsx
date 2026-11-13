@@ -374,7 +374,10 @@ function Reasons<K extends string>({
         style={[styles.reason, index > 0 && styles.reasonRule]}
         testID={`cancel-reason-${reason.key}`}
       >
-        <View style={[styles.dot, checked && styles.dotChecked]} />
+        <View
+          style={[styles.dot, checked && styles.dotChecked]}
+          testID={`cancel-reason-dot-${reason.key}`}
+        />
         <Text style={[textStyle('body'), styles.ink, styles.flex]}>{label}</Text>
       </Pressable>
     );
@@ -659,6 +662,8 @@ const styles = StyleSheet.create({
   dot: {
     width: 24,
     height: 24,
+    // A wrapping label at large text must not squeeze the circle.
+    flexShrink: 0,
     borderRadius: radii.pill,
     borderWidth: 2,
     borderColor: colors.inkMuted,

@@ -206,6 +206,7 @@ function Steps({ steps }: { steps: NonNullable<BookingDetail['steps']> }) {
                 state === 'done' && styles.dotDone,
                 state === 'current' && styles.dotCurrent,
               ]}
+              testID={`booking-step-dot-${step}`}
             />
             <Text
               style={[
@@ -412,6 +413,8 @@ const styles = StyleSheet.create({
   dot: {
     width: 20,
     height: 20,
+    // In the stacked list at large text a long label must not squeeze the dot.
+    flexShrink: 0,
     borderRadius: radii.pill,
     borderWidth: 3,
     borderColor: colors.offWhite,
