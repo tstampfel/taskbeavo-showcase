@@ -15,6 +15,8 @@ English is the source. Croatian is reviewed first. Remove a key from this list o
 | `apiStatus.connected`                   | pending | pending | pending |
 | `apiStatus.unavailable`                 | pending | pending | pending |
 | `languageSwitcher.label`                | pending | pending | pending |
+| `appShell.back`                         | pending | pending | pending |
+| `appShell.accountMenu`                  | pending | pending | pending |
 | `errorBoundary.title`                   | pending | pending | pending |
 | `errorBoundary.body`                    | pending | pending | pending |
 | `errorBoundary.retry`                   | pending | pending | pending |

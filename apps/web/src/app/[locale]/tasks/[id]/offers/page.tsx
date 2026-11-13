@@ -5,6 +5,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { OffersView } from '../../../../../components/offers/offers-view';
 import { routing } from '../../../../../i18n/routing';
+import { AppShell } from '../../../../../components/shell/app-shell';
 
 export async function generateMetadata({
   params,
@@ -22,11 +23,14 @@ export default async function TaskOffersPage({ params }: PageProps<'/[locale]/ta
   if (!hasLocale(routing.locales, locale) || !LINK_ID.test(id)) notFound();
   setRequestLocale(locale);
   const { offers } = await getMessages();
+  const t = await getTranslations({ locale, namespace: 'offers' });
   return (
-    <main>
-      <NextIntlClientProvider messages={{ offers }}>
-        <OffersView taskId={id} locale={locale} />
-      </NextIntlClientProvider>
-    </main>
+    <AppShell title={t('metaTitle')} back={`/tasks/${id}`} titleIsHeading={false}>
+      <main>
+        <NextIntlClientProvider messages={{ offers }}>
+          <OffersView taskId={id} locale={locale} />
+        </NextIntlClientProvider>
+      </main>
+    </AppShell>
   );
 }

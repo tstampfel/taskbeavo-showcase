@@ -229,6 +229,7 @@ test('signs up with an email code, then verifies the phone', async ({ page }) =>
   await expect(page.getByTestId('phone-code')).toContainText('Gesendet an +49 ••• 789');
   await page.getByTestId('phone-code-input').fill('730912');
   await expect(page).toHaveURL(/\/de$/);
+  await page.getByTestId('account-menu-button').click();
   await expect(page.getByTestId('signed-in-as')).toHaveText('Angemeldet als Ana');
   await expectNoTokensInStorage(page);
 });
@@ -566,6 +567,7 @@ test('signing out clears the session and shows "Log in" again', async ({ page })
   });
   api.viewer = { ...user, phoneVerified: true };
   await page.goto('/en');
+  await page.getByTestId('account-menu-button').click();
   await expect(page.getByTestId('signed-in-as')).toHaveText('Signed in as Ana');
   await page.getByTestId('sign-out').click();
   await expect(page.getByTestId('sign-in-link')).toBeVisible();
@@ -583,6 +585,7 @@ test('"Log out of all devices" ends every session and shows "Log in" again', asy
   });
   api.viewer = { ...user, phoneVerified: true };
   await page.goto('/en');
+  await page.getByTestId('account-menu-button').click();
   await page.getByTestId('sign-out-everywhere').click();
   await expect(page.getByTestId('sign-in-link')).toBeVisible();
   expect(api.auth['sign-out-everywhere']).toHaveLength(1);

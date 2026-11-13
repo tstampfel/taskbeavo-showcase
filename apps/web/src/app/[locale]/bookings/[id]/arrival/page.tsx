@@ -6,6 +6,7 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import styles from '../../../../../components/arrival/arrival.module.css';
 import { BookingArrival } from '../../../../../components/arrival/booking-arrival';
 import { routing } from '../../../../../i18n/routing';
+import { AppShell } from '../../../../../components/shell/app-shell';
 
 type Props = PageProps<'/[locale]/bookings/[id]/arrival'>;
 
@@ -24,11 +25,12 @@ export default async function BookingArrivalPage({ params }: Props) {
   const { arrival, errors } = await getMessages();
   const t = await getTranslations({ locale, namespace: 'arrival' });
   return (
-    <main className={styles.main}>
-      <h1 className={styles.title}>{t('title')}</h1>
-      <NextIntlClientProvider messages={{ arrival, errors }}>
-        <BookingArrival bookingId={id} locale={locale} />
-      </NextIntlClientProvider>
-    </main>
+    <AppShell title={t('title')} back={`/bookings/${id}`}>
+      <main className={styles.main}>
+        <NextIntlClientProvider messages={{ arrival, errors }}>
+          <BookingArrival bookingId={id} locale={locale} />
+        </NextIntlClientProvider>
+      </main>
+    </AppShell>
   );
 }

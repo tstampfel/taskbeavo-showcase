@@ -4,6 +4,7 @@ import { hasLocale, useTranslations } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { use } from 'react';
 import { ApiStatus } from '../../components/api-status';
+import { SiteHeader } from '../../components/shell/site-header';
 import { localeAlternates } from '../../i18n/metadata';
 import { routing } from '../../i18n/routing';
 
@@ -19,16 +20,21 @@ export default function HomePage({ params }: PageProps<'/[locale]'>) {
   const t = useTranslations();
 
   return (
-    <main
-      data-testid="home"
-      style={{ maxWidth: 720, margin: '0 auto', padding: '64px 16px', boxSizing: 'border-box' }}
-    >
-      <h1 style={{ color: colors.green, fontSize: '2.5rem', margin: 0 }}>{t('common.appName')}</h1>
-      <p data-testid="home-tagline" style={{ fontSize: '1.25rem', fontWeight: 600 }}>
-        {t('common.tagline')}
-      </p>
-      <p>{t('home.comingSoon')}</p>
-      <ApiStatus />
-    </main>
+    <>
+      <SiteHeader />
+      <main
+        data-testid="home"
+        style={{ maxWidth: 720, margin: '0 auto', padding: '64px 16px', boxSizing: 'border-box' }}
+      >
+        <h1 style={{ color: colors.green, fontSize: '2.5rem', margin: 0 }}>
+          {t('common.appName')}
+        </h1>
+        <p data-testid="home-tagline" style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+          {t('common.tagline')}
+        </p>
+        <p>{t('home.comingSoon')}</p>
+        <ApiStatus />
+      </main>
+    </>
   );
 }

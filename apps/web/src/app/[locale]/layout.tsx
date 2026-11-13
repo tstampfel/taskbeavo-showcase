@@ -5,11 +5,7 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { ApolloProvider } from '../../apollo/apollo-provider';
-import { AccountMenu } from '../../components/account-menu';
-import { ConsentBanner } from '../../components/consent/consent-banner';
-import { LanguageSwitcher } from '../../components/language-switcher';
 import { LegalFooter } from '../../components/legal/legal-document-view';
-import { TermsBanner } from '../../components/terms-update/terms-banner';
 import { siteUrl } from '../../i18n/metadata';
 import { routing } from '../../i18n/routing';
 
@@ -42,6 +38,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
   // Only the namespaces client components use ship to the browser.
   const {
     apiStatus,
+    appShell,
     consent,
     errorBoundary,
     languageSwitcher,
@@ -60,6 +57,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
         <NextIntlClientProvider
           messages={{
             apiStatus,
+            appShell,
             consent,
             errorBoundary,
             languageSwitcher,
@@ -70,21 +68,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
           }}
         >
           <ApolloProvider>
-            <header
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                gap: 12,
-                padding: '12px 16px 0',
-              }}
-            >
-              <AccountMenu />
-              <LanguageSwitcher />
-            </header>
-            <TermsBanner />
-            <ConsentBanner />
+            {/* Each page brings its header: AppShell when logged in, SiteHeader when public. */}
             {children}
             <LegalFooter locale={locale} />
           </ApolloProvider>

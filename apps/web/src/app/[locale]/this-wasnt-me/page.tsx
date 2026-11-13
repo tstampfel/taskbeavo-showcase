@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { SiteHeader } from '../../../components/shell/site-header';
 import styles from '../../../components/sign-in/sign-in.module.css';
 import { ThisWasntMe } from '../../../components/sign-in/this-wasnt-me';
 import { routing } from '../../../i18n/routing';
@@ -36,10 +37,13 @@ export default async function ThisWasntMePage({
   const { sessions, signIn, errors, errorBoundary } = await getMessages();
 
   return (
-    <main className={styles.main}>
-      <NextIntlClientProvider messages={{ sessions, signIn, errors, errorBoundary }}>
-        <ThisWasntMe token={typeof token === 'string' && token ? token : null} />
-      </NextIntlClientProvider>
-    </main>
+    <>
+      <SiteHeader />
+      <main className={styles.main}>
+        <NextIntlClientProvider messages={{ sessions, signIn, errors, errorBoundary }}>
+          <ThisWasntMe token={typeof token === 'string' && token ? token : null} />
+        </NextIntlClientProvider>
+      </main>
+    </>
   );
 }

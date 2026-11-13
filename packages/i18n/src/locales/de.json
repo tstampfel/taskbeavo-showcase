@@ -37,6 +37,10 @@
   "languageSwitcher": {
     "label": "Sprache"
   },
+  "appShell": {
+    "back": "Zurück",
+    "accountMenu": "Konto und Sprache"
+  },
   "offers": {
     "count": "{count, plural, one {# Angebot} other {# Angebote}}",
     "budget": "Budget {amount}",

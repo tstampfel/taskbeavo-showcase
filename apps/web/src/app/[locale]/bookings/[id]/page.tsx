@@ -6,6 +6,7 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import { BookingDetailView } from '../../../../components/booking/booking-detail';
 import styles from '../../../../components/booking/booking.module.css';
 import { routing } from '../../../../i18n/routing';
+import { AppShell } from '../../../../components/shell/app-shell';
 
 type Props = PageProps<'/[locale]/bookings/[id]'>;
 
@@ -24,11 +25,12 @@ export default async function BookingDetailPage({ params }: Props) {
   const { bookingDetail, checkout, offers, errors } = await getMessages();
   const t = await getTranslations({ locale, namespace: 'bookingDetail' });
   return (
-    <main className={styles.main}>
-      <h1 className={styles.title}>{t('metaTitle')}</h1>
-      <NextIntlClientProvider messages={{ bookingDetail, checkout, offers, errors }}>
-        <BookingDetailView bookingId={id} locale={locale} />
-      </NextIntlClientProvider>
-    </main>
+    <AppShell title={t('metaTitle')}>
+      <main className={styles.main}>
+        <NextIntlClientProvider messages={{ bookingDetail, checkout, offers, errors }}>
+          <BookingDetailView bookingId={id} locale={locale} />
+        </NextIntlClientProvider>
+      </main>
+    </AppShell>
   );
 }

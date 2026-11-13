@@ -7,6 +7,7 @@ import { connection } from 'next/server';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { query } from '../../apollo/rsc';
 import { localeAlternates, siteUrl } from '../../i18n/metadata';
+import { SiteHeader } from '../shell/site-header';
 import { LegalDocumentView, type LegalPageData } from './legal-document-view';
 
 /** The same rule as the API's version strings (legal/services.py). */
@@ -115,6 +116,7 @@ export function legalRoute(page: LegalPage) {
     };
     return (
       <>
+        <SiteHeader />
         <script
           type="application/ld+json"
           // Built here from catalogue strings and URLs only; `<` escaped so it can't close the tag.

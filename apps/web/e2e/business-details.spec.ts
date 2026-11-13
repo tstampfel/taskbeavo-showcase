@@ -238,6 +238,7 @@ for (const [code, message] of [
 test('the account menu links to Settings', async ({ page, stubGraphql }) => {
   await stubGraphql(answers({ business: null }));
   await page.goto('/en');
+  await page.getByTestId('account-menu-button').click();
   await page.getByTestId('settings-link').click();
   await expect(page).toHaveURL(/\/en\/settings$/);
   await expect(page.getByTestId('business-none')).toBeVisible();
