@@ -13,9 +13,13 @@ Then open the TaskBeavo (Dev) app on a simulator, emulator or device that has a 
 To build a development build locally instead of on EAS (needs Xcode, or the Android SDK):
 
 ```bash
-pnpm --filter @taskbeavo/mobile ios        # expo run:ios
+pnpm --filter @taskbeavo/mobile ios        # scripts/run-ios.mjs: expo prebuild, then expo run:ios
 pnpm --filter @taskbeavo/mobile android    # expo run:android
 ```
+
+`ios` builds for the booted simulator (or boots one); add `--device "<simulator name>"` to pick another. Arguments after `ios` go to `expo run:ios`.
+
+`expo run:ios` signs even a simulator build when the app has the Sign in with Apple or associated-domains entitlement, and on a Mac without a code signing certificate it stops with "Your computer requires some additional setup before you can build onto physical iOS devices … No code signing certificates are available to use", although it targets the simulator. So when `security find-identity -v -p codesigning` finds no identity, the script sets `TASKBEAVO_IOS_UNSIGNED_SIMULATOR=1` and `app.config.ts` leaves those two entitlements out (development builds only; preview and production refuse the variable). In that build Sign in with Apple fails and universal links don't open the app; `taskbeavo://` links and email sign-in work. To test those two, add an Apple ID in Xcode > Settings > Accounts and run the command again: with a signing identity it builds the full, signed app. The script runs `expo prebuild` every time because `expo run:ios` only prebuilds when `ios/` is missing.
 
 ## Variants
 

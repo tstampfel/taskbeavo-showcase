@@ -8,7 +8,7 @@
   "scripts": {
     "start": "expo start --dev-client",
     "dev": "expo start --dev-client",
-    "ios": "expo run:ios",
+    "ios": "node scripts/run-ios.mjs",
     "android": "expo run:android",
     "prebuild": "expo prebuild --clean",
     "lint": "eslint .",
@@ -72,6 +72,7 @@
     "@taskbeavo/tsconfig": "workspace:*",
     "@testing-library/react-native": "^14.1.0",
     "@types/jest": "^30.0.0",
+    "@types/node": "24.19.2",
     "@types/react": "^19.3.0",
     "eslint": "10.13.0",
     "jest": "^30.5.2",
