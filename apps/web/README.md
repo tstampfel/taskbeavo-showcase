@@ -2,11 +2,11 @@
 
 Next.js App Router site. Every page lives under `/hr`, `/en`, `/de` or `/fr`; `src/proxy.ts` redirects `/` by cookie or `Accept-Language`, defaulting to `hr`.
 
-| Purpose                | Command (from the repo root)                                                                                                     |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Dev server             | `pnpm --filter @taskbeavo/web dev`                                                                                               |
-| Unit tests             | `pnpm --filter @taskbeavo/web test`                                                                                              |
-| E2E (375px and 1280px) | `pnpm --filter @taskbeavo/web exec playwright test` (first run: `pnpm --filter @taskbeavo/web exec playwright install chromium`) |
+| Purpose                | Command (from the repo root)                                                                                                                                                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev server             | `pnpm --filter @taskbeavo/web dev`                                                                                                                                                                                                                |
+| Unit tests             | `pnpm --filter @taskbeavo/web test`                                                                                                                                                                                                               |
+| E2E (375px and 1280px) | `pnpm --filter @taskbeavo/web exec playwright test` (first run: `pnpm --filter @taskbeavo/web exec playwright install chromium`). Builds the app and runs it with `next start` on port 3100, plus `pnpm dev` on 3101 for `e2e/dev-server.spec.ts` |
 
 ## Environment
 
