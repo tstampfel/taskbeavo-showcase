@@ -43,7 +43,17 @@
  <div class="foot"><div class="btn pri">Yes, he's here</div><div class="btn sec">No, he didn't come</div></div>
 </div>
 
-<div class="screen" id="18e Poster · Helper didn't show">{{sb}}
+<div class="screen" id="18e Poster · No-show reported (24 h to answer)">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Grocery run for Mama</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="note warn">{{i:alert:18:#7A4806}}<span>Only say no if Marko really didn't come. He has 24 hours to say he was there. If he does, our team checks the booking's record and decides. Otherwise you get €33.60 back, plus a €5 credit from TaskBeavo.</span></div>
+  <div class="card" style="gap:6px;padding:14px"><span class="badge b-orange" style="align-self:flex-start">Waiting for Marko</span><span class="s">You said Marko didn't come. He can answer until <b>Sun 9:20</b>; after that your refund is on its way.</span></div>
+  <div class="card flat" style="gap:6px;padding:14px"><span class="s mut">If Marko says he was there: "Your helper says they were there. Our team is checking and will let you both know."</span></div>
+ </div>
+ <div class="foot"><div class="btn sec">Back to booking</div></div>
+</div>
+
+<div class="screen" id="18f Poster · Helper didn't show (after 24 h)">{{sb}}
  <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Grocery run for Mama</span><span style="width:44px"></span></div>
  <div class="body" style="gap:12px;padding-top:0">
   <div class="card center" style="gap:6px;padding:20px"><span class="badge b-grey">Cancelled by helper</span><span class="display num ok">€33.60</span><span class="p" style="font-weight:700">refunded in full</span><span class="s mut">plus a <b>€5 credit</b> from TaskBeavo for the trouble</span></div>
@@ -51,4 +61,37 @@
   <div class="card flat" style="gap:6px;padding:14px"><span class="s" style="font-weight:800">Still need help today?</span><span class="s mut">Re-open the task and we'll notify the 3 other helpers who sent offers.</span></div>
  </div>
  <div class="foot"><div class="btn pri">{{i:refresh:20:#fff}} Re-open task</div><div class="btn ghost sm">Not now</div></div>
+</div>
+
+<div class="screen" id="18g Helper · Running late (new arrival time)">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">On the day</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="card" style="padding:14px;gap:4px"><span class="c mut" style="font-weight:800">TODAY · 9:00</span><span class="p" style="font-weight:800">You're on your way · arriving 9:15</span><span class="s mut">Gruž, Dubrovnik · for Mama Kata</span></div>
+  <div class="label">Running late · new arrival time</div>
+  <div class="chips"><span class="chip">+10 min</span><span class="chip on">9:40</span><span class="chip">+45 min</span><span class="chip">Other</span></div>
+  <div class="label">Message for Ana (optional)</div>
+  <div class="input">Sorry, traffic on the Lapad road.</div>
+  <div class="note">{{i:bell:18:#1F5C46}}<span>Ana gets a push. She can keep the booking or cancel for free; a late arrival never costs you anything.</span></div>
+ </div>
+ <div class="foot"><div class="btn pri">Send new arrival time</div><div class="btn ghost sm">I can't come</div></div>
+</div>
+
+<div class="screen" id="18h Helper · Poster says you didn't come">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Grocery run for Mama</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="card" style="gap:8px;padding:14px;border:2px solid #F2A33A"><span class="row p" style="font-weight:800">{{i:alert:20:#C77A12}} Ana says you didn't come</span><span class="s">If you were there, tell us by <b>Sun 9:20</b> and our team will check.</span></div>
+  <div class="card flat" style="gap:6px;padding:14px"><span class="s mut">Our team looks at the booking's record: your "On my way" and "I've arrived" taps, the chat and any photos. You never pay anything.</span></div>
+ </div>
+ <div class="foot"><div class="btn pri">I was there</div></div>
+</div>
+
+<div class="screen" id="18i Poster · Helper is there early">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Grocery run for Mama</span><span style="width:44px"></span></div>
+ <div class="body center" style="justify-content:center;gap:14px">
+  {{i:clock:56:#1F5C46}}
+  <div class="h1">Marko is there early</div>
+  <div class="p mut" style="max-width:310px">Marko has arrived and asks to start now. If you confirm, the job starts now and can no longer be cancelled.</div>
+  <div class="note" style="max-width:320px">{{i:info:18:#1F5C46}}<span>With a registered business inside your 14-day period, you can still withdraw with the withdrawal button until the job is fully done.</span></div>
+ </div>
+ <div class="foot"><div class="btn pri">Start now</div><div class="btn sec">Keep the booked time</div></div>
 </div>

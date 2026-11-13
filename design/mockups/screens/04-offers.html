@@ -1,28 +1,35 @@
 <!--
   Built in BEAV-102 (apps/mobile src/screens/offers-screen.tsx, apps/web components/offers):
-  4a's cards (price, Private individual / Registered business, expiry, note, Accept), the
-  withdrawn/expired greyed rows, the Newest and Lowest price sorts, and 4c's table (price,
-  status, open until). Kept here for what isn't built yet: helper names, avatars, Verified ID,
-  ratings, completion, distance, languages and the Top rated sort (BEAV-144 ratings), the
-  Recommended sort and 4b "How offers are ranked" (BEAV-105), Chat on cards, and 4d the
-  accept sheet with the fee breakdown (checkout, BEAV-111). Delete each frame once built.
+  4a's cards (helper's price, total incl. service fee, Private individual / Registered business,
+  the business's name, OIB and address, expiry, note, Accept), the withdrawn/expired greyed rows,
+  the Newest and Lowest price sorts, 4b's text (the /ranking page, BEAV-191) and 4c's table.
+  Kept here for what isn't built yet: helper names, avatars, Verified ID, distance, languages
+  and the rating (BEAV-144 decides which profile stats may show), Chat on cards, and 4d the
+  accept sheet. Delete each frame once built.
+  Hard rule k: offers are ordered only by Newest or Lowest price. No "Recommended" or
+  "Top rated" sort, and no response time, completion rate or jobs-done figures, which would
+  rank helpers and steer work.
 -->
 <div class="screen" id="4a Offers list">{{sb}}
  <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">4 offers</span><span class="ibtn">{{i:more}}</span></div>
  <div class="body" style="gap:12px;padding-top:0">
   <div class="card flat" style="gap:4px;padding:12px"><span class="p" style="font-weight:700">Mow lawn &amp; trim hedge for Mama</span><span class="row s mut">{{i:cal:16:#5E6661}} Sat, 9:00 · Budget <b class="num" style="color:#17211C">€35</b> · {{i:user:16:#5E6661}} Mama Kata</span></div>
-  <div class="row between"><div class="chips"><span class="chip on" style="height:40px">Recommended</span><span class="chip" style="height:40px">Lowest price</span><span class="chip" style="height:40px">Top rated</span></div></div>
-  <div class="row between" style="margin-top:-4px"><span class="row c link" style="text-decoration:none">{{i:info:16:#1F5C46}} How offers are ranked</span><span class="row c link" style="text-decoration:none">Compare</span></div>
+  <div class="row between"><div class="chips"><span class="chip on" style="height:40px">Newest</span><span class="chip" style="height:40px">Lowest price</span></div><span class="row c link" style="text-decoration:none">Compare</span></div>
+  <div class="row" style="margin-top:-4px"><span class="row c link" style="text-decoration:none">{{i:info:16:#1F5C46}} How offers are ranked</span></div>
   <div class="card" style="gap:10px">
-   <div class="row" style="align-items:flex-start;gap:12px"><div class="av">MP</div><div class="col grow" style="gap:4px"><div class="row" style="gap:6px"><span class="p" style="font-weight:800">Marko P.</span><span class="badge b-green">{{i:shield:12:#1F5C46}} Verified ID</span></div><span class="badge b-grey" style="align-self:flex-start">Private individual</span><span class="row c mut">{{stars:5:12}} 4.8 (41) · 92% completion · 2 km</span><span class="c mut">Speaks HR · DE · Can come Sat 9:00</span></div><span class="price h1">€30</span></div>
+   <div class="row" style="align-items:flex-start;gap:12px"><div class="av">MP</div><div class="col grow" style="gap:4px"><div class="row" style="gap:6px"><span class="p" style="font-weight:800">Marko P.</span><span class="badge b-green">{{i:shield:12:#1F5C46}} Verified ID</span></div><span class="badge b-grey" style="align-self:flex-start">Private individual</span><span class="row c mut">{{stars:5:12}} 4.8 (41) · 2 km</span><span class="c mut">Speaks HR · DE · Can come Sat 9:00</span></div><div class="col" style="gap:0;align-items:flex-end"><span class="price h1">€30</span><span class="c mut">€33.60 in total</span></div></div>
    <div class="s mut">"Dobar dan! I have my own mower and trimmer, can also take the cuttings away. Javim se Mami prije dolaska."</div>
+   <div class="row between c mut"><span>Sent 20 min ago</span><span>Open until Sat 14 Nov</span></div>
    <div class="row" style="gap:8px"><div class="btn sec sm grow">{{i:msg:18:#1F5C46}} Chat</div><div class="btn pri sm grow">Accept</div></div>
   </div>
   <div class="card" style="gap:10px">
-   <div class="row" style="align-items:flex-start;gap:12px"><div class="av o">SP</div><div class="col grow" style="gap:4px"><div class="row" style="gap:6px"><span class="p" style="font-weight:800">Stjepan</span><span class="badge b-green">{{i:shield:12:#1F5C46}} Verified ID</span></div><span class="badge b-grey" style="align-self:flex-start">Registered business · obrt</span><span class="row c mut">{{stars:5:12}} 4.9 (112) · 98% · 5 km</span><span class="c mut">Speaks HR · EN · Can come Fri 16:00</span></div><span class="price h1">€38</span></div>
+   <div class="row" style="align-items:flex-start;gap:12px"><div class="av o">SP</div><div class="col grow" style="gap:4px"><div class="row" style="gap:6px"><span class="p" style="font-weight:800">Stjepan</span><span class="badge b-green">{{i:shield:12:#1F5C46}} Verified ID</span></div><span class="badge b-grey" style="align-self:flex-start">Registered business · obrt</span><span class="row c mut">{{stars:5:12}} 4.9 (112) · 5 km</span><span class="c mut">Speaks HR · EN · Can come Fri 16:00</span></div><div class="col" style="gap:0;align-items:flex-end"><span class="price h1">€38</span><span class="c mut">€42.56 in total</span></div></div>
+   <div class="col c mut" style="gap:2px;padding:8px 10px;background:#F5F4EF;border-radius:10px"><span>Obrt Stjepan Popravci · OIB 00000000010</span><span>Registered business address: Ulica primjer 1, Dubrovnik</span><span>Contact: in-app chat</span></div>
+   <div class="row between c mut"><span>Sent 2 h ago</span><span>Open until Sat 14 Nov</span></div>
    <div class="row" style="gap:8px"><div class="btn sec sm grow">{{i:msg:18:#1F5C46}} Chat</div><div class="btn pri sm grow">Accept</div></div>
   </div>
   <div class="card" style="opacity:.5;flex-direction:row;align-items:center"><div class="av">LB</div><div class="col grow" style="gap:2px"><span class="p" style="font-weight:700">Luka B.</span><span class="c">Offer withdrawn</span></div><span class="h2 num mut">€25</span></div>
+  <div class="c mut">The business address is shown only to you, on this offer and at checkout. Its public profile shows only the town.</div>
  </div>
 </div>
 
@@ -31,15 +38,15 @@
  <div class="scrim"></div>
  <div class="sheet">
   <div class="grab"></div>
-  <div class="row">{{i:info:24:#1F5C46}}<span class="h2">How offers are ranked</span></div>
-  <div class="p">Offers are ordered by match to your budget, rating, completed tasks and response time.</div>
+  <div class="row">{{i:info:24:#1F5C46}}<span class="h2">How offers are ordered</span></div>
+  <div class="p">When helpers send offers on your task, we list them like this:</div>
   <div class="col" style="gap:10px">
-   <div class="row s">{{i:euro:20:#1F5C46}} Match to your budget</div>
-   <div class="row s">{{i:star:20:#F2A33A}} Rating and number of reviews</div>
-   <div class="row s">{{i:check:20:#1F5C46}} Completed tasks</div>
-   <div class="row s">{{i:clock:20:#1F5C46}} Response time</div>
+   <div class="row s" style="align-items:flex-start">{{i:check:20:#1F5C46}}<span>Open offers come first. Withdrawn and expired offers come after them, greyed out.</span></div>
+   <div class="row s" style="align-items:flex-start">{{i:clock:20:#1F5C46}}<span>By default, newest first: the offer sent most recently is at the top.</span></div>
+   <div class="row s" style="align-items:flex-start">{{i:euro:20:#1F5C46}}<span>Switch to "Lowest price" to list them from the lowest task price up.</span></div>
+   <div class="row s" style="align-items:flex-start">{{i:list:20:#1F5C46}}<span>Nothing else changes the order: not ratings, not the helper's history, not whether they're a registered business.</span></div>
   </div>
-  <div class="note">{{i:shield:18:#1F5C46}}<span>No helper pays for placement. You can also sort by price, rating or distance.</span></div>
+  <div class="note">{{i:shield:18:#1F5C46}}<span><b>No paid placement.</b> Helpers pay TaskBeavo nothing for their place, and nobody can pay to move up. <span class="link">Fees</span></span></div>
   <div class="btn pri">Got it</div>
  </div>
 </div>
@@ -50,15 +57,16 @@
   <div class="card" style="padding:8px 8px">
   <table class="tbl">
    <tr><th></th><th style="text-align:center"><div class="av" style="margin:0 auto 4px;width:36px;height:36px;font-size:12px">MP</div>Marko P.</th><th style="text-align:center"><div class="av o" style="margin:0 auto 4px;width:36px;height:36px;font-size:12px">SP</div>Stjepan</th><th style="text-align:center"><div class="av" style="margin:0 auto 4px;width:36px;height:36px;font-size:12px">IM</div>Ivana M.</th></tr>
-   <tr><td class="mut">Price</td><td style="text-align:center" class="price">€30</td><td style="text-align:center" class="price">€38</td><td style="text-align:center" class="price">€34</td></tr>
+   <tr><td class="mut">Total incl. fee</td><td style="text-align:center" class="price">€33.60</td><td style="text-align:center" class="price">€42.56</td><td style="text-align:center" class="price">€38.08</td></tr>
+   <tr><td class="mut">Helper's price</td><td style="text-align:center">€30.00</td><td style="text-align:center">€38.00</td><td style="text-align:center">€34.00</td></tr>
    <tr><td class="mut">Rating</td><td style="text-align:center">4.8 (41)</td><td style="text-align:center">4.9 (112)</td><td style="text-align:center">4.9 (58)</td></tr>
-   <tr><td class="mut">Jobs done</td><td style="text-align:center">47</td><td style="text-align:center">130</td><td style="text-align:center">63</td></tr>
-   <tr><td class="mut">Response</td><td style="text-align:center">~15 min</td><td style="text-align:center">~1 h</td><td style="text-align:center">~30 min</td></tr>
    <tr><td class="mut">ID verified</td><td style="text-align:center" class="ok">✓ Yes</td><td style="text-align:center" class="ok">✓ Yes</td><td style="text-align:center" class="ok">✓ Yes</td></tr>
    <tr><td class="mut">Status</td><td style="text-align:center">Private</td><td style="text-align:center">Business</td><td style="text-align:center">Private</td></tr>
    <tr><td class="mut">Earliest</td><td style="text-align:center">Sat 9:00</td><td style="text-align:center">Fri 16:00</td><td style="text-align:center">Sat 14:00</td></tr>
+   <tr><td class="mut">Open until</td><td style="text-align:center">14 Nov</td><td style="text-align:center">14 Nov</td><td style="text-align:center">13 Nov</td></tr>
   </table>
   </div>
+  <div class="c mut">Columns follow the list's order (Newest). Business details: Stjepan's name, OIB and address are on his offer.</div>
   <div class="row" style="gap:8px"><div class="btn pri sm grow">Accept Marko</div><div class="btn sec sm grow">Accept Stjepan</div></div>
   <div class="btn sec sm">Accept Ivana</div>
  </div>
@@ -72,7 +80,7 @@
   <div class="row"><div class="av">MP</div><div class="col grow" style="gap:2px"><span class="h2">Accept Marko's offer?</span><span class="badge b-grey" style="align-self:flex-start">Private individual</span></div></div>
   <div class="col" style="gap:8px">
    <div class="line"><span>Agreed task price</span><span>€30.00</span></div>
-   <div class="line"><span class="row" style="gap:4px">TaskBeavo service fee {{i:info:16:#5E6661}}</span><span>€3.60</span></div>
+   <div class="line"><span class="row" style="gap:4px">TaskBeavo service fee (12%, min. €2.50) {{i:info:16:#5E6661}}</span><span>€3.60</span></div>
    <div class="hr"></div>
    <div class="line tot"><span>Total</span><span>€33.60</span></div>
   </div>
