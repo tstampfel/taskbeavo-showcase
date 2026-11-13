@@ -103,7 +103,10 @@ test('compares offers, sorts them and accepts one into checkout', async ({ page,
   await stubApi(stubGraphql);
   await page.goto(`/en/tasks/${TASK}/offers`);
 
-  await expect(page.getByRole('heading', { level: 1, name: '3 offers' })).toBeVisible();
+  // The count is the page title in the top bar, and the page's only h1 (mockup 4a).
+  const title = page.getByTestId('app-top-bar').getByRole('heading', { level: 1 });
+  await expect(title).toHaveText('3 offers');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
   await expect(page.getByText('Mow lawn & trim hedge for Mama')).toBeVisible();
   expect(await cardIds(page)).toEqual([
     'offer-card-marko',
@@ -137,7 +140,8 @@ test('compares offers, sorts them and accepts one into checkout', async ({ page,
   expect((await cardIds(page))[0]).toBe('offer-card-stjepan');
 
   await page.getByRole('button', { name: 'Compare' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Compare 2 offers' })).toBeVisible();
+  await expect(title).toHaveText('Compare 2 offers');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
   await expect(page.getByRole('columnheader', { name: 'Total incl. service fee' })).toBeVisible();
   await expect(page.getByRole('rowheader', { name: "Helper's price" })).toBeVisible();
   await expectNoHorizontalScroll(page);

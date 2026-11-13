@@ -19,6 +19,8 @@ export interface CodeStepProps {
   /** When the resend timer ends (epoch ms). */
   resendAt?: number | null;
   testId: string;
+  /** 2 under a page title in the top bar (verify phone); 1 on the sign-in page, which has none. */
+  titleLevel?: 1 | 2;
 }
 
 /**
@@ -32,8 +34,11 @@ export function CodeStep({
   onResend,
   resendAt = null,
   testId,
+  titleLevel = 1,
 }: CodeStepProps) {
   const t = useTranslations();
+  const Title = titleLevel === 1 ? 'h1' : 'h2';
+  const CardTitle = titleLevel === 1 ? 'h2' : 'h3';
   const inputId = useId();
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -90,9 +95,9 @@ export function CodeStep({
   if (lockedSeconds > 0) {
     return (
       <div className={styles.panel} data-testid={`${testId}-locked`}>
-        <h1 className={styles.title}>{title}</h1>
+        <Title className={styles.title}>{title}</Title>
         <div className={styles.card} role="alert">
-          <h2 className={styles.cardTitle}>{t('signIn.lockedTitle')}</h2>
+          <CardTitle className={styles.cardTitle}>{t('signIn.lockedTitle')}</CardTitle>
           <p className={styles.muted}>
             {t('signIn.lockedBody', { time: formatCountdown(lockedSeconds) })}
           </p>
@@ -110,7 +115,7 @@ export function CodeStep({
         void submit(code);
       }}
     >
-      <h1 className={styles.title}>{title}</h1>
+      <Title className={styles.title}>{title}</Title>
       <div className={styles.muted}>{intro}</div>
       <label htmlFor={inputId} className={styles.label}>
         {t('signIn.codeLabel')}

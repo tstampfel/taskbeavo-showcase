@@ -29,7 +29,7 @@ export default async function VerifyPhonePage({
   const { signIn, phone, errors, errorBoundary } = await getMessages();
 
   return (
-    <AppShell title={t('metaTitle')} titleIsHeading={false}>
+    <AppShell title={t('metaTitle')}>
       <main className={styles.main}>
         <NextIntlClientProvider messages={{ signIn, phone, errors, errorBoundary }}>
           <PhoneVerification next={typeof next === 'string' ? next : null} />

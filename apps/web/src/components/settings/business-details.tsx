@@ -54,7 +54,7 @@ export function BusinessDetails() {
   if (!viewer && error && !loading) {
     return (
       <section className={styles.panel} data-testid="business-load-error">
-        <h1 className={styles.title}>{t('businessDetails.title')}</h1>
+        <h2 className={styles.title}>{t('businessDetails.title')}</h2>
         <p className={styles.error} role="alert">
           {errorMessage(t, error)}
         </p>
@@ -120,7 +120,7 @@ function BusinessSummary({
 
   return (
     <section className={styles.panel} data-testid="business-details">
-      <h1 className={styles.title}>{t('businessDetails.title')}</h1>
+      <h2 className={styles.title}>{t('businessDetails.title')}</h2>
       {notice ? (
         <p className={styles.note} role="status" data-testid="business-notice">
           {notice}
@@ -240,7 +240,7 @@ function BusinessForm({
         setConfirming(true);
       }}
     >
-      <h1 className={styles.title}>{t('businessDetails.title')}</h1>
+      <h2 className={styles.title}>{t('businessDetails.title')}</h2>
       <fieldset className={styles.fieldset}>
         <legend className={styles.label}>{t('businessDetails.kindLabel')}</legend>
         <div className={styles.segments}>

@@ -10,10 +10,11 @@ import {
 } from '@taskbeavo/graphql';
 import type { Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from '../../i18n/navigation';
+import { AppShell } from '../shell/app-shell';
 import { Button } from '../ui';
-import { OffersList } from './offers-list';
+import { OffersList, offersTitle } from './offers-list';
 import styles from './offers.module.css';
 
 /**
@@ -52,8 +53,16 @@ export function OffersView({ taskId, locale }: { taskId: string; locale: Locale 
     return () => clearTimeout(timer);
   }, [list, expiryTick]);
 
+  const now = new Date();
+  const shell = (title: string, content: ReactNode) => (
+    <AppShell title={title} back={`/tasks/${taskId}`}>
+      <main>{content}</main>
+    </AppShell>
+  );
+
   if (!list) {
-    return (
+    return shell(
+      t('metaTitle'),
       <section
         className={styles.main}
         aria-busy={!offers.error}
@@ -65,22 +74,23 @@ export function OffersView({ taskId, locale }: { taskId: string; locale: Locale 
             <Button onClick={() => void refetch().catch(() => undefined)}>{t('retry')}</Button>
           </>
         ) : null}
-      </section>
+      </section>,
     );
   }
 
-  return (
+  return shell(
+    offersTitle(t, list, { sort, comparing, now }),
     <OffersList
       locale={locale}
       offers={list}
       task={task}
       sort={sort}
       comparing={comparing}
-      now={new Date()}
+      now={now}
       onSort={setSort}
       onCompare={setComparing}
       onAccept={(offerId) => router.push(`/tasks/${taskId}/offers/${offerId}/checkout`)}
-    />
+    />,
   );
 }
 

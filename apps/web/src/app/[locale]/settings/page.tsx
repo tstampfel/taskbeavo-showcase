@@ -30,7 +30,7 @@ export default async function SettingsPage({ params }: PageProps<'/[locale]/sett
     await getMessages();
 
   return (
-    <AppShell title={t('title')} titleIsHeading={false}>
+    <AppShell title={t('title')}>
       <main className={styles.main}>
         <NextIntlClientProvider
           messages={{ businessDetails, signIn, errors, errorBoundary, legal, privacySettings }}

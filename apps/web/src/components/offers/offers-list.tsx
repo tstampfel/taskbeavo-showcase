@@ -16,6 +16,19 @@ import { TraderIdentity } from './trader-identity';
 
 type Offer = TaskOffersQuery['taskOffers'][number];
 
+/**
+ * The page title in the top bar (mockup 4a "4 offers", 4c "Compare 2 offers"): every offer on
+ * the list, or the open ones side by side.
+ */
+export function offersTitle(
+  t: (key: 'count' | 'compareTitle', values: { count: number }) => string,
+  offers: readonly Offer[],
+  { sort, comparing, now }: { sort: OfferSort; comparing: boolean; now: Date },
+): string {
+  if (!comparing) return t('count', { count: offers.length });
+  return t('compareTitle', { count: arrangeOffers(offers, sort, now).open.length });
+}
+
 export interface OffersListProps {
   locale: Locale;
   offers: readonly Offer[];
@@ -68,7 +81,6 @@ export function OffersList({
   if (comparing) {
     return (
       <section data-testid="offers-compare" className={styles.main}>
-        <h1 className={styles.h1}>{t('compareTitle', { count: open.length })}</h1>
         <Card className={styles.tableWrap}>
           <table className={styles.table}>
             {/* Each column is one offer, headed by its price (names come with BEAV-144). */}
@@ -115,7 +127,6 @@ export function OffersList({
 
   return (
     <section data-testid="offers-content" className={styles.main}>
-      <h1 className={styles.h1}>{t('count', { count: offers.length })}</h1>
       {task ? (
         <Card variant="flat">
           <p className={styles.label}>{task.title}</p>

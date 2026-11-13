@@ -80,7 +80,6 @@ export function TermsUpdate({ next }: { next: string | null }) {
     // Offline or a server error: say so, with a way to try again or carry on limited.
     return (
       <div className={styles.panel} data-testid="terms-update-load-error">
-        <h1 className={styles.title}>{t('termsUpdate.title')}</h1>
         <p className={styles.error} role="alert">
           {t('termsUpdate.unavailable')}
         </p>
@@ -129,7 +128,6 @@ export function TermsUpdate({ next }: { next: string | null }) {
         void submit();
       }}
     >
-      <h1 className={styles.title}>{t('termsUpdate.title')}</h1>
       {shown ? (
         <p className={styles.muted} data-testid="terms-update-version">
           {t('termsUpdate.version', shown)}

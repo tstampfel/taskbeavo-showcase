@@ -29,7 +29,7 @@ export default async function TermsUpdatePage({
   const { termsUpdate, signIn, errors } = await getMessages();
 
   return (
-    <AppShell title={t('metaTitle')} titleIsHeading={false}>
+    <AppShell title={t('metaTitle')}>
       <main className={styles.main}>
         <NextIntlClientProvider messages={{ termsUpdate, signIn, errors }}>
           <TermsUpdate next={typeof next === 'string' ? next : null} />

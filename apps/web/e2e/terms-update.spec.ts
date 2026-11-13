@@ -123,8 +123,11 @@ test('the first page of a visit opens the screen, and accepting ends limited mod
 
   await expect(page).toHaveURL(/\/de\/terms-update\?next=%2F$/);
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Wir haben unsere AGB aktualisiert' }),
+    page
+      .getByTestId('app-top-bar')
+      .getByRole('heading', { level: 1, name: 'Wir haben unsere AGB aktualisiert' }),
   ).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
   await expect(page.getByTestId('terms-update-version')).toContainText('2026-12');
   await expect(page.getByTestId('terms-update-version')).toContainText('1. Dezember 2026');
   const box = page.getByTestId('terms-update-agree');

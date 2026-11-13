@@ -6,6 +6,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { ApolloProvider } from '../../apollo/apollo-provider';
 import { LegalFooter } from '../../components/legal/legal-document-view';
+import { pickMessages, SHELL_NAMESPACES } from '../../i18n/client-messages';
 import { siteUrl } from '../../i18n/metadata';
 import { routing } from '../../i18n/routing';
 
@@ -36,17 +37,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
   setRequestLocale(locale);
 
   // Only the namespaces client components use ship to the browser.
-  const {
-    apiStatus,
-    appShell,
-    consent,
-    errorBoundary,
-    languageSwitcher,
-    sessions,
-    settings,
-    signIn,
-    termsUpdate,
-  } = await getMessages();
+  const messages = pickMessages(await getMessages(), SHELL_NAMESPACES);
   return (
     <html lang={locale}>
       <body
@@ -54,19 +45,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
         // The --tb-* variables feed the base components in components/ui.
         style={{ ...cssVariables(), margin: 0, background: colors.offWhite, color: colors.ink }}
       >
-        <NextIntlClientProvider
-          messages={{
-            apiStatus,
-            appShell,
-            consent,
-            errorBoundary,
-            languageSwitcher,
-            sessions,
-            settings,
-            signIn,
-            termsUpdate,
-          }}
-        >
+        <NextIntlClientProvider messages={messages}>
           <ApolloProvider>
             {/* Each page brings its header: AppShell when logged in, SiteHeader when public. */}
             {children}

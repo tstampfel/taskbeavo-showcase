@@ -46,7 +46,6 @@ export function PhoneVerification({ next }: { next: string | null }) {
     // Offline or a server error: say so, instead of waiting on a viewer that never comes.
     return (
       <div className={styles.panel} data-testid="phone-load-error">
-        <h1 className={styles.title}>{t('phone.header')}</h1>
         <p className={styles.error} role="alert">
           {errorMessage(t, error)}
         </p>
@@ -66,7 +65,6 @@ export function PhoneVerification({ next }: { next: string | null }) {
   if (viewer.phoneVerified) {
     return (
       <div className={styles.panel} data-testid="phone-verified">
-        <h1 className={styles.title}>{t('phone.header')}</h1>
         <p className={styles.note} role="status">
           {t('phone.verified')}
         </p>
@@ -121,7 +119,7 @@ function PhoneNumber({
         );
       }}
     >
-      <h1 className={styles.title}>{t('phone.title')}</h1>
+      <h2 className={styles.title}>{t('phone.title')}</h2>
       <p className={styles.muted}>{t('phone.body')}</p>
       <Input
         label={t('phone.label')}
@@ -167,6 +165,7 @@ function PhoneCode({
     <CodeStep
       testId="phone-code"
       title={t('phone.codeTitle')}
+      titleLevel={2}
       intro={
         <>
           {t('phone.sentTo', { phone: sent.phoneNumberMasked })} ·{' '}

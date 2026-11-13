@@ -23,7 +23,7 @@ export interface AccountMenuProps {
 /**
  * One 44px button that opens the account menu: who is signed in, Settings, the language
  * switcher (`withLanguage`), "Sign out" and "Log out of all devices". Signed out it offers
- * "Log in" instead. Escape, a click outside or opening another page closes it.
+ * "Log in" instead. Escape, a click outside, tabbing out or opening another page closes it.
  */
 export function AccountMenu({ withLanguage = false }: AccountMenuProps) {
   const t = useTranslations('signIn');
@@ -90,7 +90,16 @@ export function AccountMenu({ withLanguage = false }: AccountMenuProps) {
   }
 
   return (
-    <div ref={root} className={styles.menuRoot}>
+    <div
+      ref={root}
+      className={styles.menuRoot}
+      onBlur={(event) => {
+        // Tabbing past the last item closes the menu. Focus that goes nowhere (a click on
+        // menu text, or on a button in Safari) leaves it open; outside taps close it above.
+        const next = event.relatedTarget;
+        if (open && next instanceof Node && !root.current?.contains(next)) setOpen(false);
+      }}
+    >
       <button
         ref={button}
         type="button"

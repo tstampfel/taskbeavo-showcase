@@ -131,6 +131,38 @@ test('the account menu opens with one tap and closes with Escape or a tap outsid
   await expect(menu).toBeHidden();
 });
 
+test('tabbing past the last item closes the menu; a tap on its text keeps it open', async ({
+  page,
+  stubGraphql,
+}) => {
+  await stubGraphql(answers({ signedIn: true }));
+  await page.goto('/en/helper/payouts/return');
+  const button = page.getByTestId('account-menu-button');
+  const menu = page.getByTestId('account-menu');
+
+  await button.click();
+  await menu.getByTestId('signed-in-as').click();
+  await expect(menu).toBeVisible();
+
+  // Settings, the four languages, Sign out and Log out of all devices, then out of the menu.
+  await button.focus();
+  await page.keyboard.press('Tab');
+  await expect(menu.getByTestId('settings-link')).toBeFocused();
+  for (let i = 0; i < 6; i++) await page.keyboard.press('Tab');
+  await expect(menu.getByTestId('sign-out-everywhere')).toBeFocused();
+  await expect(menu).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(menu).toBeHidden();
+  await expect(button).toHaveAttribute('aria-expanded', 'false');
+
+  // Shift+Tab back from the button to the back link closes it too.
+  await button.click();
+  await expect(menu).toBeVisible();
+  await button.focus();
+  await page.keyboard.press('Shift+Tab');
+  await expect(menu).toBeHidden();
+});
+
 for (const locale of ['de', 'fr'] as const) {
   test(`the open menu fits a 375px screen in ${locale}`, async ({ page, stubGraphql }) => {
     await stubGraphql(answers({ signedIn: true }));
