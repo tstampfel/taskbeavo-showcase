@@ -79,6 +79,8 @@ export function TopBar({
           <Text
             style={styles.chevron}
             allowFontScaling={false}
+            // Decorative: only the labelled button is announced, not a bare "‹".
+            accessible={false}
             importantForAccessibility="no"
             accessibilityElementsHidden
           >

@@ -187,6 +187,17 @@ describe('Screen', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
+  it('announces only the labelled back button, not the chevron glyph', async () => {
+    await renderUi(
+      <Screen title="Checkout" onBack={jest.fn()} backLabel="Back">
+        <Text>body</Text>
+      </Screen>,
+    );
+    // VoiceOver stopped on a bare "‹" next to the button (review R1-4).
+    const chevron = screen.getByText('‹', { includeHiddenElements: true });
+    expect(chevron.props.accessible).toBe(false);
+  });
+
   it('pins the footer outside the scrolling body', async () => {
     // The jest preset reports a font scale of 2; the default text size is 1.
     jest
