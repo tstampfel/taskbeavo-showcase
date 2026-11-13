@@ -30,7 +30,7 @@ A TaskBeavo feature crosses the monorepo: `backend/` defines the API, exports `p
 
 - Use `@strawberry_django.type(Model)` with fields listed **explicitly**. Never `fields="__all__"`, because a new model field would leak automatically.
 - Include `id: strawberry.ID` on every type (rule d). Apollo normalises on `__typename:id`.
-- Other users get approximate data, for example `approximate_location` (a fuzzed point or neighbourhood). Exact address and access details are visible only to the helper of an active accepted booking, behind a permission, and hidden again when it closes (rule e). Phone numbers and IBAN are never exposed to anyone but the owner; OIB neither, except a registered business's OIB, which its public profile and offers show with its business name; its registered street address goes only to the poster of a task it offered on.
+- Other users get approximate data, for example `approximate_location` (a fuzzed point or neighbourhood). Exact address, access details and the on-site contact's phone are visible only to the helper of an active accepted booking, behind a permission, and hidden again when it closes (rule e; the phone rule is `care_contacts/policy.py`). Other phone numbers and IBAN are never exposed to anyone but the owner; OIB neither, except a registered business's OIB, which its public profile and offers show with its business name; its registered street address goes only to the poster of a task it offered on.
 
 ### 3. Resolvers
 

@@ -20,7 +20,7 @@ Money outcomes (refunds, call-out, credit) are computed only in `bookings/cancel
 
 Applies to task text and photos' captions, public questions and answers, chat **before** acceptance, and reviews.
 - Detect phone numbers (including spaced and spelled digits, `+385`, `0 9 1`), emails (including `at`/`dot` obfuscation), URLs and messenger handles (WhatsApp, Viber, Telegram, Instagram). One module, `moderation/contact_filter.py`, used by every write path.
-- Clear matches are masked (`•••`) and the author is told why; doubtful ones go to the review queue. After acceptance, chat between the booked poster and helper is not masked (they need to coordinate), but phone numbers are still never exposed through profiles or the API (rule e).
+- Clear matches are masked (`•••`) and the author is told why; doubtful ones go to the review queue. After acceptance, chat between the booked poster and helper is not masked (they need to coordinate), but users' phone numbers are still never exposed through profiles or the API; the only phone the API shows another user is the on-site contact's, to the helper of an active booking (rule e).
 - Table-driven tests with Croatian, German and French examples, including false positives (prices, dates, house numbers).
 
 ## 3. Report and block
@@ -50,7 +50,7 @@ Applies to task text and photos' captions, public questions and answers, chat **
 
 ## 7. No access ("Couldn't do the job?")
 
-1. The helper picks a reason. An automatic chat message and push go to the **poster**, who calls the on-site contact from their own phone. TaskBeavo makes no calls.
+1. The helper picks a reason. An automatic chat message and push go to the **poster**, who calls the on-site contact from their own phone. The helper can also call the contact from their own phone with the Call link the active booking shows (rule e). TaskBeavo itself places no calls.
 2. A **15-minute wait timer** starts (server-side timestamp). "Request call-out pay" stays disabled until it ends, unless the poster replies that nobody is home.
 3. Evidence: a photo taken **in the app** (camera only, not the gallery) with timestamp and GPS. GPS more than ~100 m from the task point routes the request to manual review.
 4. The poster has 48 h to choose: reschedule (no fee), accept call-out, or dispute. No reply in 48 h accepts the call-out.

@@ -53,7 +53,8 @@ describe('analytics before consent', () => {
     expect(load).not.toHaveBeenCalled();
   });
 
-  it('opts out and forgets the anonymous id when consent is withdrawn', async () => {
+  it('opts out on withdrawal without reset(), which would contact PostHog again', async () => {
+    // reset() reloads feature flags: a request with a fresh anonymous id after the no (BEAV-221).
     const { client, load } = fakePostHog();
     const analytics = createAnalytics({ key: 'phc_test', load, clearStorage: vi.fn() });
 
@@ -61,7 +62,24 @@ describe('analytics before consent', () => {
     await analytics.apply(false);
 
     expect(client.opt_out_capturing).toHaveBeenCalledTimes(1);
+    expect(client.reset).not.toHaveBeenCalled();
+  });
+
+  it('starts a new anonymous id when the visitor agrees again on the same page', async () => {
+    const { client, load } = fakePostHog();
+    const analytics = createAnalytics({ key: 'phc_test', load, clearStorage: vi.fn() });
+
+    await analytics.apply(true);
+    await analytics.apply(false);
+    await analytics.apply(true);
+
+    // reset(true): a new device id too, or the old id rides along as $device_id.
     expect(client.reset).toHaveBeenCalledTimes(1);
+    expect(client.reset).toHaveBeenCalledWith(true);
+    const resetAt = vi.mocked(client.reset).mock.invocationCallOrder[0] ?? 0;
+    const optedInAt = vi.mocked(client.opt_in_capturing).mock.invocationCallOrder.at(-1) ?? 0;
+    // reset() clears PostHog's consent state, so it must come before opting in, not after.
+    expect(resetAt).toBeLessThan(optedInAt);
   });
 
   it('sends no personal data: no autocapture, no recordings, no query strings', () => {
@@ -115,6 +133,16 @@ function fakeBrowser(hostname: string, cookies: Record<string, string | undefine
 }
 
 describe('withdrawing analytics', () => {
+  it('sends each event at once, so none is left queued to leave after a no', () => {
+    expect(postHogConfig(EU_HOST)).toMatchObject({ request_batching: false });
+  });
+
+  it('keeps PostHog off once its own record of the no is deleted with the rest', () => {
+    // clearPostHogStorage removes __ph_opt_in_out_<key>; without a record PostHog would
+    // otherwise go back to capturing on the same page.
+    expect(postHogConfig(EU_HOST)).toMatchObject({ opt_out_capturing_by_default: true });
+  });
+
   it('turns off PostHog persistence when opted out', () => {
     expect(postHogConfig(EU_HOST)).toMatchObject({ opt_out_persistence_by_default: true });
   });
