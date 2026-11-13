@@ -133,6 +133,20 @@ beforeEach(async () => {
   await i18n.changeLanguage('en');
 });
 
+it('puts the poster’s confirm under the refund breakdown, not pinned above it', async () => {
+  // A pinned button could be tapped while the amounts were still below the fold.
+  await renderCancel({ BookingCancellation: () => ({ booking: booking() }) });
+
+  await screen.findByText(en.cases.LATE);
+  await fireEvent.press(screen.getByTestId('cancel-reason-DIFFERENT_DATE'));
+
+  expect(screen.queryByTestId('cancel-screen-footer')).toBeNull();
+  const order = screen
+    .getAllByTestId(/^cancel-(preview|confirm)$/)
+    .map((node) => node.props.testID as string);
+  expect(order).toEqual(['cancel-preview', 'cancel-confirm']);
+});
+
 it('shows the server preview and cancels with the chosen reason', async () => {
   const { variables } = await renderCancel({
     BookingCancellation: () => ({ booking: booking() }),

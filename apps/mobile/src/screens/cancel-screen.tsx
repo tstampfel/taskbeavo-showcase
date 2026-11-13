@@ -126,7 +126,10 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
   const onWithdraw = (name: string, email: string) =>
     void withdraw({ variables: { id: bookingId, name, email } }).catch(() => undefined);
 
-  // The screen's one final action, pinned at the bottom (mockup 13c, 13g `.foot`).
+  // The screen's one final action. The helper's is pinned at the bottom (mockup 13g `.foot`):
+  // what it means for the poster is in the card at the top. The poster's stays in the body,
+  // right under the refund breakdown, so it can't be tapped with the amounts below the fold
+  // (unlike mockup 13c).
   let footer: ReactNode;
   if ((view.kind === 'cancel' || view.kind === 'helperCancel') && reason?.kind === 'noFault') {
     footer = (
@@ -295,6 +298,7 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
           ) : (
             <Preview preview={view.preview} money={money} />
           )}
+          {footer}
         </>
       )}
 
@@ -339,7 +343,7 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
         onPress={() => onOpenPolicy(locale)}
       />
     </>,
-    footer,
+    view.kind === 'cancel' ? undefined : footer,
   );
 }
 
