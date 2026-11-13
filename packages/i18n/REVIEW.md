@@ -811,3 +811,12 @@ Until BEAV-200 these keys held the English text in the languages listed, so Germ
 ## Business details settings (BEAV-199)
 
 DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check. The `businessDetails.*` keys are the Settings → Business details screen on web and mobile. None of it is legal text: `businessDetails.confirmBody` explains the BEAV-195 rule (a business poster books registered businesses only, and private helpers' open offers are withdrawn) in plain words, and `invalidOib` / `invalidObrtOib` replace the helper-onboarding wording of `errors.INVALID_OIB` and `errors.INVALID_BUSINESS_OIB` on this screen. de and fr explain "obrt" once in `kind.OBRT` ("Einzelunternehmen", "entreprise individuelle"); the translator may prefer another gloss.
+
+## Cookie banner and Privacy and data settings (BEAV-83)
+
+DRAFT, written by me, never machine-translated: en is the source, hr, de and fr are my drafts for a native speaker. The banner and switch texts are legal-adjacent (ePrivacy consent, ZEK čl. 100; GDPR Art. 7): **the lawyer must approve `consent.body`, `consent.essentialBody`, `consent.analyticsBody`, `privacySettings.analyticsWeb`, `privacySettings.analyticsApp`, `privacySettings.marketingBody` and `privacySettings.footnote` in English, then a professional translator words hr, de and fr.** They describe what the cookie policy (COOKIES) and privacy notice (PRIVACY) say, so they must match the lawyer's final documents; a change to them is a strings-only change, and the CONSENT rows already record the document version each choice referred to.
+
+- `consent.*`: the web cookie banner (mockup 19 "Cookies on TaskBeavo") and its Settings view. `consent.reject` and `consent.accept` sit side by side with the same weight, as regulators expect; `consent.settingsTitle` is also the footer's "Cookie settings".
+- `consent.policyLink` names the COOKIES document like `legal.documents.COOKIES`; keep the two the same.
+- `privacySettings.*`: Settings → Privacy and data on web and mobile. `marketingEmail`/`marketingPush` are the opt-in for news and offers; `marketingBody` says booking and payment messages always arrive (they are part of the service). hr "push obavijestima" keeps the English "push", as Croatian apps commonly do; the translator may prefer another word.
+- `errors.CONSENT_UNAVAILABLE`: shown when no cookie policy or privacy notice is in force, so agreeing can't be recorded.

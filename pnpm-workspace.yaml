@@ -17,9 +17,11 @@ minimumReleaseAgeExclude:
   - '@typescript-eslint/utils@8.72.1'
   - '@typescript-eslint/visitor-keys@8.72.1'
   - typescript-eslint@8.72.1
+# posthog-js (BEAV-83) pulls in core-js, whose postinstall only prints a banner.
 # next-intl's optional message extractor pulls in @parcel/watcher and @swc/core, jest-expo pulls in unrs-resolver, and the Sentry SDKs pull in @sentry/cli (source map upload); all ship prebuilt binaries as optional platform packages, so their install scripts aren't needed.
 allowBuilds:
   '@sentry/cli': false
   '@parcel/watcher': false
   '@swc/core': false
   unrs-resolver: false
+  core-js: false

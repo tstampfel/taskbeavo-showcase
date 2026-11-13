@@ -182,7 +182,8 @@
     "WITHDRAWAL_NOT_AVAILABLE": "La rétractation du contrat n’est pas disponible pour cette réservation.",
     "CANCELLATION_CHANGED": "Le remboursement a changé depuis l’ouverture de cet écran, car un délai est passé. Vérifiez le nouveau montant. Rien n’a été annulé.",
     "INVALID_WITHDRAWAL_DETAILS": "Les informations de rétractation sont manquantes ou invalides. Vérifiez votre nom et votre adresse e-mail.",
-    "INVALID_ETA": "Choisissez une heure d’arrivée entre 1 minute et 4 heures à partir de maintenant."
+    "INVALID_ETA": "Choisissez une heure d’arrivée entre 1 minute et 4 heures à partir de maintenant.",
+    "CONSENT_UNAVAILABLE": "Les statistiques et les actualités ne peuvent pas être activées pour le moment. Veuillez réessayer plus tard."
   },
   "uploads": {
     "choosePhoto": "Choisir une photo",
@@ -664,6 +665,31 @@
     "legal": "Informations légales et licences",
     "documents": "Documents juridiques",
     "licences": "Licences"
+  },
+  "consent": {
+    "title": "Cookies sur TaskBeavo",
+    "body": "Nous utilisons des cookies essentiels pour vous connecter et assurer votre sécurité. Avec votre accord, nous utilisons aussi des cookies d’analyse pour améliorer le site.",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "settings": "Paramètres",
+    "settingsTitle": "Paramètres des cookies",
+    "essentialTitle": "Cookies essentiels",
+    "essentialBody": "Nécessaires à la connexion et à la sécurité. Toujours actifs.",
+    "analyticsTitle": "Cookies d’analyse",
+    "analyticsBody": "Des statistiques anonymes sur les pages consultées, pour améliorer le site. Désactivé tant que vous n’avez pas donné votre accord.",
+    "save": "Enregistrer mes choix",
+    "policyLink": "Politique en matière de cookies",
+    "saveFailed": "Votre choix n’a pas pu être enregistré. Veuillez réessayer."
+  },
+  "privacySettings": {
+    "title": "Confidentialité et données",
+    "analytics": "Statistiques d’utilisation",
+    "analyticsWeb": "Des statistiques anonymes sur vos visites dans ce navigateur. Désactivé tant que vous n’avez pas donné votre accord.",
+    "analyticsApp": "Nous aide à améliorer l’application. Désactivé tant que vous n’avez pas donné votre accord.",
+    "marketingEmail": "Actualités et offres par e-mail",
+    "marketingPush": "Actualités et offres par notification push",
+    "marketingBody": "Les messages sur vos réservations et paiements arrivent toujours.",
+    "footnote": "Chaque choix est enregistré avec la date et la version du texte que vous avez accepté."
   },
   "businessDetails": {
     "title": "Informations sur l’entreprise",

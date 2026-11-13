@@ -182,7 +182,8 @@
     "WITHDRAWAL_NOT_AVAILABLE": "Withdrawal from the contract isn't available for this booking.",
     "CANCELLATION_CHANGED": "The refund changed since you opened this screen, because a deadline passed. Check the new amount. Nothing was cancelled.",
     "INVALID_WITHDRAWAL_DETAILS": "Withdrawal details are missing or invalid. Check your name and email address.",
-    "INVALID_ETA": "Pick an arrival time between 1 minute and 4 hours from now."
+    "INVALID_ETA": "Pick an arrival time between 1 minute and 4 hours from now.",
+    "CONSENT_UNAVAILABLE": "Analytics and news can't be switched on right now. Please try again later."
   },
   "uploads": {
     "choosePhoto": "Choose photo",
@@ -664,6 +665,31 @@
     "legal": "Legal and licences",
     "documents": "Legal documents",
     "licences": "Licences"
+  },
+  "consent": {
+    "title": "Cookies on TaskBeavo",
+    "body": "We use essential cookies to sign you in and keep you safe. With your OK, we also use analytics cookies to improve the site.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "settings": "Settings",
+    "settingsTitle": "Cookie settings",
+    "essentialTitle": "Essential cookies",
+    "essentialBody": "Needed to sign you in and keep you safe. Always on.",
+    "analyticsTitle": "Analytics cookies",
+    "analyticsBody": "Anonymous statistics on which pages are visited, so we can improve the site. Off until you agree.",
+    "save": "Save choices",
+    "policyLink": "Cookie policy",
+    "saveFailed": "Your choice couldn't be saved. Please try again."
+  },
+  "privacySettings": {
+    "title": "Privacy and data",
+    "analytics": "Analytics",
+    "analyticsWeb": "Anonymous statistics about your visits in this browser. Off until you agree.",
+    "analyticsApp": "Helps us improve the app. Off until you agree.",
+    "marketingEmail": "News and offers by email",
+    "marketingPush": "News and offers by push notification",
+    "marketingBody": "Booking and payment messages always arrive.",
+    "footnote": "Every choice is saved with the date and the version of the text you agreed to."
   },
   "businessDetails": {
     "title": "Business details",

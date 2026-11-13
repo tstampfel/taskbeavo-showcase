@@ -3,6 +3,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { BusinessDetails } from '../../../components/settings/business-details';
+import { PrivacySettings } from '../../../components/settings/privacy-settings';
 import styles from '../../../components/sign-in/sign-in.module.css';
 import { routing } from '../../../i18n/routing';
 
@@ -15,17 +16,24 @@ export async function generateMetadata({
   return { title: t('title'), robots: { index: false, follow: false } };
 }
 
-/** Account settings, for now Business details (BEAV-199): the obrt or company a poster books for. */
+/**
+ * Account settings: Business details (BEAV-199), the obrt or company a poster books for, and
+ * Privacy and data (BEAV-83), the analytics and marketing consent switches.
+ */
 export default async function SettingsPage({ params }: PageProps<'/[locale]/settings'>) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
-  const { businessDetails, signIn, errors, errorBoundary } = await getMessages();
+  const { businessDetails, signIn, errors, errorBoundary, legal, privacySettings } =
+    await getMessages();
 
   return (
     <main className={styles.main}>
-      <NextIntlClientProvider messages={{ businessDetails, signIn, errors, errorBoundary }}>
+      <NextIntlClientProvider
+        messages={{ businessDetails, signIn, errors, errorBoundary, legal, privacySettings }}
+      >
         <BusinessDetails />
+        <PrivacySettings />
       </NextIntlClientProvider>
     </main>
   );
