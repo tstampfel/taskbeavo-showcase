@@ -9,6 +9,8 @@ export default function BookingDetailRoute() {
     <BookingDetailScreen
       bookingId={id}
       onOpen={(screen) => router.push({ pathname: `/bookings/[id]/${screen}`, params: { id } })}
+      // A push or link may open the booking with nothing behind it: back then goes home.
+      onBack={() => (router.canGoBack() ? router.back() : router.replace('/'))}
     />
   );
 }

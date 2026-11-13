@@ -3,6 +3,7 @@ import { ApolloProvider } from '@apollo/client/react';
 import { BookingDetailDocument, ViewerDocument, typePolicies } from '@taskbeavo/graphql';
 import { catalogues, formatMoney } from '@taskbeavo/i18n';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Observable, type Subscriber } from 'rxjs';
 import { i18n } from '../src/i18n';
@@ -187,6 +188,23 @@ it('follows the stepper of mockup 05', async () => {
   expect(screen.getByTestId('booking-step-held-done')).toBeOnTheScreen();
   expect(screen.getByTestId('booking-step-requested-current')).toBeOnTheScreen();
   expect(screen.getByTestId('booking-step-released-todo')).toBeOnTheScreen();
+});
+
+it.each([
+  [1, 'row'],
+  [3.1, 'column'],
+])('at text scale %s lays the steps out as a %s', async (fontScale, direction) => {
+  // Four columns are too narrow for whole words at the largest sizes: the steps become a list.
+  const dimensions = jest
+    .spyOn(Dimensions, 'get')
+    .mockReturnValue({ width: 402, height: 874, scale: 3, fontScale });
+  try {
+    await renderDetail(booking('helper-9', { status: 'PAYMENT_REQUESTED' }));
+    const style = StyleSheet.flatten(screen.getByTestId('booking-steps').props.style);
+    expect(style.flexDirection ?? 'column').toBe(direction);
+  } finally {
+    dimensions.mockRestore();
+  }
 });
 
 it('sends the poster to release once payment is requested', async () => {

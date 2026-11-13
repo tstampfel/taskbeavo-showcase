@@ -12,13 +12,19 @@ import {
   type DetailCheckout,
 } from '@taskbeavo/graphql';
 import { defaultLocale, formatDateTime, formatMoney, isLocale, type Locale } from '@taskbeavo/i18n';
-import { colors, minTapTarget, spacing } from '@taskbeavo/ui-tokens';
-import { useEffect } from 'react';
+import { colors, radii, spacing } from '@taskbeavo/ui-tokens';
+import { useEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  ActivityIndicator,
+  Linking,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { TraderIdentity } from '../components/trader-identity';
-import { Badge, Button, Card } from '../components/ui';
+import { Badge, Button, Card, Note, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 
 /** The booking screens the detail screen links into, by their route segment. */
@@ -27,9 +33,16 @@ export type BookingScreen = 'checkout' | 'arrival' | 'cancel' | 'no-access' | 'r
 export interface BookingDetailScreenProps {
   bookingId: string;
   onOpen(screen: BookingScreen): void;
+  /** The top bar's back button. */
+  onBack?: () => void;
 }
 
-const LINKS: readonly { link: keyof BookingLinks; screen: BookingScreen; primary?: boolean }[] = [
+type Link = { link: keyof BookingLinks; screen: BookingScreen; primary?: boolean };
+
+/** From this text scale on, the progress steps are a list rather than four columns. */
+const STACKED_STEPS_FONT_SCALE = 1.3;
+
+const LINKS: readonly Link[] = [
   { link: 'release', screen: 'release', primary: true },
   { link: 'noAccess', screen: 'no-access', primary: true },
   { link: 'arrival', screen: 'arrival' },
@@ -43,7 +56,7 @@ const LINKS: readonly { link: keyof BookingLinks; screen: BookingScreen; primary
  * socket reconnects (src/apollo). The exact address and access details show only when the
  * server sends them (hard rule e); a live event that ends the booking takes them away.
  */
-export function BookingDetailScreen({ bookingId, onOpen }: BookingDetailScreenProps) {
+export function BookingDetailScreen({ bookingId, onOpen, onBack }: BookingDetailScreenProps) {
   const { t, i18n } = useTranslation();
   const locale: Locale = isLocale(i18n.language) ? i18n.language : defaultLocale;
   const booking = useQuery(BookingDetailDocument, {
@@ -74,18 +87,22 @@ export function BookingDetailScreen({ bookingId, onOpen }: BookingDetailScreenPr
       />
     </View>
   );
+  const placeholder = (children: ReactNode) => (
+    <Screen
+      title={t('bookingDetail.metaTitle')}
+      onBack={onBack}
+      backLabel={t('bookingDetail.back')}
+    >
+      {children}
+    </Screen>
+  );
   if (!current || (!viewer && viewerQuery.loading)) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        {booking.loading || viewerQuery.loading ? (
-          <ActivityIndicator
-            color={colors.green}
-            accessibilityLabel={t('bookingDetail.metaTitle')}
-          />
-        ) : (
-          retry
-        )}
-      </SafeAreaView>
+    return placeholder(
+      booking.loading || viewerQuery.loading ? (
+        <ActivityIndicator color={colors.green} accessibilityLabel={t('bookingDetail.metaTitle')} />
+      ) : (
+        retry
+      ),
     );
   }
   const view = bookingDetailView(current, bookingRole(current, viewer?.id ?? null), new Date(), {
@@ -93,73 +110,78 @@ export function BookingDetailScreen({ bookingId, onOpen }: BookingDetailScreenPr
     fresh: booking.networkStatus !== NetworkStatus.loading,
   });
   // Never show one side's screen to someone whose side isn't known.
-  if (view.kind === 'unknownViewer')
-    return <SafeAreaView style={styles.safeArea}>{retry}</SafeAreaView>;
+  if (view.kind === 'unknownViewer') return placeholder(retry);
 
   const time = (at: unknown) => (typeof at === 'string' ? formatDateTime(at, locale, 'short') : '');
   const money = (cents: number) => formatMoney(cents, locale);
   const poster = view.role === 'poster';
+  const held = view.steps && view.status !== 'AWAITING_PAYMENT' && view.status !== 'CLOSED';
+  const links = LINKS.filter(({ link }) => view.links[link]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text accessibilityRole="header" style={[textStyle('h1'), styles.title]}>
-          {current.task.title}
-        </Text>
-        <Badge
-          label={t(`bookingDetail.status.${view.status}`)}
-          tone={view.status === 'PAYMENT_REQUESTED' ? 'orange' : 'green'}
-          testID="booking-status"
-        />
-        {view.steps && <Steps steps={view.steps} />}
+    <Screen
+      title={current.task.title}
+      onBack={onBack}
+      backLabel={t('bookingDetail.back')}
+      testID="booking-detail"
+      footer={links.length > 0 ? <Links links={links} onOpen={onOpen} /> : undefined}
+    >
+      {view.steps && <Steps steps={view.steps} />}
 
-        <Card style={styles.card}>
-          <Text style={[textStyle('body'), styles.ink]}>
+      <Card style={styles.card}>
+        <View style={styles.between}>
+          <Text style={[textStyle('label'), styles.ink, styles.grow]}>
             {t('bookingDetail.startsAt', { time: time(current.slotStart) })}
           </Text>
-          <Text style={[textStyle('body'), styles.ink]} testID="booking-amount">
-            {poster
-              ? t('bookingDetail.totalPoster', { total: money(current.totalCents) })
-              : t('bookingDetail.amountHelper', { amount: money(current.amountCents) })}
-          </Text>
-          {view.steps && view.status !== 'AWAITING_PAYMENT' && view.status !== 'CLOSED' && (
-            <Text style={[textStyle('small'), styles.muted]}>
-              {poster
-                ? t('bookingDetail.heldPoster', { total: money(current.totalCents) })
-                : t('bookingDetail.heldHelper', { amount: money(current.amountCents) })}
-            </Text>
-          )}
-          {view.confirmationEmailed && (
-            <Text style={[textStyle('small'), styles.muted]}>{t('checkout.held.email')}</Text>
-          )}
-        </Card>
-
-        {view.checkout && (
-          <CheckoutNotice
-            checkout={view.checkout}
-            time={time}
-            onPay={view.links.checkout ? () => onOpen('checkout') : undefined}
+          <Badge
+            label={t(`bookingDetail.status.${view.status}`)}
+            tone={view.status === 'PAYMENT_REQUESTED' ? 'orange' : 'green'}
+            testID="booking-status"
           />
+        </View>
+        <Text style={[textStyle('small'), styles.muted]} testID="booking-amount">
+          {poster
+            ? t('bookingDetail.totalPoster', { total: money(current.totalCents) })
+            : t('bookingDetail.amountHelper', { amount: money(current.amountCents) })}
+        </Text>
+        {view.confirmationEmailed && (
+          <Text style={[textStyle('small'), styles.muted]}>{t('checkout.held.email')}</Text>
         )}
+      </Card>
 
-        <PlaceCard place={view.place} />
+      {held && (
+        <Text style={[textStyle('caption'), styles.sys]}>
+          {poster
+            ? t('bookingDetail.heldPoster', { total: money(current.totalCents) })
+            : t('bookingDetail.heldHelper', { amount: money(current.amountCents) })}
+        </Text>
+      )}
 
-        {view.trader && <HelperCard trader={view.trader} />}
+      {view.checkout && (
+        <CheckoutNotice
+          checkout={view.checkout}
+          time={time}
+          onPay={view.links.checkout ? () => onOpen('checkout') : undefined}
+        />
+      )}
 
-        <Links view={view} onOpen={onOpen} />
+      <PlaceCard place={view.place} />
 
-        <Text style={[textStyle('small'), styles.muted]}>{t('bookingDetail.safety')}</Text>
-      </ScrollView>
-    </SafeAreaView>
+      {view.trader && <HelperCard trader={view.trader} />}
+
+      <Note tone="warn">{t('bookingDetail.safety')}</Note>
+    </Screen>
   );
 }
 
 function Steps({ steps }: { steps: NonNullable<BookingDetail['steps']> }) {
   const { t } = useTranslation();
+  // At large text the four columns are too narrow for whole words: list the steps instead.
+  const stacked = useWindowDimensions().fontScale >= STACKED_STEPS_FONT_SCALE;
   return (
     <View
       accessibilityLabel={t('bookingDetail.stepsLabel')}
-      style={styles.steps}
+      style={stacked ? styles.stepsStacked : styles.steps}
       testID="booking-steps"
     >
       {steps.map(({ step, state }) => {
@@ -175,11 +197,23 @@ function Steps({ steps }: { steps: NonNullable<BookingDetail['steps']> }) {
                   ? t('bookingDetail.stepCurrent', { step: label })
                   : label
             }
-            style={styles.step}
+            style={stacked ? styles.stepStacked : styles.step}
             testID={`booking-step-${step}-${state}`}
           >
-            <View style={[styles.dot, state !== 'todo' && styles.dotReached]} />
-            <Text style={[textStyle('caption'), state === 'current' ? styles.ink : styles.muted]}>
+            <View
+              style={[
+                styles.dot,
+                state === 'done' && styles.dotDone,
+                state === 'current' && styles.dotCurrent,
+              ]}
+            />
+            <Text
+              style={[
+                textStyle('caption'),
+                !stacked && styles.stepLabel,
+                state === 'current' ? styles.ink : styles.muted,
+              ]}
+            >
               {label}
             </Text>
           </View>
@@ -235,12 +269,12 @@ function PlaceCard({ place }: { place: BookingPlace }) {
   const { t } = useTranslation();
   return (
     <Card style={styles.card} testID="booking-place">
-      <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
+      <Text accessibilityRole="header" style={[textStyle('caption'), styles.muted, styles.section]}>
         {t('bookingDetail.place.title')}
       </Text>
       {place.kind === 'exact' ? (
         <>
-          <Text style={[textStyle('body'), styles.ink]} testID="booking-address">
+          <Text style={[textStyle('label'), styles.ink]} testID="booking-address">
             {place.address}
           </Text>
           {place.onlyWhileBooked && (
@@ -248,6 +282,7 @@ function PlaceCard({ place }: { place: BookingPlace }) {
               {t('bookingDetail.place.whileBooked')}
             </Text>
           )}
+          {(place.accessDetails || place.contact) && <View style={styles.rule} />}
           {place.accessDetails ? (
             <Text style={[textStyle('body'), styles.ink]} testID="booking-access">
               {t('bookingDetail.place.access', { details: place.accessDetails })}
@@ -255,7 +290,7 @@ function PlaceCard({ place }: { place: BookingPlace }) {
           ) : null}
           {place.contact && (
             <>
-              <Text style={[textStyle('body'), styles.ink]}>
+              <Text style={[textStyle('label'), styles.ink]}>
                 {t('bookingDetail.place.contact', {
                   name: place.contact.name,
                   area: place.contact.area,
@@ -294,7 +329,7 @@ function HelperCard({ trader }: { trader: NonNullable<BookingDetail['trader']> }
   const { t } = useTranslation();
   return (
     <Card style={styles.card} testID="booking-helper">
-      <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
+      <Text accessibilityRole="header" style={[textStyle('caption'), styles.muted, styles.section]}>
         {t('bookingDetail.helperTitle')}
       </Text>
       {trader.helperIsTrader ? (
@@ -306,48 +341,84 @@ function HelperCard({ trader }: { trader: NonNullable<BookingDetail['trader']> }
   );
 }
 
-function Links({ view, onOpen }: { view: BookingDetail; onOpen(screen: BookingScreen): void }) {
+/** The screen's actions, pinned at the bottom (mockup 5b, 5c `.foot`): the main one first. */
+function Links({ links, onOpen }: { links: Link[]; onOpen(screen: BookingScreen): void }) {
   const { t } = useTranslation();
-  const shown = LINKS.filter(({ link }) => view.links[link]);
-  if (shown.length === 0) return null;
+  const others = links.filter(({ primary }) => !primary);
   return (
-    <View style={styles.card}>
-      <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
-        {t('bookingDetail.links.title')}
-      </Text>
-      {shown.map(({ link, screen, primary }) => (
-        <Button
-          key={link}
-          variant={primary ? 'primary' : 'secondary'}
-          label={t(`bookingDetail.links.${link}`)}
-          onPress={() => onOpen(screen)}
-          testID={`booking-link-${screen}`}
-        />
-      ))}
-    </View>
+    <>
+      {others.length > 0 && (
+        <View style={styles.secondaryLinks}>
+          {others.map(({ link, screen }) => (
+            <View key={link} style={styles.grow}>
+              <Button
+                variant="secondary"
+                size="sm"
+                label={t(`bookingDetail.links.${link}`)}
+                onPress={() => onOpen(screen)}
+                testID={`booking-link-${screen}`}
+              />
+            </View>
+          ))}
+        </View>
+      )}
+      {links
+        .filter(({ primary }) => primary)
+        .map(({ link, screen }) => (
+          <Button
+            key={link}
+            label={t(`bookingDetail.links.${link}`)}
+            onPress={() => onOpen(screen)}
+            testID={`booking-link-${screen}`}
+          />
+        ))}
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.offWhite },
-  content: { gap: spacing.lg, padding: spacing.xl },
-  title: { color: colors.green },
+  content: { gap: spacing.lg },
   ink: { color: colors.ink },
   muted: { color: colors.inkMuted },
   error: { color: colors.error },
   card: { gap: spacing.sm },
-  steps: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-  step: {
+  grow: { flexGrow: 1, flexShrink: 1 },
+  between: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
-    gap: spacing.xs,
-    minHeight: minTapTarget / 2,
+    justifyContent: 'space-between',
+    gap: spacing.sm,
   },
+  // The mockups' `.sys` pill: a system line in the booking's own colours.
+  sys: {
+    alignSelf: 'center',
+    textAlign: 'center',
+    color: colors.green,
+    backgroundColor: colors.greenTint,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+  },
+  rule: { height: 1, backgroundColor: colors.line },
+  // The mockups' small capitals section label ("ACCESS DETAILS").
+  section: { textTransform: 'uppercase' },
+  // The mockups' `.stepper`: one column per step, the dot above its label.
+  steps: { flexDirection: 'row', alignItems: 'flex-start' },
+  step: { flex: 1, alignItems: 'center', gap: spacing.xs },
+  stepsStacked: { gap: spacing.sm },
+  stepStacked: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  stepLabel: { textAlign: 'center' },
   dot: {
-    width: spacing.sm,
-    height: spacing.sm,
-    borderRadius: spacing.sm / 2,
+    width: 20,
+    height: 20,
+    borderRadius: radii.pill,
+    borderWidth: 3,
+    borderColor: colors.offWhite,
     backgroundColor: colors.line,
   },
-  dotReached: { backgroundColor: colors.green },
+  dotDone: { backgroundColor: colors.green },
+  // Current: orange with an orange ring. Decorative; the label and its text say "current".
+  dotCurrent: { backgroundColor: colors.orange, borderColor: colors.orangeTint },
+  secondaryLinks: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 });

@@ -28,12 +28,12 @@ import {
   isLocale,
   type Locale,
 } from '@taskbeavo/i18n';
-import { colors, spacing } from '@taskbeavo/ui-tokens';
-import { useState } from 'react';
+import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
+import type { TFunction } from 'i18next';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Card } from '../components/ui';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Button, Card, Note, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 
 export interface ArrivalScreenProps {
@@ -65,6 +65,7 @@ export function ArrivalScreen({ bookingId, onBack }: ArrivalScreenProps) {
   const [contest, contesting] = useMutation(ContestNoShowDocument);
   const [startEarly, askingEarly] = useMutation(RequestEarlyStartDocument);
   const [answerEarly, answeringEarly] = useMutation(RespondToEarlyStartDocument);
+  const [helperState, setHelperState] = useState<HelperState>(HELPER_IDLE);
   const current = booking.data?.booking;
   const viewer = viewerQuery.data?.viewer;
 
@@ -83,21 +84,26 @@ export function ArrivalScreen({ bookingId, onBack }: ArrivalScreenProps) {
       />
     </>
   );
+  const frame = (children: ReactNode, footer?: ReactNode) => (
+    <Screen
+      title={t('arrival.title')}
+      onBack={onBack}
+      backLabel={t('arrival.back')}
+      footer={footer}
+      testID="arrival-screen"
+    >
+      {children}
+    </Screen>
+  );
   if (!current || (!viewer && viewerQuery.loading)) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        {booking.loading || viewerQuery.loading ? (
-          <ActivityIndicator color={colors.green} />
-        ) : (
-          retry
-        )}
-      </SafeAreaView>
+    return frame(
+      booking.loading || viewerQuery.loading ? <ActivityIndicator color={colors.green} /> : retry,
     );
   }
   const view = arrivalView(current, arrivalRole(current, viewer?.id ?? null));
   if (view.kind === 'unknownViewer') {
     // Never show one side's screen to someone whose side isn't known.
-    return <SafeAreaView style={styles.safeArea}>{retry}</SafeAreaView>;
+    return frame(retry);
   }
 
   const mutations = [
@@ -124,118 +130,114 @@ export function ArrivalScreen({ bookingId, onBack }: ArrivalScreenProps) {
   const status = arrivalStatusMessage(view);
   const statusTime = status.at ? formatTime(status.at, locale) : '';
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text accessibilityRole="header" style={[textStyle('h1'), styles.title]}>
-          {t('arrival.title')}
-        </Text>
+  const helper =
+    view.kind === 'helper'
+      ? helperActions({
+          view,
+          busy,
+          state: helperState,
+          setState: setHelperState,
+          t,
+          onMyWay: (etaMinutes) =>
+            void onMyWay({ variables: { ...vars, etaMinutes } }).catch(refresh),
+          onLate: (etaMinutes) => void late({ variables: { ...vars, etaMinutes } }).catch(refresh),
+          onArrived: () => void arrived({ variables: vars }).catch(refresh),
+          onCantCome: () =>
+            void cantCome({ variables: { id: bookingId, reason: 'CANT_COME' } })
+              .then(refresh)
+              .catch(refresh),
+          onStartEarly: () => void startEarly({ variables: vars }).catch(refresh),
+        })
+      : null;
 
-        <Text style={[textStyle('body'), styles.ink]} testID="arrival-status">
+  return frame(
+    <>
+      {/* The day of the job at a glance (mockup 18a, 18g): when, and where things stand. */}
+      <Card style={styles.card} testID="arrival-summary">
+        <Text style={[textStyle('caption'), styles.muted, styles.section]}>
+          {typeof current.slotStart === 'string' ? time(current.slotStart) : null}
+        </Text>
+        <Text style={[textStyle('label'), styles.ink]} testID="arrival-status">
           {view.kind === 'helper'
             ? t(`arrival.statusHelper.${status.key}`, { time: statusTime })
             : t(`arrival.statusPoster.${status.key}`, { time: statusTime })}
         </Text>
+      </Card>
 
-        {view.noShowRejected && (
-          <Text style={[textStyle('body'), styles.ink]}>{t('arrival.rejected')}</Text>
-        )}
-        {view.earlyStartConfirmed && (
-          <Text style={[textStyle('body'), styles.ink]}>{t('arrival.earlyStartConfirmed')}</Text>
-        )}
+      {view.noShowRejected && (
+        <Text style={[textStyle('body'), styles.ink]}>{t('arrival.rejected')}</Text>
+      )}
+      {view.earlyStartConfirmed && (
+        <Text style={[textStyle('body'), styles.ink]}>{t('arrival.earlyStartConfirmed')}</Text>
+      )}
 
-        {view.noShow && (
-          <Card style={styles.card} testID="arrival-no-show">
-            <Text style={[textStyle('body'), styles.ink]}>
-              {view.noShow.settled
-                ? t(view.kind === 'helper' ? 'arrival.settledHelper' : 'arrival.settledPoster')
-                : view.noShow.contested
-                  ? t(
-                      view.kind === 'helper'
-                        ? 'arrival.contestedHelper'
-                        : 'arrival.contestedPoster',
-                    )
-                  : t(
-                      view.kind === 'helper' ? 'arrival.reportedHelper' : 'arrival.reportedPoster',
-                      {
-                        time: time(view.noShow.contestBy),
-                      },
-                    )}
-            </Text>
-            {view.kind === 'helper' && view.canContestNoShow && (
-              <Button
-                label={t('arrival.contest')}
-                busy={contesting.loading}
-                disabled={busy}
-                onPress={() => void contest({ variables: vars }).catch(refresh)}
-                testID="arrival-contest"
-              />
-            )}
-          </Card>
-        )}
-
-        {view.kind === 'helper' ? (
-          <HelperPanel
-            view={view}
-            busy={busy}
-            onMyWay={(etaMinutes) =>
-              void onMyWay({ variables: { ...vars, etaMinutes } }).catch(refresh)
-            }
-            onLate={(etaMinutes) =>
-              void late({ variables: { ...vars, etaMinutes } }).catch(refresh)
-            }
-            onArrived={() => void arrived({ variables: vars }).catch(refresh)}
-            onCantCome={() =>
-              void cantCome({ variables: { id: bookingId, reason: 'CANT_COME' } })
-                .then(refresh)
-                .catch(refresh)
-            }
-            onStartEarly={() => void startEarly({ variables: vars }).catch(refresh)}
-          />
-        ) : (
-          <PosterPanel
-            view={view}
-            busy={busy}
-            money={(cents) => formatMoney(cents, locale)}
-            onAnswerLate={(keep) =>
-              void answerLate({ variables: { ...vars, keep } }).catch(refresh)
-            }
-            onConfirmCame={(came) =>
-              void confirmCame({ variables: { ...vars, came } }).catch(refresh)
-            }
-            onAnswerEarly={(confirm) =>
-              void answerEarly({
-                variables: { ...vars, confirm, locale: graphqlLocale(locale) },
-              }).catch(refresh)
-            }
-          />
-        )}
-
-        {errorCode && (
-          <Text accessibilityRole="alert" style={[textStyle('body'), styles.error]}>
-            {i18n.exists(`errors.${errorCode}`) ? t(`errors.${errorCode}`) : t('arrival.loadError')}
+      {view.noShow && (
+        <Card style={[styles.card, styles.alert]} testID="arrival-no-show">
+          <Text style={[textStyle('body'), styles.ink]}>
+            {view.noShow.settled
+              ? t(view.kind === 'helper' ? 'arrival.settledHelper' : 'arrival.settledPoster')
+              : view.noShow.contested
+                ? t(view.kind === 'helper' ? 'arrival.contestedHelper' : 'arrival.contestedPoster')
+                : t(view.kind === 'helper' ? 'arrival.reportedHelper' : 'arrival.reportedPoster', {
+                    time: time(view.noShow.contestBy),
+                  })}
           </Text>
-        )}
+          {view.kind === 'helper' && view.canContestNoShow && (
+            <Button
+              label={t('arrival.contest')}
+              busy={contesting.loading}
+              disabled={busy}
+              onPress={() => void contest({ variables: vars }).catch(refresh)}
+              testID="arrival-contest"
+            />
+          )}
+        </Card>
+      )}
 
-        <Button variant="ghost" label={t('arrival.back')} onPress={onBack} />
-      </ScrollView>
-    </SafeAreaView>
+      {helper ? (
+        helper.body
+      ) : view.kind === 'poster' ? (
+        <PosterPanel
+          view={view}
+          busy={busy}
+          money={(cents) => formatMoney(cents, locale)}
+          onAnswerLate={(keep) => void answerLate({ variables: { ...vars, keep } }).catch(refresh)}
+          onConfirmCame={(came) =>
+            void confirmCame({ variables: { ...vars, came } }).catch(refresh)
+          }
+          onAnswerEarly={(confirm) =>
+            void answerEarly({
+              variables: { ...vars, confirm, locale: graphqlLocale(locale) },
+            }).catch(refresh)
+          }
+        />
+      ) : null}
+
+      {errorCode && (
+        <Text accessibilityRole="alert" style={[textStyle('body'), styles.error]}>
+          {i18n.exists(`errors.${errorCode}`) ? t(`errors.${errorCode}`) : t('arrival.loadError')}
+        </Text>
+      )}
+    </>,
+    helper?.footer,
   );
 }
 
 function EtaChoices({
+  legend,
   picked,
   onPick,
   disabled,
 }: {
+  legend: string;
   picked: number | null;
   onPick(minutes: number): void;
   disabled: boolean;
 }) {
   const { t } = useTranslation();
   return (
-    <View accessibilityRole="radiogroup" accessibilityLabel={t('arrival.etaLegend')}>
-      <Text style={[textStyle('small'), styles.muted]}>{t('arrival.etaLegend')}</Text>
+    <View accessibilityRole="radiogroup" accessibilityLabel={legend} style={styles.etas}>
+      <Text style={[textStyle('label'), styles.ink]}>{legend}</Text>
       <View style={styles.chips}>
         {ETA_CHOICES.map((minutes) => (
           <Pressable
@@ -247,7 +249,7 @@ function EtaChoices({
             style={[styles.chip, picked === minutes && styles.chipPicked]}
             testID={`arrival-eta-${minutes}`}
           >
-            <Text style={[textStyle('body'), picked === minutes ? styles.onGreen : styles.ink]}>
+            <Text style={[textStyle('label'), picked === minutes ? styles.onGreen : styles.ink]}>
               {t('arrival.etaMinutes', { minutes })}
             </Text>
           </Pressable>
@@ -257,9 +259,24 @@ function EtaChoices({
   );
 }
 
-function HelperPanel({
+interface HelperState {
+  eta: number | null;
+  reportingLate: boolean;
+  confirmingCantCome: boolean;
+}
+
+const HELPER_IDLE: HelperState = { eta: null, reportingLate: false, confirmingCantCome: false };
+
+/**
+ * The helper's taps (mockups 18a, 18g): the arrival times and the hints in the body, the main
+ * action pinned in the footer. Running late and "I can't come" stay as quieter buttons.
+ */
+function helperActions({
   view,
   busy,
+  state,
+  setState,
+  t,
   onMyWay,
   onLate,
   onArrived,
@@ -268,89 +285,55 @@ function HelperPanel({
 }: {
   view: HelperArrival;
   busy: boolean;
+  state: HelperState;
+  setState(update: (state: HelperState) => HelperState): void;
+  t: TFunction;
   onMyWay(etaMinutes: number | null): void;
   onLate(etaMinutes: number): void;
   onArrived(): void;
   onCantCome(): void;
   onStartEarly(): void;
-}) {
-  const { t } = useTranslation();
-  const [eta, setEta] = useState<number | null>(null);
-  const [reportingLate, setReportingLate] = useState(false);
-  const [confirmingCantCome, setConfirmingCantCome] = useState(false);
-  return (
+}): { body: ReactNode; footer: ReactNode } {
+  const { eta, reportingLate, confirmingCantCome } = state;
+  const set = (patch: Partial<HelperState>) => setState((now) => ({ ...now, ...patch }));
+  const choosing = view.canTap && (view.canMarkOnMyWay || reportingLate);
+
+  const body = (
     <>
-      {view.canTap && (
-        <Card style={styles.card}>
-          {(view.canMarkOnMyWay || reportingLate) && (
-            <EtaChoices picked={eta} onPick={setEta} disabled={busy} />
-          )}
-          {view.canMarkOnMyWay && (
-            <>
-              <Text style={[textStyle('small'), styles.muted]}>{t('arrival.onMyWayHint')}</Text>
-              <Button
-                label={t('arrival.onMyWay')}
-                disabled={busy}
-                onPress={() => onMyWay(eta)}
-                testID="arrival-on-my-way"
-              />
-            </>
-          )}
-          <Button
-            variant="secondary"
-            label={t('arrival.arrived')}
-            disabled={busy}
-            onPress={onArrived}
-            testID="arrival-arrived"
-          />
-          {reportingLate ? (
+      {choosing && (
+        <EtaChoices
+          legend={reportingLate ? t('arrival.runningLate') : t('arrival.etaLegend')}
+          picked={eta}
+          onPick={(minutes) => set({ eta: minutes })}
+          disabled={busy}
+        />
+      )}
+      {view.canTap && view.canMarkOnMyWay && !reportingLate && (
+        <Note>{t('arrival.onMyWayHint')}</Note>
+      )}
+      {view.canTap && confirmingCantCome && <Note tone="red">{t('arrival.cantComeBody')}</Note>}
+      {view.canTap && !confirmingCantCome && (
+        <View style={styles.quiet}>
+          {!reportingLate && (
             <Button
               variant="secondary"
-              label={t('arrival.sendLate')}
-              disabled={busy || eta === null}
-              onPress={() => eta !== null && onLate(eta)}
-              testID="arrival-send-late"
-            />
-          ) : (
-            <Button
-              variant="secondary"
+              size="sm"
               label={t('arrival.runningLate')}
               disabled={busy}
-              onPress={() => {
-                setEta(null);
-                setReportingLate(true);
-              }}
+              onPress={() => set({ eta: null, reportingLate: true })}
               testID="arrival-running-late"
             />
           )}
-          {confirmingCantCome ? (
-            <View style={styles.card}>
-              <Text style={[textStyle('body'), styles.ink]}>{t('arrival.cantComeBody')}</Text>
-              <Button
-                variant="danger"
-                label={t('arrival.cantComeConfirm')}
-                disabled={busy}
-                onPress={onCantCome}
-                testID="arrival-cant-come-confirm"
-              />
-              <Button
-                variant="ghost"
-                label={t('arrival.goBack')}
-                disabled={busy}
-                onPress={() => setConfirmingCantCome(false)}
-              />
-            </View>
-          ) : (
-            <Button
-              variant="ghost"
-              label={t('arrival.cantCome')}
-              disabled={busy}
-              onPress={() => setConfirmingCantCome(true)}
-              testID="arrival-cant-come"
-            />
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            label={t('arrival.cantCome')}
+            disabled={busy}
+            onPress={() => set({ confirmingCantCome: true })}
+            testID="arrival-cant-come"
+          />
           <Text style={[textStyle('small'), styles.muted]}>{t('arrival.noReplyHint')}</Text>
-        </Card>
+        </View>
       )}
       {view.canRequestEarlyStart && (
         <Card style={styles.card}>
@@ -369,6 +352,71 @@ function HelperPanel({
       )}
     </>
   );
+
+  let footer: ReactNode = null;
+  if (view.canTap && confirmingCantCome) {
+    footer = (
+      <>
+        <Button
+          variant="danger"
+          label={t('arrival.cantComeConfirm')}
+          disabled={busy}
+          onPress={onCantCome}
+          testID="arrival-cant-come-confirm"
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          label={t('arrival.goBack')}
+          disabled={busy}
+          onPress={() => set({ confirmingCantCome: false })}
+        />
+      </>
+    );
+  } else if (view.canTap && reportingLate) {
+    footer = (
+      <>
+        <Button
+          label={t('arrival.sendLate')}
+          disabled={busy || eta === null}
+          onPress={() => eta !== null && onLate(eta)}
+          testID="arrival-send-late"
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          label={t('arrival.goBack')}
+          disabled={busy}
+          onPress={() => set({ eta: null, reportingLate: false })}
+        />
+      </>
+    );
+  } else if (view.canTap) {
+    const arrivedButton = (
+      <Button
+        variant={view.canMarkOnMyWay ? 'ghost' : 'primary'}
+        size={view.canMarkOnMyWay ? 'sm' : 'md'}
+        label={t('arrival.arrived')}
+        disabled={busy}
+        onPress={onArrived}
+        testID="arrival-arrived"
+      />
+    );
+    footer = view.canMarkOnMyWay ? (
+      <>
+        <Button
+          label={t('arrival.onMyWay')}
+          disabled={busy}
+          onPress={() => onMyWay(eta)}
+          testID="arrival-on-my-way"
+        />
+        {arrivedButton}
+      </>
+    ) : (
+      arrivedButton
+    );
+  }
+  return { body, footer };
 }
 
 function PosterPanel({
@@ -496,23 +544,26 @@ function PosterPanel({
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.offWhite },
-  content: { gap: spacing.lg, padding: spacing.xl },
-  title: { color: colors.green },
   ink: { color: colors.ink },
   muted: { color: colors.inkMuted },
   onGreen: { color: colors.white },
   error: { color: colors.error },
   card: { gap: spacing.sm },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.xs },
+  // The mockups' small capitals over the summary ("TODAY · 9:00").
+  section: { textTransform: 'uppercase' },
+  // A no-show report wants attention: the mockups' orange outline (18h).
+  alert: { borderWidth: borderWidth.focus, borderColor: colors.orange },
+  quiet: { gap: spacing.sm },
+  etas: { gap: spacing.sm },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: {
-    minHeight: 44,
+    minHeight: minTapTarget,
     minWidth: 64,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    borderRadius: 22,
-    borderWidth: 1,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.pill,
+    borderWidth: borderWidth.thin,
     borderColor: colors.line,
     backgroundColor: colors.white,
   },

@@ -50,6 +50,7 @@
     "compare": "Comparer",
     "backToList": "Retour à la liste",
     "compareTitle": "{count, plural, one {Comparer # offre} other {Comparer # offres}}",
+    "compareOrder": "Les colonnes suivent l'ordre de la liste.",
     "trader": {
       "private": "Particulier",
       "business": "Professionnel enregistré",
@@ -87,6 +88,7 @@
       "business": "Pro"
     },
     "metaTitle": "Offres",
+    "back": "Retour",
     "cellLabel": "{row} pour l’offre de {price} : {value}"
   },
   "errors": {
@@ -310,6 +312,7 @@
     "title": "Paiement",
     "metaTitle": "Paiement",
     "back": "Retour aux offres",
+    "backToBooking": "Retour à la réservation",
     "loadError": "Le paiement n’a pas pu être chargé. Vérifiez votre connexion et réessayez.",
     "retry": "Réessayer",
     "notConfigured": "Le paiement par carte n’est pas configuré dans cette version de l’application. Rien n’a été débité.",
@@ -789,6 +792,7 @@
   },
   "bookingDetail": {
     "metaTitle": "Réservation",
+    "back": "Retour",
     "loadError": "Nous n’avons pas pu charger cette réservation. Vérifiez votre connexion et réessayez.",
     "retry": "Réessayer",
     "stepsLabel": "Avancement de la réservation",

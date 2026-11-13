@@ -50,6 +50,7 @@
     "compare": "Usporedi",
     "backToList": "Natrag na popis",
     "compareTitle": "{count, plural, one {Usporedi # ponudu} few {Usporedi # ponude} other {Usporedi # ponuda}}",
+    "compareOrder": "Stupci prate redoslijed popisa.",
     "trader": {
       "private": "Privatna osoba",
       "business": "Registrirani obrt ili tvrtka",
@@ -87,6 +88,7 @@
       "business": "Obrt/tvrtka"
     },
     "metaTitle": "Ponude",
+    "back": "Natrag",
     "cellLabel": "{row} za ponudu od {price}: {value}"
   },
   "errors": {
@@ -310,6 +312,7 @@
     "title": "Plaćanje",
     "metaTitle": "Plaćanje",
     "back": "Natrag na ponude",
+    "backToBooking": "Natrag na rezervaciju",
     "loadError": "Plaćanje se nije moglo učitati. Provjerite vezu i pokušajte ponovno.",
     "retry": "Pokušaj ponovno",
     "notConfigured": "Plaćanje karticom nije postavljeno u ovoj verziji aplikacije. Ništa nije naplaćeno.",
@@ -789,6 +792,7 @@
   },
   "bookingDetail": {
     "metaTitle": "Rezervacija",
+    "back": "Natrag",
     "loadError": "Nismo mogli učitati ovu rezervaciju. Provjerite vezu i pokušajte ponovno.",
     "retry": "Pokušaj ponovno",
     "stepsLabel": "Tijek rezervacije",

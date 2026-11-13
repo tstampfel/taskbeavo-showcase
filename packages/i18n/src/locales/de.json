@@ -50,6 +50,7 @@
     "compare": "Vergleichen",
     "backToList": "Zurück zur Liste",
     "compareTitle": "{count, plural, one {# Angebot vergleichen} other {# Angebote vergleichen}}",
+    "compareOrder": "Die Spalten folgen der Reihenfolge der Liste.",
     "trader": {
       "private": "Privatperson",
       "business": "Eingetragenes Gewerbe",
@@ -87,6 +88,7 @@
       "business": "Gewerbe"
     },
     "metaTitle": "Angebote",
+    "back": "Zurück",
     "cellLabel": "{row} für das Angebot über {price}: {value}"
   },
   "errors": {
@@ -310,6 +312,7 @@
     "title": "Bezahlen",
     "metaTitle": "Bezahlen",
     "back": "Zurück zu den Angeboten",
+    "backToBooking": "Zurück zur Buchung",
     "loadError": "Die Zahlung konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     "retry": "Erneut versuchen",
     "notConfigured": "Kartenzahlungen sind in dieser App-Version nicht eingerichtet. Es wurde nichts abgebucht.",
@@ -789,6 +792,7 @@
   },
   "bookingDetail": {
     "metaTitle": "Buchung",
+    "back": "Zurück",
     "loadError": "Wir konnten diese Buchung nicht laden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     "retry": "Erneut versuchen",
     "stepsLabel": "Fortschritt der Buchung",

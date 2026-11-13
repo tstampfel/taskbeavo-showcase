@@ -254,7 +254,7 @@ describe('OffersScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Compare' }));
 
     const table = screen.getByTestId('offers-compare');
-    expect(within(table).getByText('Compare 3 offers')).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'Compare 3 offers' })).toBeTruthy();
     expect(within(table).getByText('Business')).toBeTruthy();
     expect(within(table).getAllByText('New helper')).toHaveLength(3);
     expect(

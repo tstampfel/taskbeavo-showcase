@@ -10,6 +10,8 @@ export default function TaskOffersRoute() {
     <OffersScreen
       taskId={id}
       openRanking={openRanking}
+      // A push or link may open the offers with nothing behind them: back then goes home.
+      onBack={() => (router.canGoBack() ? router.back() : router.replace('/'))}
       onAccept={(offerId) =>
         router.push({
           pathname: '/tasks/[id]/offers/[offerId]/checkout',

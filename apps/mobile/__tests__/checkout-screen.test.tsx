@@ -580,7 +580,7 @@ describe('CheckoutScreen', () => {
 
     expect(await screen.findByTestId(testID)).toBeTruthy();
     expect(screen.getByText(title)).toBeTruthy();
-    await fireEvent.press(screen.getByRole('button'));
+    await fireEvent.press(within(screen.getByTestId(testID)).getByRole('button'));
     expect(onBackToOffers).toHaveBeenCalledWith('task-1');
   });
 
