@@ -698,6 +698,8 @@ GRAPHQL_MUTATION_RATE_LIMIT_OVERRIDES: dict[str, int] = {
     "updateHelperProfile": 10,
     # Each call makes a Stripe request for a new onboarding link.
     "startPayoutOnboarding": 5,
+    # Public and unauthenticated: each call stores a CONSENT row (the web cookie banner).
+    "setConsent": 10,
     # Public and unauthenticated: each call stores an email address.
     "joinWaitlist": 5,
     # Public and unauthenticated: each call tries a withdrawal token.
