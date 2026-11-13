@@ -48,6 +48,7 @@ If a page needs both, keep the page a server component and put the interactive p
 
 ### 5. UI
 
+- Every page brings its own header. Logged-in pages wrap their `<main>` in `AppShell` (`components/shell/app-shell.tsx`: `title`, `back` for the parent page, `actions` for extra 44px buttons, `titleIsHeading={false}` while the body still has its own `h1`); its account menu holds the session controls and the language switcher. Public pages render `SiteHeader` first. Both put the terms and cookie banners under the header.
 - Use tokens from `@taskbeavo/ui-tokens` (green `#1F5C46`, orange `#F2A33A`, off-white `#F5F4EF`, ink `#17211C`) and Manrope via `next/font/google`.
 - Build mobile-first: no horizontal scroll at **375px**, then check 768px and 1280px.
 - Every string comes from `@taskbeavo/i18n` (next-intl) in hr, en, de and fr, following `i18n-strings`. Check German and French at 375px.
