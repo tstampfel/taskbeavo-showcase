@@ -1,0 +1,33 @@
+{
+  "id": "evt_3TestPaymentIntentFailed",
+  "object": "event",
+  "api_version": "2026-09-30.endive",
+  "created": 1793520000,
+  "data": {
+    "object": {
+      "id": "pi_3TestDestinationCharge",
+      "object": "payment_intent",
+      "amount": 3360,
+      "amount_received": 0,
+      "application_fee_amount": 360,
+      "automatic_payment_methods": {"allow_redirects": "never", "enabled": true},
+      "currency": "eur",
+      "last_payment_error": {
+        "code": "card_declined",
+        "decline_code": "insufficient_funds",
+        "doc_url": "https://stripe.com/docs/error-codes/card-declined",
+        "message": "Your card has insufficient funds.",
+        "type": "card_error"
+      },
+      "livemode": false,
+      "metadata": {"booking_id": "42"},
+      "on_behalf_of": "acct_1TestHelperExpress",
+      "status": "requires_payment_method",
+      "transfer_data": {"destination": "acct_1TestHelperExpress"}
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {"id": null, "idempotency_key": null},
+  "type": "payment_intent.payment_failed"
+}

@@ -1,0 +1,169 @@
+# Every pull request to develop runs these jobs; branch protection on develop requires them
+# (see docs/ci.md). Each step runs a command from the CLAUDE.md Commands table.
+# Third-party actions are pinned to a full commit SHA, with the release tag in a comment.
+name: CI
+
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to a PR cancels its older run. Pushes to develop group by commit, so a queued
+# run for one merge isn't dropped when the next merge lands.
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Matches the uv the backend image copies in (backend/Dockerfile).
+  UV_VERSION: '0.11.28'
+  # The lowest Node that package.json "engines" allows.
+  NODE_VERSION: '22'
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgis:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: taskbeavo
+          POSTGRES_PASSWORD: taskbeavo
+          POSTGRES_DB: taskbeavo
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U taskbeavo -d taskbeavo"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgis://taskbeavo:taskbeavo@localhost:5432/taskbeavo
+      REDIS_URL: redis://localhost:6379/15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install GDAL, GEOS and PROJ
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gdal-bin
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Install
+        run: uv sync --frozen
+      - name: Only synthetic OIBs and IBANs in the repository
+        run: python3 ../scripts/check_synthetic_identifiers.py
+      - name: Lint
+        run: uv run ruff check . && uv run ruff format --check .
+      - name: Typecheck
+        run: uv run pyright
+      - name: Migrations are committed
+        run: uv run python manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+      - name: Tests
+        run: uv run pytest
+
+  js:
+    name: JS
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Reads the pnpm version from package.json "packageManager".
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      # --frozen-lockfile: CI installs exactly the lockfile, so pnpm's minimumReleaseAge
+      # policy that admitted each version when it was locked still holds.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Format
+        run: pnpm format:check
+      - name: Lint
+        run: pnpm turbo run lint
+      - name: Typecheck
+        run: pnpm turbo run typecheck
+      - name: Tests
+        run: pnpm turbo run test
+      # Not a turbo task: it reads apps/web and apps/mobile, which turbo wouldn't hash for
+      # packages/i18n, so a cached result could hide a newly unused key.
+      - name: Translation catalogues
+        run: pnpm --filter @taskbeavo/i18n check:catalogues
+
+  graphql-drift:
+    name: GraphQL drift
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # export_schema loads GeoDjango, so it needs GDAL but no database.
+      - name: Install GDAL, GEOS and PROJ
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gdal-bin
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install
+        run: |
+          (cd backend && uv sync --frozen)
+          pnpm install --frozen-lockfile
+      - name: schema.graphql and generated types match the backend
+        run: pnpm --filter @taskbeavo/graphql check:generated
+
+  web-e2e:
+    name: Web e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm --filter @taskbeavo/web exec playwright install --with-deps chromium
+      # The specs mock /api/graphql, so no backend runs here.
+      - name: Playwright
+        run: pnpm --filter @taskbeavo/web exec playwright test
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report/
+            apps/web/test-results/
+          retention-days: 7

@@ -1,0 +1,39 @@
+# The signed-in poster's on-site contacts (e.g. "Mama Kata"). Only the owner reads these.
+# After deleteCareContact, evict the returned object from the cache
+# (`cache.evict({ id: cache.identify(data.deleteCareContact) })`) so lists drop it.
+
+fragment CareContactFields on CareContact {
+  id
+  name
+  phone
+  smsCapable
+  area
+  language
+  noSmartphone
+  createdAt
+  updatedAt
+}
+
+query MyCareContacts {
+  myCareContacts {
+    ...CareContactFields
+  }
+}
+
+mutation CreateCareContact($input: CreateCareContactInput!) {
+  createCareContact(input: $input) {
+    ...CareContactFields
+  }
+}
+
+mutation UpdateCareContact($id: ID!, $input: UpdateCareContactInput!) {
+  updateCareContact(id: $id, input: $input) {
+    ...CareContactFields
+  }
+}
+
+mutation DeleteCareContact($id: ID!) {
+  deleteCareContact(id: $id) {
+    ...CareContactFields
+  }
+}

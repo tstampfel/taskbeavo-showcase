@@ -1,0 +1,5 @@
+{% extends "email/base.txt" %}{% load i18n %}
+{% block content %}{% blocktranslate %}Hello, {{ first_name }}!{% endblocktranslate %}
+
+{% translate "Post a task, get offers from verified neighbours, and release the payment only when the job is done." %}
+{% translate "Your payment is held safely until you release it." %}{% endblock %}

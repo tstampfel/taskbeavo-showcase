@@ -1,0 +1,7 @@
+{% extends "email/base.html" %}{% load i18n %}
+{% block title %}{% translate "Welcome to TaskBeavo" %}{% endblock %}
+{% block content %}
+<h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#17211C;">{% blocktranslate %}Hello, {{ first_name }}!{% endblocktranslate %}</h1>
+<p style="margin:0 0 12px;">{% translate "Post a task, get offers from verified neighbours, and release the payment only when the job is done." %}</p>
+<p style="margin:0;">{% translate "Your payment is held safely until you release it." %}</p>
+{% endblock %}

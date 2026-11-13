@@ -1,0 +1,96 @@
+# Tasks (BEAV-85). The exact place (address, lat, lng, accessDetails) and `onSiteContact`
+# are for the poster and the helper of an active booking (BEAV-107; its `phone` follows the
+# same rule), `careContact` and the moderation fields for the poster only; everyone else
+# gets the approximate area. Show `holdReasons` with `enums.TaskHoldReason.*`, `textMasked` with
+# `contactFilter.masked` and `warnings` with `enums.TaskWarning.*`.
+
+fragment TaskFields on Task {
+  id
+  status
+  category
+  title
+  description
+  approximateLat
+  approximateLng
+  serviceAreaName
+  windowStart
+  windowEnd
+  flexibleDate
+  budgetCents
+  photos {
+    id
+    url
+  }
+  isMine
+  createdAt
+  publishedAt
+  address
+  lat
+  lng
+  accessDetails
+  onSiteContact {
+    id
+    name
+    area
+    language
+    phone
+  }
+  careContact {
+    id
+    name
+  }
+  textMasked
+  holdReasons
+}
+
+query Task($id: ID!) {
+  task(id: $id) {
+    ...TaskFields
+  }
+}
+
+query MyTasks {
+  myTasks {
+    ...TaskFields
+  }
+}
+
+mutation SaveTaskDraft($id: ID, $input: TaskInput!) {
+  saveTaskDraft(id: $id, input: $input) {
+    id
+    task {
+      ...TaskFields
+    }
+    warnings
+  }
+}
+
+mutation PostTask($input: TaskInput!) {
+  postTask(input: $input) {
+    id
+    task {
+      ...TaskFields
+    }
+    warnings
+  }
+}
+
+mutation PublishTaskDraft($id: ID!) {
+  publishTaskDraft(id: $id) {
+    id
+    task {
+      ...TaskFields
+    }
+    warnings
+  }
+}
+
+mutation UpdateTask($id: ID!, $input: TaskInput!) {
+  updateTask(id: $id, input: $input) {
+    id
+    task {
+      ...TaskFields
+    }
+    warnings
+  }
+}

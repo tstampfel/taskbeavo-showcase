@@ -1,0 +1,64 @@
+{
+  "id": "evt_3UZDFy0PlatfSbx00LUlWZ01",
+  "object": "event",
+  "api_version": "2026-09-30.endive",
+  "context": "acct_1PlatformSandbox0",
+  "created": 1794071909,
+  "data": {
+    "object": {
+      "id": "tr_3UZDFy0PlatfSbx00pU2HiEG",
+      "object": "transfer",
+      "amount": 3000,
+      "amount_reversed": 300,
+      "balance_transaction": "txn_3UZDFy0PlatfSbx00f0jIkge",
+      "created": 1794071905,
+      "currency": "eur",
+      "description": null,
+      "destination": "acct_1HelperSandbox00",
+      "destination_payment": "py_1UZDG10HelprSbx0fZDffheY",
+      "livemode": false,
+      "metadata": {},
+      "reversals": {
+        "object": "list",
+        "data": [
+          {
+            "id": "trr_1UZDG40PlatfSbx0lan30gRo",
+            "object": "transfer_reversal",
+            "amount": 300,
+            "balance_transaction": "txn_1UZDG50PlatfSbx0Tx2P8Zyf",
+            "created": 1794071908,
+            "currency": "eur",
+            "destination_payment_refund": "pyr_1UZDG40HelprSbx0KHv8ULH3",
+            "metadata": {
+              "booking_id": "00000000-0000-0000-0000-000000000000",
+              "action": "transfer_reversal"
+            },
+            "source_refund": null,
+            "transfer": "tr_3UZDFy0PlatfSbx00pU2HiEG"
+          }
+        ],
+        "has_more": false,
+        "total_count": 1,
+        "url": "/v1/transfers/tr_3UZDFy0PlatfSbx00pU2HiEG/reversals"
+      },
+      "reversed": false,
+      "source_transaction": "ch_3UZDFy0PlatfSbx00DEAmjLZ",
+      "source_type": "card",
+      "transfer_group": "group_pi_3UZDFy0PlatfSbx00e1bBz9B"
+    },
+    "previous_attributes": {
+      "amount_reversed": 0,
+      "reversals": {
+        "data": [],
+        "total_count": 0
+      }
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": "req_bwI6Xuody3nyK9",
+    "idempotency_key": "booking:00000000-0000-0000-0000-000000000000:cancel:transfer_reversal:v1"
+  },
+  "type": "transfer.reversed"
+}

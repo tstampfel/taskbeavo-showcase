@@ -1,0 +1,14 @@
+# gitleaks configuration: the default rules, plus an allowlist of the fake values the
+# tests use (see docs/public-release.md). A scan with this file must report no leaks.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test placeholders, not secrets"
+regexes = [
+  '''^(sk|rk)_(live|test)_0123456789$''',
+  '''^pk_test_abc123$''',
+  '''^pi_123_secret_456$''',
+  '''^pi_3TestDestinationCharge_secret_abc$''',
+  '''^c3RhZ2luZy1vbmx5LWZpZWxkLWtleS0wMTIzNDU2Nzg=$''',
+]

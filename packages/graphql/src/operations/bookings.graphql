@@ -1,0 +1,291 @@
+# Checkout (BEAV-111; docs/PLAN.md "Checkout with card authentication (3D Secure)").
+#
+# acceptOffer opens the checkout: both boxes ticked, with the CANCELLATION version the
+# screen showed (CheckoutPolicy). Its CheckoutSession carries the Stripe client secret for
+# the payment sheet: never store or log it (CheckoutSession is never persisted, see
+# src/persistence.ts). Use fetchPolicy "no-cache" for AcceptOffer and CheckoutSession.
+#
+# Money is confirmed by Stripe's webhook only: after the sheet says the payment went
+# through, show "Confirming payment…" until bookingUpdated (or a refetch of Booking) says
+# FUNDS_HELD. A decline keeps the booking AWAITING_PAYMENT with a new lastPaymentAttempt;
+# the poster tries again on the same PaymentIntent. A poster who left the sheet comes back
+# with CheckoutSession until checkoutExpiresAt; CHECKOUT_CLOSED means refetch Booking and
+# show checkoutFailureReason.
+
+fragment PaymentAttemptFields on PaymentAttempt {
+  id
+  kind
+  declineCode
+  at
+}
+
+fragment BookingFields on Booking {
+  id
+  taskId
+  offerId
+  helperUserId
+  helperIsTrader
+  status
+  amountCents
+  feeCents
+  creditCents
+  totalCents
+  slotStart
+  termsVersion
+  cancellationVersion
+  checkoutExpiresAt
+  lastPaymentAttempt {
+    ...PaymentAttemptFields
+  }
+  checkoutFailureReason
+  createdAt
+  updatedAt
+}
+
+# The CANCELLATION version in force in the checkout's language: its text for the policy
+# sheet, and the lawyer's wording of the two tick boxes (never from the catalogues). Null,
+# or no checkoutConsent, means checkout can't be shown.
+query CheckoutPolicy($language: Locale!) {
+  currentLegalDocument(kind: CANCELLATION, language: $language) {
+    id
+    kind
+    version
+    language
+    effectiveAt
+    text
+    checkoutConsent {
+      privateHelper {
+        cancellationPolicy
+        earlyStart
+      }
+      traderHelper {
+        cancellationPolicy
+        earlyStart
+      }
+    }
+  }
+}
+
+query Booking($id: ID!) {
+  booking(id: $id) {
+    ...BookingFields
+  }
+}
+
+mutation AcceptOffer(
+  $offerId: ID!
+  $expectedPriceCents: Int!
+  $expectedTotalCents: Int!
+  $expectedFeeScheduleVersion: String!
+  $consent: CheckoutConsentInput!
+  $slotStart: DateTime
+) {
+  acceptOffer(
+    offerId: $offerId
+    expectedPriceCents: $expectedPriceCents
+    expectedTotalCents: $expectedTotalCents
+    expectedFeeScheduleVersion: $expectedFeeScheduleVersion
+    consent: $consent
+    slotStart: $slotStart
+  ) {
+    id
+    clientSecret
+    paymentPending
+    booking {
+      ...BookingFields
+    }
+  }
+}
+
+query CheckoutSession($bookingId: ID!) {
+  checkoutSession(bookingId: $bookingId) {
+    id
+    clientSecret
+    paymentPending
+    booking {
+      ...BookingFields
+    }
+  }
+}
+
+subscription BookingUpdated($id: ID!) {
+  bookingUpdated(id: $id) {
+    ...BookingFields
+  }
+}
+
+# The poster's cancel screen (BEAV-122): the refund preview and the withdrawal button.
+# The amounts are the server's (bookings/cancellation.py); the screen only shows them.
+fragment CancellationFields on Booking {
+  id
+  status
+  helperUserId
+  withdrawalAvailable
+  withdrawalEndsAt
+  cancelPreview {
+    id
+    case
+    chargeCents
+    refundCents
+    helperCompensationCents
+    keptFeeCents
+    creditBackCents
+    refusedWith
+  }
+  cancellation {
+    id
+    withdrawal
+    case
+    refundCents
+    helperCompensationCents
+    keptFeeCents
+    awaitingSupport
+    confirmed
+    requestedAt
+    requestedBy
+    posterCreditCents
+    creditBackCents
+  }
+  helperCancelPreview {
+    id
+    refundCents
+    posterCreditCents
+    refusedWith
+  }
+  noFaultRequest {
+    id
+    reason
+    label
+    requestedBy
+    requestedByYou
+    requestedAt
+    respondBy
+    response
+    awaitingSupport
+    canRespond
+    decision
+    open
+  }
+  canRequestNoFault
+  canReopenTask
+  taskReopened
+}
+
+query BookingCancellation($id: ID!) {
+  booking(id: $id) {
+    ...BookingFields
+    ...CancellationFields
+  }
+}
+
+# `expectedRefundCents` is the preview's refundCents the poster saw: a deadline passing
+# meanwhile refuses with CANCELLATION_CHANGED instead of refunding less.
+mutation CancelBooking($id: ID!, $reason: PosterCancelReason!, $expectedRefundCents: Int!) {
+  cancelBooking(id: $id, reason: $reason, expectedRefundCents: $expectedRefundCents) {
+    ...BookingFields
+    ...CancellationFields
+  }
+}
+
+# `name` and `email` are prefilled from the viewer (ZZP čl. 81.a(3)); the confirmation
+# is emailed to `email`.
+mutation WithdrawFromContract($id: ID!, $name: String!, $email: String!) {
+  withdrawFromContract(id: $id, name: $name, email: $email) {
+    ...BookingFields
+    ...CancellationFields
+  }
+}
+
+# The helper cancels (bookings/helper_cancel.py): the poster gets everything back, plus a
+# EUR 5 TaskBeavo credit under 24 h before the start; the helper never pays.
+mutation CancelAsHelper($id: ID!, $reason: HelperCancelReason!) {
+  cancelAsHelper(id: $id, reason: $reason) {
+    ...BookingFields
+    ...CancellationFields
+  }
+}
+
+# Either side cites a no-fault reason; the other side has 48 h to respond.
+mutation RequestNoFaultCancellation($id: ID!, $reason: NoFaultReason!) {
+  requestNoFaultCancellation(id: $id, reason: $reason) {
+    ...BookingFields
+    ...CancellationFields
+  }
+}
+
+mutation RespondToNoFaultCancellation($id: ID!, $agree: Boolean!) {
+  respondToNoFaultCancellation(id: $id, agree: $agree) {
+    ...BookingFields
+    ...CancellationFields
+  }
+}
+
+# After a helper or no-fault cancel: the declined offers come back and their helpers hear.
+mutation ReopenTask($bookingId: ID!) {
+  reopenTask(bookingId: $bookingId) {
+    ...BookingFields
+    ...CancellationFields
+  }
+}
+
+# The booking detail screen (BEAV-115, mockup 05): the hub both sides open from pushes and
+# emails, linking to checkout, the day of the job, cancel, no-access and release. `task`
+# comes as the viewer may see it: its exact address, access details and on-site contact
+# only for the poster and for the helper of an active booking (hard rule e). The live
+# event selects them too, so the event that ends a booking clears them from the cache.
+fragment BookingDetailFields on Booking {
+  id
+  task {
+    id
+    title
+    category
+    serviceAreaName
+    address
+    accessDetails
+    onSiteContact {
+      id
+      name
+      area
+      language
+      phone
+    }
+  }
+  helperBusiness {
+    id
+    businessName
+    businessOib
+  }
+  cancelPreview {
+    id
+  }
+  helperCancelPreview {
+    id
+  }
+  withdrawalAvailable
+  canRequestNoFault
+  noFaultRequest {
+    id
+    canRespond
+  }
+  cancellation {
+    id
+  }
+  arrival {
+    id
+    noShowContestBy
+  }
+}
+
+query BookingDetail($id: ID!) {
+  booking(id: $id) {
+    ...BookingFields
+    ...BookingDetailFields
+  }
+}
+
+subscription BookingDetailUpdated($id: ID!) {
+  bookingUpdated(id: $id) {
+    ...BookingFields
+    ...BookingDetailFields
+  }
+}

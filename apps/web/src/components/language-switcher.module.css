@@ -1,0 +1,35 @@
+.list {
+  display: flex;
+  gap: 2px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-grey-tint);
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: var(--tb-tap-target);
+  min-height: var(--tb-tap-target);
+  padding: 0 12px;
+  border-radius: var(--tb-radius-pill);
+  color: var(--tb-color-grey-tint-text);
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.option:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-input-focus-border);
+  outline-offset: var(--tb-border-focus);
+}
+
+.option[aria-current='true'] {
+  background: var(--tb-color-white);
+  color: var(--tb-color-green);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+}

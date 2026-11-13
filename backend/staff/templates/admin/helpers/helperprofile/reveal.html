@@ -1,0 +1,9 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block content %}
+<p>{% translate "Shown once. This reveal is logged. Don't copy these values anywhere outside TaskBeavo's restricted systems." %}</p>
+<dl>
+{% for label, value in values %}<dt>{{ label }}</dt><dd><code>{{ value }}</code></dd>{% empty %}<dd>{% translate "No tax IDs on this profile." %}</dd>{% endfor %}
+</dl>
+<p><a href="{% url 'admin:helpers_helperprofile_change' original.pk %}">{% translate "Back to the profile" %}</a></p>
+{% endblock %}

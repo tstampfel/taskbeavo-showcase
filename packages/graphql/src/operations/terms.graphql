@@ -1,0 +1,36 @@
+# Re-accepting updated terms (BEAV-82). While `mustAcceptTerms` is true the account is in
+# limited mode: "We've updated our terms" shows TermsToAccept in the app's language, names
+# its version and date on the tick box, and accepts that version (BEAV-188). Its own
+# queries, so the viewer mocks stay as they are. TermsStatus carries the version too, so
+# the banners open the screen again when a newer version takes effect mid-session.
+query TermsStatus($language: Locale!) {
+  viewer {
+    id
+    mustAcceptTerms
+    termsToAccept(language: $language) {
+      id
+      version
+    }
+  }
+}
+
+query TermsToAccept($language: Locale!) {
+  viewer {
+    id
+    termsToAccept(language: $language) {
+      id
+      kind
+      version
+      language
+      effectiveAt
+    }
+  }
+}
+
+mutation AcceptCurrentTerms($version: String!, $language: Locale!) {
+  acceptCurrentTerms(version: $version, language: $language) {
+    ...ViewerFields
+    accountState
+    mustAcceptTerms
+  }
+}

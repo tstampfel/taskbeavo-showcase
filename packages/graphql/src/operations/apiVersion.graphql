@@ -1,0 +1,4 @@
+# Sample query that proves the web and mobile clients reach the API.
+query ApiVersion {
+  apiVersion
+}

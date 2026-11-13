@@ -1,0 +1,7 @@
+.next/
+next-env.d.ts
+.vercel/
+playwright-report/
+test-results/
+# Written by next dev
+AGENTS.md

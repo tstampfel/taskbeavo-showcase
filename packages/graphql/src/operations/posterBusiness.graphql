@@ -1,0 +1,38 @@
+# The obrt or company a poster books for (BEAV-195). While it is set, the poster's tasks take
+# offers from registered helpers only: private helpers can't offer (sendOffer returns
+# BUSINESS_POSTER_REGISTERED_ONLY), their open offers are withdrawn and they are told why.
+# The OIB comes back masked; only its owner sees it.
+
+fragment PosterBusinessFields on PosterBusiness {
+  id
+  kind
+  name
+  oibMasked
+}
+
+query PosterBusiness {
+  viewer {
+    id
+    posterBusiness {
+      ...PosterBusinessFields
+    }
+  }
+}
+
+mutation SetPosterBusiness($input: PosterBusinessInput!) {
+  setPosterBusiness(input: $input) {
+    id
+    posterBusiness {
+      ...PosterBusinessFields
+    }
+  }
+}
+
+mutation ClearPosterBusiness {
+  clearPosterBusiness {
+    id
+    posterBusiness {
+      ...PosterBusinessFields
+    }
+  }
+}

@@ -1,0 +1,104 @@
+# Offers (BEAV-100). A helper's offer lasts 7 days, never past the task's date, and is
+# renewed with one tap (renewOffer, also for an EXPIRED offer). NEEDS_UPDATE means the
+# poster changed the task's date, address or scope: updateOffer confirms it (no fields) or
+# changes it. The poster sees every offer on their task with taskOffers; `messageMasked`
+# (helper only) pairs with `contactFilter.masked`. Show `helperIsTrader` as the "Private
+# individual" / "Registered business" label every offer must carry. For a trader, show
+# helperBusinessName, helperBusinessOib and helperBusinessAddress next to the label (hard
+# rule e, BEAV-192); they are null for a private helper, and the address is null for anyone
+# but the task's poster. `withdrawnReason` (helper only) says why TaskBeavo withdrew an
+# offer: BUSINESS_POSTER_REGISTERED_ONLY when the poster books for a business (BEAV-195).
+# Show it neutrally; it says nothing about the helper.
+
+fragment OfferFields on Offer {
+  id
+  taskId
+  helperUserId
+  helperIsTrader
+  helperBusinessName
+  helperBusinessOib
+  helperBusinessAddress
+  status
+  withdrawnReason
+  priceCents
+  serviceFeeCents
+  serviceFeeCreditCents
+  serviceFeeScheduleVersion
+  serviceFeePercent
+  serviceFeeMinimumCents
+  totalCents
+  message
+  messageMasked
+  expiresAt
+  isMine
+  createdAt
+  updatedAt
+}
+
+query TaskOffers($taskId: ID!) {
+  taskOffers(taskId: $taskId) {
+    ...OfferFields
+  }
+}
+
+query MyOffers {
+  myOffers {
+    ...OfferFields
+  }
+}
+
+mutation SendOffer($input: SendOfferInput!) {
+  sendOffer(input: $input) {
+    ...OfferFields
+  }
+}
+
+mutation UpdateOffer($id: ID!, $input: UpdateOfferInput!) {
+  updateOffer(id: $id, input: $input) {
+    ...OfferFields
+  }
+}
+
+mutation RenewOffer($id: ID!) {
+  renewOffer(id: $id) {
+    ...OfferFields
+  }
+}
+
+mutation WithdrawOffer($id: ID!) {
+  withdrawOffer(id: $id) {
+    ...OfferFields
+  }
+}
+
+# Live offer events for the poster's task (BEAV-101). Only the task's poster receives them.
+# Use offerReceived with subscribeToMore on TaskOffers and `withNewOffer` (src/offers.ts) to
+# prepend the new offer; offerWithdrawn and offerExpiring carry an offer already in the
+# list, which the normalised cache updates by itself. Events missed while disconnected come
+# back with the refetch on reconnect and on return to the foreground.
+
+subscription OfferReceived($taskId: ID!) {
+  offerReceived(taskId: $taskId) {
+    ...OfferFields
+  }
+}
+
+subscription OfferWithdrawn($taskId: ID!) {
+  offerWithdrawn(taskId: $taskId) {
+    ...OfferFields
+  }
+}
+
+subscription OfferExpiring($taskId: ID!) {
+  offerExpiring(taskId: $taskId) {
+    ...OfferFields
+  }
+}
+
+# offer.updated (BEAV-102): the helper changed or renewed an offer already in the list, so
+# the normalised cache updates its price, message and expiry by itself. Live only, no push.
+subscription OfferUpdated($taskId: ID!) {
+  offerUpdated(taskId: $taskId) {
+    ...OfferFields
+  }
+}

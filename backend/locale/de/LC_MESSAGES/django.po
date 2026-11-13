@@ -1,0 +1,1451 @@
+# TaskBeavo backend strings: emails, push, SMS and PDFs. English is the source;
+# drafts await native-speaker review (packages/i18n/REVIEW.md).
+msgid ""
+msgstr ""
+"Project-Id-Version: taskbeavo-backend\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-09 10:16+0100\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: accounts/outbox_handlers.py:63
+msgid "iPhone"
+msgstr "iPhone"
+
+#: accounts/outbox_handlers.py:64
+msgid "Android phone"
+msgstr "Android-Handy"
+
+#: accounts/outbox_handlers.py:66
+msgid "Web browser"
+msgstr "Webbrowser"
+
+#: accounts/phone.py:145
+#, python-format
+msgid ""
+"%(code)s is your TaskBeavo code. It expires in %(minutes)s minutes. Don't "
+"share it with anyone."
+msgstr ""
+"%(code)s ist Ihr TaskBeavo-Code. Er ist %(minutes)s Minuten gültig. Geben "
+"Sie ihn an niemanden weiter."
+
+#: bookings/admin.py:28
+msgid "Note"
+msgstr "Notiz"
+
+#: bookings/admin.py:31
+msgid "Restricted: trust team only (may hold health details)"
+msgstr "Eingeschränkt: nur Trust-Team (kann Gesundheitsdaten enthalten)"
+
+#: bookings/admin.py:40
+msgid "Work already done (%)"
+msgstr "Bereits erledigte Arbeit (%)"
+
+#: bookings/admin.py:49 bookings/admin.py:64
+msgid "Decision"
+msgstr "Entscheidung"
+
+#: bookings/admin.py:51
+msgid "Uphold: nobody's fault, full refund"
+msgstr "Bestätigen: niemand ist schuld, volle Erstattung"
+
+#: bookings/admin.py:52
+msgid "Reject: the ordinary policy applies to whoever asked"
+msgstr "Ablehnen: für die anfragende Seite gelten die üblichen Regeln"
+
+#: bookings/admin.py:66
+msgid "Uphold: the helper didn't come, full refund"
+msgstr "Bestätigen: Der Helfer kam nicht, volle Erstattung"
+
+#: bookings/admin.py:67
+msgid "Reject: the helper was there, the booking continues"
+msgstr "Ablehnen: Der Helfer war da, die Buchung läuft weiter"
+
+#: bookings/admin.py:83
+msgid "Cancellations & withdrawals"
+msgstr "Stornierungen und Widerrufe"
+
+#: bookings/admin.py:88
+msgid "Withdrawal waits for the share of the work done"
+msgstr "Widerruf wartet auf den Anteil der erledigten Arbeit"
+
+#: bookings/admin.py:89
+msgid "No-fault request waits for a decision"
+msgstr "Antrag ohne Verschulden wartet auf Entscheidung"
+
+#: bookings/admin.py:90
+msgid "No-show waits for a decision (contested or not settled)"
+msgstr ""
+"Nichterscheinen wartet auf Entscheidung (bestritten oder nicht abgerechnet)"
+
+#: bookings/admin.py:91
+msgid "Refund not confirmed yet"
+msgstr "Erstattung noch nicht bestätigt"
+
+#: bookings/admin.py:92
+msgid "Refused by Stripe"
+msgstr "Von Stripe abgelehnt"
+
+#: bookings/admin.py:203
+msgid "Note added."
+msgstr "Notiz hinzugefügt."
+
+#: bookings/admin.py:219
+msgid "No withdrawal waits for a share on this booking."
+msgstr "Bei dieser Buchung wartet kein Widerruf auf einen Anteil."
+
+#: bookings/admin.py:223
+msgid "Share saved. The settlement is being sent to Stripe."
+msgstr "Anteil gespeichert. Die Abwicklung wird an Stripe gesendet."
+
+#: bookings/admin.py:240
+msgid "No no-fault request waits for a decision here."
+msgstr "Hier wartet kein Antrag ohne Verschulden auf eine Entscheidung."
+
+#: bookings/admin.py:243 bookings/admin.py:271
+msgid "Decision saved."
+msgstr "Entscheidung gespeichert."
+
+#: bookings/admin.py:258
+msgid "No no-show waits for a decision here."
+msgstr "Hier wartet kein Nichterscheinen auf eine Entscheidung."
+
+#: bookings/admin.py:267
+msgid "Settling failed again. The money stays held; ask engineering."
+msgstr ""
+"Die Abrechnung ist erneut fehlgeschlagen. Das Geld bleibt zurückgehalten; "
+"wenden Sie sich an die Technik."
+
+#: bookings/admin.py:301
+#, python-format
+msgid "Booking %(id)s"
+msgstr "Buchung %(id)s"
+
+#: bookings/admin.py:373
+msgid "Faults"
+msgstr "Selbst verschuldete Absagen"
+
+#: bookings/admin.py:377
+msgid "Bookings"
+msgstr "Buchungen"
+
+#: bookings/admin.py:381
+msgid "Reliability (%)"
+msgstr "Zuverlässigkeit (%)"
+
+#: bookings/admin.py:385
+msgid "Mark reviewed"
+msgstr "Als geprüft markieren"
+
+#: bookings/admin.py:390
+msgid "Marked reviewed."
+msgstr "Als geprüft markiert."
+
+#. Translators: an amount in euros; "€%(amount)s" in English, "%(amount)s €" in hr/de/fr.
+#: bookings/contract_email.py:164
+#, python-format
+msgid "€%(amount)s"
+msgstr "%(amount)s €"
+
+#: bookings/withdrawal_email.py:183
+#: core/templates/email/withdrawal_confirmation/body.html:9
+#: core/templates/email/withdrawal_confirmation/body.txt:8
+msgid "Withdraw from contract"
+msgstr "Vertrag widerrufen"
+
+#: bookings/withdrawal_email.py:189
+msgid "Our team is working this out; we'll let you know."
+msgstr "Unser Team ermittelt das gerade; wir melden uns bei Ihnen."
+
+#: bookings/withdrawal_email.py:198
+msgid "None: the work hadn't started."
+msgstr "Nichts: Die Arbeit hatte noch nicht begonnen."
+
+#: core/templates/email/base.html:18 core/templates/email/base.txt:4
+msgid "You're receiving this email because you have a TaskBeavo account."
+msgstr "Sie erhalten diese E-Mail, weil Sie ein TaskBeavo-Konto haben."
+
+#: core/templates/email/base.html:19 core/templates/email/base.txt:5
+msgid "TaskBeavo · Local help in Croatia"
+msgstr "TaskBeavo · Hilfe vor Ort in Kroatien"
+
+#: core/templates/email/contract_confirmation/body.html:2
+#: core/templates/email/contract_confirmation/body.html:4
+#: core/templates/email/contract_confirmation/body.txt:2
+#: notifications/kinds.py:236
+msgid "Your booking is confirmed"
+msgstr "Ihre Buchung ist bestätigt"
+
+#: core/templates/email/contract_confirmation/body.html:5
+#: core/templates/email/contract_confirmation/body.txt:4
+#: core/templates/email/welcome/body.html:4
+#: core/templates/email/welcome/body.txt:2
+#: core/templates/email/withdrawal_confirmation/body.html:6
+#: core/templates/email/withdrawal_confirmation/body.txt:5
+#, python-format
+msgid "Hello, %(first_name)s!"
+msgstr "Hallo %(first_name)s!"
+
+#: core/templates/email/contract_confirmation/body.html:6
+#: core/templates/email/contract_confirmation/body.txt:6
+msgid ""
+"Your payment is held and your booking is confirmed. Please keep this email: "
+"it confirms your contract."
+msgstr ""
+"Ihre Zahlung ist hinterlegt und Ihre Buchung ist bestätigt. Bitte bewahren "
+"Sie diese E-Mail auf: Sie bestätigt Ihren Vertrag."
+
+#: core/templates/email/contract_confirmation/body.html:7
+#: core/templates/email/contract_confirmation/body.txt:8
+msgid "Your booking"
+msgstr "Ihre Buchung"
+
+#: core/templates/email/contract_confirmation/body.html:9
+#: core/templates/email/contract_confirmation/body.txt:9
+#: core/templates/email/withdrawal_confirmation/body.html:11
+#: core/templates/email/withdrawal_confirmation/body.txt:10
+#: staff/templates/admin/bookings/booking/evidence.html:42
+msgid "Task"
+msgstr "Auftrag"
+
+#: core/templates/email/contract_confirmation/body.html:10
+#: core/templates/email/contract_confirmation/body.txt:10
+#: core/templates/email/withdrawal_confirmation/body.html:12
+#: core/templates/email/withdrawal_confirmation/body.txt:11
+msgid "Start (Croatian time)"
+msgstr "Beginn (kroatische Zeit)"
+
+#: core/templates/email/contract_confirmation/body.html:11
+#: core/templates/email/contract_confirmation/body.txt:11
+#: staff/templates/admin/bookings/booking/evidence.html:44
+msgid "Helper"
+msgstr "Helfer"
+
+#: core/templates/email/contract_confirmation/body.html:11
+#: core/templates/email/contract_confirmation/body.txt:11
+#, python-format
+msgid "Registered business: %(trader_name)s, OIB %(trader_oib)s"
+msgstr "Registriertes Unternehmen: %(trader_name)s, OIB %(trader_oib)s"
+
+#: core/templates/email/contract_confirmation/body.html:11
+#: core/templates/email/contract_confirmation/body.txt:12
+#, python-format
+msgid "Registered address: %(trader_address)s"
+msgstr "Eingetragene Anschrift: %(trader_address)s"
+
+#: core/templates/email/contract_confirmation/body.html:11
+#: core/templates/email/contract_confirmation/body.txt:12
+#: staff/templates/admin/bookings/booking/evidence.html:45
+msgid "Registered business"
+msgstr "Eingetragenes Unternehmen"
+
+#: core/templates/email/contract_confirmation/body.html:11
+#: core/templates/email/contract_confirmation/body.txt:12
+#: staff/templates/admin/bookings/booking/evidence.html:45
+msgid "Private individual"
+msgstr "Privatperson"
+
+#: core/templates/email/contract_confirmation/body.html:12
+#: core/templates/email/contract_confirmation/body.txt:13
+msgid "Task price"
+msgstr "Preis der Aufgabe"
+
+#: core/templates/email/contract_confirmation/body.html:13
+#: core/templates/email/contract_confirmation/body.txt:14
+msgid "TaskBeavo service fee"
+msgstr "TaskBeavo-Servicegebühr"
+
+#: core/templates/email/contract_confirmation/body.html:14
+#: core/templates/email/contract_confirmation/body.txt:15
+#: core/templates/email/withdrawal_confirmation/body.html:14
+#: core/templates/email/withdrawal_confirmation/body.txt:13
+msgid "Total paid"
+msgstr "Insgesamt bezahlt"
+
+#: core/templates/email/contract_confirmation/body.html:16
+#: core/templates/email/contract_confirmation/body.txt:17
+msgid ""
+"Your payment is held until you release it. TaskBeavo arranges this booking "
+"as the helper's agent; the contract for the task is between you and the "
+"helper."
+msgstr ""
+"Ihre Zahlung bleibt hinterlegt, bis Sie sie freigeben. TaskBeavo vermittelt "
+"diese Buchung als Vertreter des Helfers; der Vertrag über die Aufgabe "
+"besteht zwischen Ihnen und dem Helfer."
+
+#: core/templates/email/contract_confirmation/body.html:17
+#: core/templates/email/contract_confirmation/body.txt:19
+msgid "Cancellation and withdrawal"
+msgstr "Stornierung und Widerruf"
+
+#: core/templates/email/contract_confirmation/body.html:18
+#: core/templates/email/contract_confirmation/body.txt:20
+#, python-format
+msgid ""
+"The attached cancellation policy, version %(cancellation_version)s, applies "
+"to this booking. It includes the information on your right of withdrawal and "
+"the model withdrawal form."
+msgstr ""
+"Für diese Buchung gelten die beigefügten Stornierungsbedingungen, Version "
+"%(cancellation_version)s. Sie enthalten die Widerrufsbelehrung und das "
+"Muster-Widerrufsformular."
+
+#: core/templates/email/contract_confirmation/body.html:19
+#: core/templates/email/contract_confirmation/body.txt:22
+msgid ""
+"Your right of withdrawal covers both your service fee contract with "
+"TaskBeavo and the task contract with the helper's registered business."
+msgstr ""
+"Ihr Widerrufsrecht umfasst sowohl Ihren Vertrag mit TaskBeavo über die "
+"Servicegebühr als auch den Vertrag über die Aufgabe mit dem registrierten "
+"Unternehmen des Helfers."
+
+#: core/templates/email/contract_confirmation/body.html:20
+#: core/templates/email/contract_confirmation/body.txt:24
+#, python-format
+msgid ""
+"On %(early_start_at)s (Croatian time) you expressly asked for the booking to "
+"be arranged and the task performed within your 14-day withdrawal period, and "
+"you acknowledged that you lose your right of withdrawal from each contract "
+"once that service has been fully performed."
+msgstr ""
+"Am %(early_start_at)s (kroatische Zeit) haben Sie ausdrücklich verlangt, "
+"dass die Buchung innerhalb Ihrer 14-tägigen Widerrufsfrist vereinbart und "
+"die Aufgabe ausgeführt wird, und bestätigt, dass Sie Ihr Widerrufsrecht für "
+"jeden Vertrag verlieren, sobald die jeweilige Dienstleistung vollständig "
+"erbracht ist."
+
+#: core/templates/email/contract_confirmation/body.html:20
+#: core/templates/email/contract_confirmation/body.txt:24
+msgid ""
+"Your right of withdrawal covers only your service fee contract with "
+"TaskBeavo. The task is agreed with a private individual, so the task itself "
+"has no statutory right of withdrawal."
+msgstr ""
+"Ihr Widerrufsrecht umfasst nur Ihren Vertrag mit TaskBeavo über die "
+"Servicegebühr. Die Aufgabe ist mit einer Privatperson vereinbart, daher "
+"besteht für die Aufgabe selbst kein gesetzliches Widerrufsrecht."
+
+#: core/templates/email/contract_confirmation/body.html:21
+#: core/templates/email/contract_confirmation/body.txt:26
+#, python-format
+msgid ""
+"On %(early_start_at)s (Croatian time) you expressly asked TaskBeavo to "
+"arrange the booking within your 14-day withdrawal period for the service "
+"fee, and you acknowledged that you lose that right of withdrawal once "
+"TaskBeavo's service has been fully performed."
+msgstr ""
+"Am %(early_start_at)s (kroatische Zeit) haben Sie TaskBeavo ausdrücklich "
+"gebeten, die Buchung innerhalb Ihrer 14-tägigen Widerrufsfrist für die "
+"Servicegebühr zu vereinbaren, und bestätigt, dass Sie dieses Widerrufsrecht "
+"verlieren, sobald die Dienstleistung von TaskBeavo vollständig erbracht ist."
+
+#: core/templates/email/contract_confirmation/body.html:22
+#: core/templates/email/contract_confirmation/body.txt:28
+#, python-format
+msgid ""
+"Your service fee contract is with %(taskbeavo_name)s, OIB %(taskbeavo_oib)s, "
+"%(taskbeavo_address)s, %(taskbeavo_email)s."
+msgstr ""
+"Ihr Vertrag über die Servicegebühr besteht mit %(taskbeavo_name)s, OIB "
+"%(taskbeavo_oib)s, %(taskbeavo_address)s, %(taskbeavo_email)s."
+
+#: core/templates/email/contract_confirmation/body.html:23
+#: core/templates/email/contract_confirmation/body.txt:30
+#: core/templates/email/notification/body.html:6
+#: core/templates/email/notification/body.txt:6
+#: core/templates/email/withdrawal_confirmation/body.html:17
+#: core/templates/email/withdrawal_confirmation/body.txt:16
+msgid "Open TaskBeavo"
+msgstr "TaskBeavo öffnen"
+
+#: core/templates/email/contract_confirmation/subject.txt:1
+msgid "Your booking is confirmed: your contract details"
+msgstr "Ihre Buchung ist bestätigt: Ihre Vertragsdetails"
+
+#: core/templates/email/new_device/body.html:2
+#: core/templates/email/new_device/body.html:4
+msgid "New login to your account"
+msgstr "Neue Anmeldung bei Ihrem Konto"
+
+#: core/templates/email/new_device/body.html:5
+#: core/templates/email/new_device/body.txt:2
+msgid ""
+"Someone just signed in to your TaskBeavo account on a device we haven't seen "
+"before."
+msgstr ""
+"Gerade hat sich jemand auf einem Gerät, das wir noch nicht kennen, bei Ihrem "
+"TaskBeavo-Konto angemeldet."
+
+#: core/templates/email/new_device/body.html:6
+#: core/templates/email/new_device/body.txt:4
+msgid "Device:"
+msgstr "Gerät:"
+
+#: core/templates/email/new_device/body.html:7
+#: core/templates/email/new_device/body.txt:5
+msgid "Approximate location:"
+msgstr "Ungefährer Ort:"
+
+#: core/templates/email/new_device/body.html:8
+#: core/templates/email/new_device/body.txt:6
+msgid "Time:"
+msgstr "Zeit:"
+
+#: core/templates/email/new_device/body.html:9
+#: core/templates/email/new_device/body.txt:8
+msgid "If this was you, you don't need to do anything."
+msgstr "Wenn Sie das waren, müssen Sie nichts tun."
+
+#: core/templates/email/new_device/body.html:10
+#: core/templates/email/new_device/body.txt:9
+msgid ""
+"If it wasn't you, log out of all devices now. Whoever signed in loses access "
+"straight away."
+msgstr ""
+"Wenn Sie das nicht waren, melden Sie sich jetzt auf allen Geräten ab. Wer "
+"sich angemeldet hat, verliert sofort den Zugang."
+
+#: core/templates/email/new_device/body.html:11
+#: core/templates/email/new_device/body.txt:11
+msgid "This wasn't me"
+msgstr "Das war ich nicht"
+
+#: core/templates/email/new_device/body.html:13
+#: core/templates/email/new_device/body.txt:12
+msgid ""
+"You're receiving this security notice because a new device signed in to your "
+"TaskBeavo account."
+msgstr ""
+"Sie erhalten diesen Sicherheitshinweis, weil sich ein neues Gerät bei Ihrem "
+"TaskBeavo-Konto angemeldet hat."
+
+#: core/templates/email/new_device/subject.txt:1
+#, python-format
+msgid "New login to TaskBeavo from %(device)s, %(location)s"
+msgstr "Neue Anmeldung bei TaskBeavo von %(device)s, %(location)s"
+
+#: core/templates/email/new_device/subject.txt:1
+#, python-format
+msgid "New login to TaskBeavo from %(device)s"
+msgstr "Neue Anmeldung bei TaskBeavo von %(device)s"
+
+#: core/templates/email/sign_in_code/body.html:2
+#: core/templates/email/sign_in_code/body.html:4
+msgid "Your sign-in code"
+msgstr "Ihr Anmeldecode"
+
+#: core/templates/email/sign_in_code/body.html:5
+#: core/templates/email/sign_in_code/body.txt:2
+msgid "Enter this code in TaskBeavo to sign in or create your account:"
+msgstr ""
+"Geben Sie diesen Code in TaskBeavo ein, um sich anzumelden oder Ihr Konto zu "
+"erstellen:"
+
+#: core/templates/email/sign_in_code/body.html:7
+#: core/templates/email/sign_in_code/body.txt:6
+#, python-format
+msgid "It expires in %(minutes)s minutes and works once."
+msgstr "Er läuft in %(minutes)s Minuten ab und funktioniert nur einmal."
+
+#: core/templates/email/sign_in_code/body.html:8
+#: core/templates/email/sign_in_code/body.txt:7
+msgid ""
+"If you didn't ask for it, you can ignore this email. Never share the code "
+"with anyone."
+msgstr ""
+"Wenn Sie ihn nicht angefordert haben, können Sie diese E-Mail ignorieren. "
+"Geben Sie den Code niemals weiter."
+
+#: core/templates/email/sign_in_code/body.html:10
+#: core/templates/email/sign_in_code/body.txt:8
+msgid ""
+"You're receiving this email because this address was entered to sign in to "
+"TaskBeavo."
+msgstr ""
+"Sie erhalten diese E-Mail, weil diese Adresse für eine Anmeldung bei "
+"TaskBeavo eingegeben wurde."
+
+#: core/templates/email/sign_in_code/subject.txt:1
+#, python-format
+msgid "%(code)s is your TaskBeavo code"
+msgstr "%(code)s ist Ihr TaskBeavo-Code"
+
+#: core/templates/email/welcome/body.html:2
+#: core/templates/email/welcome/subject.txt:1
+msgid "Welcome to TaskBeavo"
+msgstr "Willkommen bei TaskBeavo"
+
+#: core/templates/email/welcome/body.html:5
+#: core/templates/email/welcome/body.txt:4
+msgid ""
+"Post a task, get offers from verified neighbours, and release the payment "
+"only when the job is done."
+msgstr ""
+"Stellen Sie eine Aufgabe ein, erhalten Sie Angebote von geprüften Nachbarn "
+"und geben Sie die Zahlung erst frei, wenn die Arbeit erledigt ist."
+
+#: core/templates/email/welcome/body.html:6
+#: core/templates/email/welcome/body.txt:5
+msgid "Your payment is held safely until you release it."
+msgstr "Ihre Zahlung wird sicher verwahrt, bis Sie sie freigeben."
+
+#: core/templates/email/withdrawal_confirmation/body.html:2
+#: core/templates/email/withdrawal_confirmation/body.html:5
+#: core/templates/email/withdrawal_confirmation/body.txt:3
+#: core/templates/email/withdrawal_confirmation/subject.txt:1
+#: notifications/kinds.py:266
+msgid "Withdrawal received"
+msgstr "Widerruf eingegangen"
+
+#: core/templates/email/withdrawal_confirmation/body.html:8
+#: core/templates/email/withdrawal_confirmation/body.txt:7
+msgid "Received (Croatian time)"
+msgstr "Eingegangen (kroatische Zeit)"
+
+#: core/templates/email/withdrawal_confirmation/body.html:9
+#: core/templates/email/withdrawal_confirmation/body.txt:8
+msgid "Your statement"
+msgstr "Ihre Erklärung"
+
+#: core/templates/email/withdrawal_confirmation/body.html:10
+#: core/templates/email/withdrawal_confirmation/body.txt:9
+#: staff/templates/admin/bookings/booking/evidence.html:39
+msgid "Booking"
+msgstr "Buchung"
+
+#: core/templates/email/withdrawal_confirmation/body.html:13
+#: core/templates/email/withdrawal_confirmation/body.txt:12
+msgid "Work started"
+msgstr "Arbeit begonnen"
+
+#: core/templates/email/withdrawal_confirmation/body.html:13
+#: core/templates/email/withdrawal_confirmation/body.txt:12
+msgid "Yes"
+msgstr "Ja"
+
+#: core/templates/email/withdrawal_confirmation/body.html:13
+#: core/templates/email/withdrawal_confirmation/body.txt:12
+msgid "No"
+msgstr "Nein"
+
+#: core/templates/email/withdrawal_confirmation/body.html:15
+#: core/templates/email/withdrawal_confirmation/body.txt:14
+#: staff/templates/admin/bookings/booking/evidence.html:115
+msgid "Refund"
+msgstr "Erstattung"
+
+#: core/templates/email/withdrawal_confirmation/body.html:15
+#: core/templates/email/withdrawal_confirmation/body.txt:14
+msgid "The part not yet done, once our team has worked it out"
+msgstr "Der noch nicht erledigte Teil, sobald unser Team ihn berechnet hat"
+
+#: core/templates/email/withdrawal_confirmation/body.html:15
+#: core/templates/email/withdrawal_confirmation/body.txt:14
+#, python-format
+msgid "%(total)s to your card"
+msgstr "%(total)s auf Ihre Karte"
+
+#: helpers/admin.py:28
+msgid "OIB"
+msgstr "OIB"
+
+#: helpers/admin.py:29
+msgid "Business OIB"
+msgstr "OIB des Unternehmens"
+
+#: helpers/admin.py:30
+msgid "IBAN"
+msgstr "IBAN"
+
+#: helpers/admin.py:31
+msgid "VAT ID"
+msgstr "USt-IdNr."
+
+#: helpers/admin.py:128
+#, python-format
+msgid "Tax IDs of helper profile %(id)s"
+msgstr "Steuer-IDs des Helferprofils %(id)s"
+
+#: notifications/kinds.py:56
+msgid "New offer on your task"
+msgstr "Neues Angebot für Ihre Aufgabe"
+
+#: notifications/kinds.py:57
+msgid "A helper sent you an offer. Open TaskBeavo to compare offers."
+msgstr ""
+"Ein Helfer hat Ihnen ein Angebot geschickt. Öffnen Sie TaskBeavo, um die "
+"Angebote zu vergleichen."
+
+#: notifications/kinds.py:66
+msgid "An offer expires soon"
+msgstr "Ein Angebot läuft bald ab"
+
+#: notifications/kinds.py:67
+msgid ""
+"An offer on your task expires within a day. Open TaskBeavo to compare offers."
+msgstr ""
+"Ein Angebot für Ihre Aufgabe läuft in weniger als einem Tag ab. Öffnen Sie "
+"TaskBeavo, um die Angebote zu vergleichen."
+
+#: notifications/kinds.py:75
+msgid "An offer was withdrawn"
+msgstr "Ein Angebot wurde zurückgezogen"
+
+#: notifications/kinds.py:76
+msgid ""
+"A helper withdrew their offer on your task. Open TaskBeavo to see your "
+"offers."
+msgstr ""
+"Ein Helfer hat sein Angebot für Ihre Aufgabe zurückgezogen. Öffnen Sie "
+"TaskBeavo, um Ihre Angebote zu sehen."
+
+#: notifications/kinds.py:85
+msgid "Your offer was withdrawn"
+msgstr "Ihr Angebot wurde zurückgezogen"
+
+#: notifications/kinds.py:87
+msgid ""
+"This task now takes offers from registered businesses only, so your offer "
+"was withdrawn. Open TaskBeavo to find more tasks."
+msgstr "Diese Aufgabe nimmt jetzt nur noch Angebote von registrierten Unternehmen an, daher wurde Ihr Angebot zurückgezogen. Öffnen Sie TaskBeavo, um weitere Aufgaben zu finden."
+
+#: notifications/kinds.py:96
+msgid "Your offer was accepted"
+msgstr "Ihr Angebot wurde angenommen"
+
+#: notifications/kinds.py:97
+msgid "The poster accepted your offer. Open TaskBeavo to see the booking."
+msgstr ""
+"Der Auftraggeber hat Ihr Angebot angenommen. Öffnen Sie TaskBeavo, um die "
+"Buchung zu sehen."
+
+#: notifications/kinds.py:104
+msgid "Your offer was declined"
+msgstr "Ihr Angebot wurde abgelehnt"
+
+#: notifications/kinds.py:105
+msgid "The poster chose another offer. Open TaskBeavo to find more tasks."
+msgstr ""
+"Der Auftraggeber hat ein anderes Angebot gewählt. Öffnen Sie TaskBeavo, um "
+"weitere Aufgaben zu finden."
+
+#: notifications/kinds.py:114
+msgid "New message"
+msgstr "Neue Nachricht"
+
+#: notifications/kinds.py:115
+msgid "You have a new message. Open TaskBeavo to read it."
+msgstr "Sie haben eine neue Nachricht. Öffnen Sie TaskBeavo, um sie zu lesen."
+
+#: notifications/kinds.py:122
+msgid "Payment requested"
+msgstr "Zahlung angefordert"
+
+#: notifications/kinds.py:123
+msgid ""
+"Your helper finished the task and requested payment. Open TaskBeavo to "
+"release it."
+msgstr ""
+"Ihr Helfer hat die Aufgabe erledigt und die Zahlung angefordert. Öffnen Sie "
+"TaskBeavo, um sie freizugeben."
+
+#: notifications/kinds.py:131
+msgid "Payment released"
+msgstr "Zahlung freigegeben"
+
+#: notifications/kinds.py:132
+msgid ""
+"The poster released your payment. It is on its way to your bank account."
+msgstr ""
+"Der Auftraggeber hat Ihre Zahlung freigegeben. Sie ist unterwegs auf Ihr "
+"Bankkonto."
+
+#: notifications/kinds.py:139
+msgid "Cancellation requested"
+msgstr "Stornierung angefragt"
+
+#: notifications/kinds.py:140
+msgid "The other side asked to cancel a booking. Open TaskBeavo to respond."
+msgstr ""
+"Die andere Seite möchte eine Buchung stornieren. Öffnen Sie TaskBeavo, um zu "
+"antworten."
+
+#: notifications/kinds.py:147 notifications/kinds.py:490
+msgid "Booking cancelled"
+msgstr "Buchung storniert"
+
+#: notifications/kinds.py:148
+msgid "A booking was cancelled. Open TaskBeavo for the details."
+msgstr "Eine Buchung wurde storniert. Öffnen Sie TaskBeavo für die Details."
+
+#: notifications/kinds.py:155
+msgid "Change requested"
+msgstr "Änderung angefragt"
+
+#: notifications/kinds.py:157
+msgid ""
+"The other side asked to change the price or time of a booking. Open "
+"TaskBeavo to respond."
+msgstr ""
+"Die andere Seite möchte den Preis oder die Zeit einer Buchung ändern. Öffnen "
+"Sie TaskBeavo, um zu antworten."
+
+#: notifications/kinds.py:166
+msgid "Dispute update"
+msgstr "Neuigkeiten zum Streitfall"
+
+#: notifications/kinds.py:167
+msgid ""
+"There is news about a dispute on your booking. Open TaskBeavo for the "
+"details."
+msgstr ""
+"Es gibt Neuigkeiten zu einem Streitfall bei Ihrer Buchung. Öffnen Sie "
+"TaskBeavo für die Details."
+
+#: notifications/kinds.py:176
+msgid "Stripe needs more information"
+msgstr "Stripe benötigt weitere Angaben"
+
+#: notifications/kinds.py:178
+msgid ""
+"Your offers are paused until you give Stripe the missing details for your "
+"payouts. Open TaskBeavo to continue."
+msgstr ""
+"Ihre Angebote sind pausiert, bis Sie Stripe die fehlenden Angaben für Ihre "
+"Auszahlungen geben. Öffnen Sie TaskBeavo, um fortzufahren."
+
+#: notifications/kinds.py:187
+msgid "Payout account not approved"
+msgstr "Auszahlungskonto nicht genehmigt"
+
+#: notifications/kinds.py:189
+msgid ""
+"Stripe couldn't approve your payout account, so you can't send offers for "
+"now. Open TaskBeavo to see what happens next."
+msgstr ""
+"Stripe konnte Ihr Auszahlungskonto nicht genehmigen, daher können Sie "
+"vorerst keine Angebote senden. Öffnen Sie TaskBeavo, um zu sehen, wie es "
+"weitergeht."
+
+#: notifications/kinds.py:206
+msgid "Access details updated"
+msgstr "Zugangshinweise aktualisiert"
+
+#: notifications/kinds.py:207
+msgid "The poster updated how to get in. Open TaskBeavo before you go."
+msgstr ""
+"Der Auftraggeber hat die Zugangshinweise geändert. Öffnen Sie TaskBeavo, "
+"bevor Sie losgehen."
+
+#: notifications/kinds.py:216
+msgid "Payment refunded"
+msgstr "Zahlung erstattet"
+
+#: notifications/kinds.py:218
+msgid ""
+"Your booking didn't go ahead, so we refunded your payment in full. It can "
+"take a few days to reach your account."
+msgstr ""
+"Ihre Buchung kam nicht zustande, daher haben wir Ihre Zahlung vollständig "
+"erstattet. Es kann einige Tage dauern, bis sie auf Ihrem Konto ist."
+
+#: notifications/kinds.py:237
+msgid "Your payment is held and your booking is confirmed."
+msgstr "Ihre Zahlung ist hinterlegt und Ihre Buchung ist bestätigt."
+
+#: notifications/kinds.py:246
+msgid "Payout failed"
+msgstr "Auszahlung fehlgeschlagen"
+
+#: notifications/kinds.py:248
+msgid ""
+"Your bank returned a payout. Update your bank details in Stripe; we'll send "
+"the money again once they're fixed."
+msgstr ""
+"Ihre Bank hat eine Auszahlung zurückgewiesen. Aktualisieren Sie Ihre "
+"Bankdaten bei Stripe; wir senden das Geld erneut, sobald sie korrigiert sind."
+
+#: notifications/kinds.py:267
+msgid "Your withdrawal from the contract is recorded."
+msgstr "Ihr Widerruf des Vertrags ist erfasst."
+
+#: notifications/kinds.py:276
+msgid "Refund on its way"
+msgstr "Erstattung unterwegs"
+
+#: notifications/kinds.py:278
+msgid ""
+"Your cancellation is complete and your refund is on its way. It can take a "
+"few days to reach your account."
+msgstr ""
+"Ihre Stornierung ist abgeschlossen und Ihre Erstattung ist unterwegs. Es "
+"kann einige Tage dauern, bis sie auf Ihrem Konto ist."
+
+#: notifications/kinds.py:295
+msgid "Cancellation under review"
+msgstr "Stornierung wird geprüft"
+
+#: notifications/kinds.py:296
+msgid ""
+"Our team is reviewing your cancellation request. We'll let you know the "
+"outcome."
+msgstr ""
+"Unser Team prüft Ihre Stornierungsanfrage. Wir teilen Ihnen das Ergebnis mit."
+
+#: notifications/kinds.py:305
+msgid "Booking cancelled, no one's fault"
+msgstr "Buchung storniert, ohne Verschulden"
+
+#: notifications/kinds.py:307
+msgid ""
+"The no-fault cancellation stands. The booking is cancelled and the poster "
+"gets a full refund."
+msgstr ""
+"Die Stornierung ohne Verschulden gilt. Die Buchung ist storniert und der "
+"Auftraggeber erhält den vollen Betrag zurück."
+
+#: notifications/kinds.py:317
+msgid "No-fault cancellation accepted"
+msgstr "Stornierung ohne Verschulden anerkannt"
+
+#: notifications/kinds.py:319
+msgid ""
+"Our team accepted the no-fault reason. The booking is cancelled and the "
+"poster gets a full refund."
+msgstr ""
+"Unser Team hat den Grund ohne Verschulden anerkannt. Die Buchung ist "
+"storniert und der Auftraggeber erhält die volle Erstattung."
+
+#: notifications/kinds.py:330
+msgid "No-fault reason not accepted"
+msgstr "Grund ohne Verschulden nicht anerkannt"
+
+#: notifications/kinds.py:332
+msgid ""
+"Our team didn't accept the no-fault reason, so the usual cancellation policy "
+"applies. Open TaskBeavo to see what happens next."
+msgstr ""
+"Unser Team hat den Grund ohne Verschulden nicht anerkannt, daher gelten die "
+"üblichen Stornobedingungen. Öffnen Sie TaskBeavo, um zu sehen, wie es "
+"weitergeht."
+
+#: notifications/kinds.py:343
+msgid "A task is open again"
+msgstr "Ein Auftrag ist wieder offen"
+
+#: notifications/kinds.py:344
+msgid ""
+"A task you offered on is open again and your offer is back. Open TaskBeavo "
+"to see it."
+msgstr ""
+"Ein Auftrag, für den Sie ein Angebot gemacht haben, ist wieder offen und Ihr "
+"Angebot gilt wieder. Öffnen Sie TaskBeavo."
+
+#: notifications/kinds.py:359
+msgid "Your task starts in 2 hours"
+msgstr "Ihr Auftrag beginnt in 2 Stunden"
+
+#: notifications/kinds.py:360
+msgid ""
+"A booked task starts in about 2 hours. Open TaskBeavo to see the details."
+msgstr ""
+"Ein gebuchter Auftrag beginnt in etwa 2 Stunden. Öffnen Sie TaskBeavo für "
+"die Details."
+
+#: notifications/kinds.py:367
+msgid "Your task starts in 30 minutes"
+msgstr "Ihr Auftrag beginnt in 30 Minuten"
+
+#: notifications/kinds.py:368
+msgid ""
+"A booked task starts in about 30 minutes. Tap On my way when you set off."
+msgstr ""
+"Ein gebuchter Auftrag beginnt in etwa 30 Minuten. Tippen Sie auf Bin "
+"unterwegs, wenn Sie losfahren."
+
+#: notifications/kinds.py:375
+msgid "Are you on your way?"
+msgstr "Sind Sie unterwegs?"
+
+#: notifications/kinds.py:377
+msgid ""
+"Your booked task started 15 minutes ago. Let the poster know if you're "
+"running late, have arrived or can't come."
+msgstr ""
+"Ihr gebuchter Auftrag hat vor 15 Minuten begonnen. Sagen Sie dem "
+"Auftraggeber, ob Sie sich verspäten, angekommen sind oder nicht kommen "
+"können."
+
+#: notifications/kinds.py:386
+msgid "Did your helper come?"
+msgstr "Ist Ihr Helfer gekommen?"
+
+#: notifications/kinds.py:387
+msgid ""
+"Your helper should be there by now. Open TaskBeavo to tell us whether they "
+"came."
+msgstr ""
+"Ihr Helfer sollte inzwischen da sein. Öffnen Sie TaskBeavo und sagen Sie "
+"uns, ob er gekommen ist."
+
+#: notifications/kinds.py:394
+msgid "Your helper is on the way"
+msgstr "Ihr Helfer ist unterwegs"
+
+#: notifications/kinds.py:395
+msgid "Your helper set off. Open TaskBeavo to see when they expect to arrive."
+msgstr ""
+"Ihr Helfer ist losgefahren. Öffnen Sie TaskBeavo, um zu sehen, wann er "
+"ankommen will."
+
+#: notifications/kinds.py:402
+msgid "Your helper is running late"
+msgstr "Ihr Helfer verspätet sich"
+
+#: notifications/kinds.py:404
+msgid ""
+"Your helper sent a new arrival time. Open TaskBeavo to keep the booking or "
+"cancel for free."
+msgstr ""
+"Ihr Helfer hat eine neue Ankunftszeit geschickt. Öffnen Sie TaskBeavo, um "
+"die Buchung zu behalten oder kostenlos zu stornieren."
+
+#: notifications/kinds.py:413
+msgid "Your helper has arrived"
+msgstr "Ihr Helfer ist angekommen"
+
+#: notifications/kinds.py:414
+msgid "Your helper says they have arrived."
+msgstr "Ihr Helfer meldet, dass er angekommen ist."
+
+#: notifications/kinds.py:421
+msgid "Your new time is fine"
+msgstr "Ihre neue Zeit passt"
+
+#: notifications/kinds.py:422
+msgid "The poster is fine with your new arrival time."
+msgstr "Der Auftraggeber ist mit Ihrer neuen Ankunftszeit einverstanden."
+
+#: notifications/kinds.py:431
+msgid "Were you there?"
+msgstr "Waren Sie da?"
+
+#: notifications/kinds.py:433
+msgid ""
+"The poster says you didn't come. If you were there, tap I was there within "
+"24 hours and our team will review it. Otherwise the poster gets a full "
+"refund."
+msgstr ""
+"Der Auftraggeber gibt an, dass Sie nicht gekommen sind. Wenn Sie da waren, "
+"tippen Sie innerhalb von 24 Stunden auf Ich war da, und unser Team prüft es. "
+"Sonst erhält der Auftraggeber alles zurück."
+
+#: notifications/kinds.py:442
+msgid "Your helper says they came"
+msgstr "Ihr Helfer sagt, er war da"
+
+#: notifications/kinds.py:444
+msgid ""
+"Your helper says they were there. Our team will review it and let you both "
+"know the outcome."
+msgstr ""
+"Ihr Helfer sagt, er war da. Unser Team prüft das und teilt Ihnen beiden das "
+"Ergebnis mit."
+
+#: notifications/kinds.py:454
+msgid "Your refund is on its way"
+msgstr "Ihre Erstattung ist unterwegs"
+
+#: notifications/kinds.py:456
+msgid ""
+"Your helper didn't answer within 24 hours, so the booking is cancelled and "
+"you get a full refund."
+msgstr ""
+"Ihr Helfer hat nicht innerhalb von 24 Stunden geantwortet. Die Buchung ist "
+"storniert, und Sie erhalten alles zurück."
+
+#: notifications/kinds.py:466
+msgid "No-show confirmed"
+msgstr "Nichterscheinen bestätigt"
+
+#: notifications/kinds.py:468
+msgid ""
+"Our team reviewed it and found the helper didn't come, so the booking is "
+"cancelled and the poster gets a full refund. The helper pays nothing."
+msgstr ""
+"Unser Team hat es geprüft: Der Helfer kam nicht. Die Buchung ist storniert, "
+"und der Auftraggeber erhält alles zurück. Der Helfer zahlt nichts."
+
+#: notifications/kinds.py:478
+msgid "The booking continues"
+msgstr "Die Buchung läuft weiter"
+
+#: notifications/kinds.py:480
+msgid ""
+"Our team reviewed it and found the helper was there, so the booking "
+"continues. Open TaskBeavo to see what happens next."
+msgstr ""
+"Unser Team hat es geprüft: Der Helfer war da, die Buchung läuft weiter. "
+"Öffnen Sie TaskBeavo, um zu sehen, wie es weitergeht."
+
+#: notifications/kinds.py:492
+msgid ""
+"The poster said you didn't come, so the booking is cancelled and the poster "
+"gets a full refund. You pay nothing. Open TaskBeavo to see the booking."
+msgstr ""
+"Der Auftraggeber hat angegeben, dass Sie nicht gekommen sind. Die Buchung "
+"ist storniert und er erhält alles zurück. Sie zahlen nichts. Öffnen Sie "
+"TaskBeavo, um die Buchung zu sehen."
+
+#: notifications/kinds.py:501
+msgid "Your helper can start now"
+msgstr "Ihr Helfer kann jetzt anfangen"
+
+#: notifications/kinds.py:503
+msgid ""
+"Your helper is there early and asks to start now. Open TaskBeavo to confirm "
+"or keep the booked time."
+msgstr ""
+"Ihr Helfer ist früher da und möchte jetzt anfangen. Öffnen Sie TaskBeavo, um "
+"zuzustimmen oder die gebuchte Zeit zu behalten."
+
+#: notifications/kinds.py:512
+msgid "You can start now"
+msgstr "Sie können jetzt anfangen"
+
+#: notifications/kinds.py:513
+msgid "The poster confirmed an early start. The job starts now."
+msgstr ""
+"Der Auftraggeber hat den früheren Beginn bestätigt. Der Auftrag beginnt "
+"jetzt."
+
+#: notifications/kinds.py:520
+msgid "Start at the booked time"
+msgstr "Beginn zur gebuchten Zeit"
+
+#: notifications/kinds.py:521
+msgid "The poster would like to keep the booked start time."
+msgstr "Der Auftraggeber möchte die gebuchte Startzeit beibehalten."
+
+#: staff/models.py:24
+msgid "Viewed a booking's evidence"
+msgstr "Belege einer Buchung angesehen"
+
+#: staff/models.py:25
+msgid "Viewed a user's account page"
+msgstr "Kontoseite eines Nutzers angesehen"
+
+#: staff/models.py:26
+msgid "Revealed a helper's OIB, IBAN or VAT ID"
+msgstr "OIB, IBAN oder USt-IdNr. eines Helfers angezeigt"
+
+#: staff/models.py:27
+msgid "Added a staff note"
+msgstr "Mitarbeiternotiz hinzugefügt"
+
+#: staff/models.py:28
+msgid "Created a record in the admin"
+msgstr "Datensatz im Admin angelegt"
+
+#: staff/models.py:29
+msgid "Changed a record in the admin"
+msgstr "Datensatz im Admin geändert"
+
+#: staff/models.py:30
+msgid "Deleted a record in the admin"
+msgstr "Datensatz im Admin gelöscht"
+
+#: staff/models.py:31
+msgid "Ran an admin action"
+msgstr "Admin-Aktion ausgeführt"
+
+#: staff/models.py:33
+msgid "Deleted a staff note at the end of its retention"
+msgstr "Mitarbeiternotiz nach Ablauf der Aufbewahrungsfrist gelöscht"
+
+#: staff/models.py:34
+msgid "Redacted a staff note after an account deletion"
+msgstr "Inhalt einer Mitarbeiternotiz nach einer Kontolöschung entfernt"
+
+#: staff/models.py:55
+msgid "staff audit event"
+msgstr "Mitarbeiter-Prüfprotokolleintrag"
+
+#: staff/models.py:56
+msgid "staff audit events"
+msgstr "Mitarbeiter-Prüfprotokolleinträge"
+
+#: staff/models.py:118
+msgid "staff note"
+msgstr "Mitarbeiternotiz"
+
+#: staff/models.py:119
+msgid "staff notes"
+msgstr "Mitarbeiternotizen"
+
+#: staff/models.py:147
+msgid "See exact addresses and access details"
+msgstr "Genaue Adressen und Zugangshinweise sehen"
+
+#: staff/models.py:148
+msgid "Read booking chat"
+msgstr "Buchungs-Chat lesen"
+
+#: staff/models.py:149
+msgid "See task and evidence photos"
+msgstr "Auftrags- und Belegfotos sehen"
+
+#: staff/models.py:150
+msgid "See Stripe IDs and payout account status"
+msgstr "Stripe-IDs und Status des Auszahlungskontos sehen"
+
+#: staff/models.py:151
+msgid "See the on-site contact's phone number"
+msgstr "Telefonnummer der Kontaktperson vor Ort sehen"
+
+#: staff/models.py:152
+msgid "Reveal a helper's OIB, IBAN and VAT ID"
+msgstr "OIB, IBAN und USt-IdNr. eines Helfers anzeigen"
+
+#: staff/models.py:153
+msgid "Read and write restricted notes"
+msgstr "Eingeschränkte Notizen lesen und schreiben"
+
+#: staff/models.py:156
+msgid "See the specific health-revealing reason of a cancellation"
+msgstr "Den genauen Stornogrund sehen, der Gesundheitsdaten verraten kann"
+
+#: staff/sites.py:108 staff/sites.py:109
+msgid "TaskBeavo staff"
+msgstr "TaskBeavo-Team"
+
+#: staff/sites.py:110
+msgid "Staff console"
+msgstr "Mitarbeiterkonsole"
+
+#: staff/templates/admin/bookings/booking/evidence.html:27
+msgid "Home"
+msgstr "Start"
+
+#: staff/templates/admin/bookings/booking/evidence.html:35
+msgid ""
+"Personal data. Your opening of this page is logged. Use it only for the case "
+"you are working on."
+msgstr ""
+"Personenbezogene Daten. Das Öffnen dieser Seite wird protokolliert. Nutzen "
+"Sie sie nur für den Fall, an dem Sie arbeiten."
+
+#: staff/templates/admin/bookings/booking/evidence.html:41
+msgid "Status"
+msgstr "Status"
+
+#: staff/templates/admin/bookings/booking/evidence.html:43
+msgid "Poster"
+msgstr "Auftraggeber"
+
+#: staff/templates/admin/bookings/booking/evidence.html:43
+#: staff/templates/admin/bookings/booking/evidence.html:44
+#: staff/templates/admin/bookings/booking/evidence.html:176
+#, python-format
+msgid "User %(id)s"
+msgstr "Nutzer %(id)s"
+
+#: staff/templates/admin/bookings/booking/evidence.html:46
+msgid "Start"
+msgstr "Beginn"
+
+#: staff/templates/admin/bookings/booking/evidence.html:47
+msgid "Created"
+msgstr "Erstellt"
+
+#: staff/templates/admin/bookings/booking/evidence.html:48
+msgid "Closed"
+msgstr "Abgeschlossen"
+
+#: staff/templates/admin/bookings/booking/evidence.html:49
+msgid "Terms version"
+msgstr "Version der AGB"
+
+#: staff/templates/admin/bookings/booking/evidence.html:50
+msgid "Cancellation policy version"
+msgstr "Version der Stornierungsbedingungen"
+
+#: staff/templates/admin/bookings/booking/evidence.html:55
+msgid "Timeline"
+msgstr "Verlauf"
+
+#: staff/templates/admin/bookings/booking/evidence.html:58
+msgid "When"
+msgstr "Wann"
+
+#: staff/templates/admin/bookings/booking/evidence.html:58
+msgid "Event"
+msgstr "Ereignis"
+
+#: staff/templates/admin/bookings/booking/evidence.html:58
+msgid "By"
+msgstr "Von"
+
+#: staff/templates/admin/bookings/booking/evidence.html:58
+msgid "Details"
+msgstr "Details"
+
+#: staff/templates/admin/bookings/booking/evidence.html:66
+msgid "No events yet."
+msgstr "Noch keine Ereignisse."
+
+#: staff/templates/admin/bookings/booking/evidence.html:68
+#, python-format
+msgid ""
+"Early-start consent captured %(at)s (terms %(terms)s, withdrawal notice "
+"%(notice)s)."
+msgstr ""
+"Zustimmung zum vorzeitigen Beginn erfasst am %(at)s (AGB %(terms)s, "
+"Widerrufsbelehrung %(notice)s)."
+
+#: staff/templates/admin/bookings/booking/evidence.html:74
+msgid "Chat"
+msgstr "Chat"
+
+#: staff/templates/admin/bookings/booking/evidence.html:75
+msgid "No chat messages are stored for this booking."
+msgstr "Für diese Buchung sind keine Chatnachrichten gespeichert."
+
+#: staff/templates/admin/bookings/booking/evidence.html:81
+msgid "Photos"
+msgstr "Fotos"
+
+#: staff/templates/admin/bookings/booking/evidence.html:84
+#, python-format
+msgid "Photo %(id)s"
+msgstr "Foto %(id)s"
+
+#: staff/templates/admin/bookings/booking/evidence.html:85
+#, python-format
+msgid "Photo %(id)s isn't ready."
+msgstr "Foto %(id)s ist noch nicht bereit."
+
+#: staff/templates/admin/bookings/booking/evidence.html:86
+msgid "No photos."
+msgstr "Keine Fotos."
+
+#: staff/templates/admin/bookings/booking/evidence.html:94
+msgid "Place"
+msgstr "Ort"
+
+#: staff/templates/admin/bookings/booking/evidence.html:96
+msgid "Area"
+msgstr "Gebiet"
+
+#: staff/templates/admin/bookings/booking/evidence.html:98
+msgid "Exact address"
+msgstr "Genaue Adresse"
+
+#: staff/templates/admin/bookings/booking/evidence.html:99
+msgid "Access details"
+msgstr "Zugangshinweise"
+
+#: staff/templates/admin/bookings/booking/evidence.html:102
+msgid "On-site contact"
+msgstr "Kontaktperson vor Ort"
+
+#: staff/templates/admin/bookings/booking/evidence.html:103
+msgid "Contact's phone"
+msgstr "Telefon der Kontaktperson"
+
+#: staff/templates/admin/bookings/booking/evidence.html:109
+msgid "Payment"
+msgstr "Zahlung"
+
+#: staff/templates/admin/bookings/booking/evidence.html:110
+msgid "Read-only. Releasing or refunding is not done here."
+msgstr "Nur lesen. Freigaben und Erstattungen erfolgen nicht hier."
+
+#: staff/templates/admin/bookings/booking/evidence.html:112
+msgid "Task price (helper gets)"
+msgstr "Auftragspreis (erhält der Helfer)"
+
+#: staff/templates/admin/bookings/booking/evidence.html:112
+#: staff/templates/admin/bookings/booking/evidence.html:113
+#: staff/templates/admin/bookings/booking/evidence.html:114
+#: staff/templates/admin/bookings/booking/evidence.html:115
+#: staff/templates/admin/bookings/booking/evidence.html:116
+msgid "cents"
+msgstr "Cent"
+
+#: staff/templates/admin/bookings/booking/evidence.html:113
+msgid "Service fee"
+msgstr "Servicegebühr"
+
+#: staff/templates/admin/bookings/booking/evidence.html:114
+msgid "Tip"
+msgstr "Trinkgeld"
+
+#: staff/templates/admin/bookings/booking/evidence.html:116
+msgid "Helper compensation"
+msgstr "Entschädigung für den Helfer"
+
+#: staff/templates/admin/bookings/booking/evidence.html:118
+msgid "PaymentIntent"
+msgstr "PaymentIntent"
+
+#: staff/templates/admin/bookings/booking/evidence.html:119
+msgid "Late payment refund"
+msgstr "Erstattung einer verspäteten Zahlung"
+
+#: staff/templates/admin/bookings/booking/evidence.html:120
+msgid "Helper's Stripe account"
+msgstr "Stripe-Konto des Helfers"
+
+#: staff/templates/admin/bookings/booking/evidence.html:127
+msgid "Withdrawal after the start"
+msgstr "Widerruf nach dem Beginn"
+
+#: staff/templates/admin/bookings/booking/evidence.html:128
+msgid ""
+"The poster withdrew from the contract after the work started. Enter the "
+"share of the work already done; the helper keeps that share of the price and "
+"the rest is refunded."
+msgstr ""
+"Der Auftraggeber hat den Vertrag nach Arbeitsbeginn widerrufen. Geben Sie "
+"den Anteil der bereits erledigten Arbeit ein; der Helfer behält diesen "
+"Anteil des Preises, der Rest wird erstattet."
+
+#: staff/templates/admin/bookings/booking/evidence.html:132
+msgid "Save share and refund"
+msgstr "Anteil speichern und erstatten"
+
+#: staff/templates/admin/bookings/booking/evidence.html:139
+msgid "No-fault cancellation request"
+msgstr "Stornierungsantrag ohne Verschulden"
+
+#: staff/templates/admin/bookings/booking/evidence.html:140
+#, python-format
+msgid "Reason %(reason)s, asked by the %(by)s at %(at)s."
+msgstr "Grund %(reason)s, beantragt von %(by)s am %(at)s."
+
+#: staff/templates/admin/bookings/booking/evidence.html:141
+#, python-format
+msgid "Response: %(response)s."
+msgstr "Antwort: %(response)s."
+
+#: staff/templates/admin/bookings/booking/evidence.html:141
+#, python-format
+msgid "Waiting for a response until %(by)s."
+msgstr "Antwort erwartet bis %(by)s."
+
+#: staff/templates/admin/bookings/booking/evidence.html:143
+msgid ""
+"Lean towards the family; ask for light evidence if needed. Upholding refunds "
+"everything. Rejecting a helper's reason makes it a helper cancel (full "
+"refund, the EUR 5 credit if it was under 24 h, a reliability fault); "
+"rejecting a poster's reason applies the ordinary policy as of when they "
+"asked."
+msgstr ""
+"Entscheiden Sie im Zweifel für die Familie; fordern Sie bei Bedarf einfache "
+"Nachweise an. Bestätigen erstattet alles. Wird der Grund der Hilfskraft "
+"abgelehnt, gilt es als Absage der Hilfskraft (volle Erstattung, 5 EUR "
+"Guthaben bei weniger als 24 h, ein Zuverlässigkeitspunkt); wird der Grund "
+"des Auftraggebers abgelehnt, gelten die üblichen Regeln zum Zeitpunkt der "
+"Anfrage."
+
+#: staff/templates/admin/bookings/booking/evidence.html:147
+#: staff/templates/admin/bookings/booking/evidence.html:166
+msgid "Save decision"
+msgstr "Entscheidung speichern"
+
+#: staff/templates/admin/bookings/booking/evidence.html:156
+msgid "No-show not settled"
+msgstr "Nichterscheinen nicht abgerechnet"
+
+#: staff/templates/admin/bookings/booking/evidence.html:157
+msgid ""
+"The poster said the helper didn't come and the helper didn't answer within "
+"24 hours, but settling it failed. It is retried automatically; you can also "
+"decide it here. Upholding settles it now (full refund, the EUR 5 credit if "
+"it was under 24 h, a no-show fault that only queues a human review). It "
+"can't be rejected: the helper didn't contest it."
+msgstr ""
+"Der Auftraggeber gab an, dass der Helfer nicht kam, und der Helfer "
+"antwortete nicht innerhalb von 24 Stunden, aber die Abrechnung schlug fehl. "
+"Sie wird automatisch wiederholt; Sie können auch hier entscheiden. "
+"Bestätigen rechnet sofort ab (volle Erstattung, 5 EUR Guthaben bei unter 24 "
+"h, ein Nichterscheinen-Vermerk, der nur eine menschliche Prüfung auslöst). "
+"Ablehnen ist nicht möglich: Der Helfer hat nicht widersprochen."
+
+#: staff/templates/admin/bookings/booking/evidence.html:159
+msgid "Contested no-show"
+msgstr "Bestrittenes Nichterscheinen"
+
+#: staff/templates/admin/bookings/booking/evidence.html:160
+msgid ""
+"The poster said the helper didn't come and the helper answered that they "
+"were there. Check the On my way, Running late and I've arrived taps and the "
+"reminders in the booking events, and the chat. Upholding cancels the booking "
+"as the helper's (full refund, the EUR 5 credit if it was under 24 h, a no-"
+"show fault that only queues a human review). Rejecting keeps the booking: "
+"the helper was there."
+msgstr ""
+"Der Auftraggeber gab an, dass der Helfer nicht kam, und der Helfer "
+"antwortete, er sei da gewesen. Prüfen Sie die Tipps Bin unterwegs, Verspäte "
+"mich und Bin angekommen sowie die Erinnerungen in den Buchungsereignissen "
+"und den Chat. Bestätigen storniert die Buchung als Stornierung des Helfers "
+"(volle Erstattung, 5 EUR Guthaben bei unter 24 h, ein Nichterscheinen-"
+"Vermerk, der nur eine menschliche Prüfung auslöst). Ablehnen behält die "
+"Buchung: Der Helfer war da."
+
+#: staff/templates/admin/bookings/booking/evidence.html:173
+msgid "Staff notes"
+msgstr "Mitarbeiternotizen"
+
+#: staff/templates/admin/bookings/booking/evidence.html:176
+msgid "Former staff member"
+msgstr "Ehemaliges Teammitglied"
+
+#: staff/templates/admin/bookings/booking/evidence.html:176
+msgid "Restricted"
+msgstr "Eingeschränkt"
+
+#: staff/templates/admin/bookings/booking/evidence.html:177
+msgid "Removed after an account deletion."
+msgstr "Nach einer Kontolöschung entfernt."
+
+#: staff/templates/admin/bookings/booking/evidence.html:179
+msgid "No notes yet."
+msgstr "Noch keine Notizen."
+
+#: staff/templates/admin/bookings/booking/evidence.html:183
+msgid "Add note"
+msgstr "Notiz hinzufügen"
+
+#: staff/templates/admin/helpers/helperprofile/change_form.html:7
+msgid ""
+"Revealing the full OIB, IBAN and VAT ID is logged. Do it only when the task "
+"needs the full value."
+msgstr ""
+"Das Anzeigen der vollständigen OIB, IBAN und USt-IdNr. wird protokolliert. "
+"Tun Sie es nur, wenn die Aufgabe den vollständigen Wert erfordert."
+
+#: staff/templates/admin/helpers/helperprofile/change_form.html:8
+msgid "Reveal tax IDs"
+msgstr "Steuer-IDs anzeigen"
+
+#: staff/templates/admin/helpers/helperprofile/reveal.html:4
+msgid ""
+"Shown once. This reveal is logged. Don't copy these values anywhere outside "
+"TaskBeavo's restricted systems."
+msgstr ""
+"Wird einmal angezeigt. Diese Anzeige wird protokolliert. Kopieren Sie diese "
+"Werte nicht außerhalb der geschützten Systeme von TaskBeavo."
+
+#: staff/templates/admin/helpers/helperprofile/reveal.html:6
+msgid "No tax IDs on this profile."
+msgstr "Dieses Profil hat keine Steuer-IDs."
+
+#: staff/templates/admin/helpers/helperprofile/reveal.html:8
+msgid "Back to the profile"
+msgstr "Zurück zum Profil"

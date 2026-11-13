@@ -1,0 +1,2395 @@
+input AccountDetailsInput {
+  ticket: String!
+  firstName: String!
+  lastName: String!
+
+  """The person confirmed they are 18 or older."""
+  isAdult: Boolean!
+
+  """The language the person chose for the app."""
+  locale: Locale!
+
+  """ISO 3166-1 alpha-2 country they live in."""
+  country: String!
+
+  """The device's IANA time zone."""
+  timeZone: String!
+
+  """
+  Required: the version of the terms and conditions the person ticked the box for, from `currentLegalDocument(kind: TERMS)`. Optional in the schema only so that leaving it out answers TERMS_NOT_ACCEPTED.
+  """
+  acceptedTermsVersion: String = null
+}
+
+"""
+The email is verified but has no account yet: send `ticket` with the account details to `completeAccountDetails`.
+"""
+type AccountDetailsRequired {
+  """A digest of the ticket, for the cache."""
+  id: ID!
+
+  """
+  The address the account will have. After Apple's "Hide My Email" it is a private relay address.
+  """
+  email: String!
+  ticket: String!
+
+  """The name Google or Apple shared, to pre-fill the form; null if none."""
+  firstName: String
+
+  """The family name Google or Apple shared; null if none."""
+  lastName: String
+}
+
+"""
+What the account may do. Anything but ACTIVE is limited mode: no new tasks, offers or bookings, while history, open bookings, chat on them, data export and account deletion keep working.
+"""
+enum AccountState {
+  ACTIVE
+  TERMS_UPDATE_REQUIRED
+  SUSPENDED
+  DELETION_PENDING
+}
+
+"""
+A signed-in session's tokens. Send the access token as `Authorization: Bearer`; trade the refresh token for new tokens with `refreshSession` before it expires.
+"""
+type AuthSession {
+  id: ID!
+  accessToken: String!
+  accessTokenExpiresAt: DateTime!
+  refreshToken: String!
+  refreshTokenExpiresAt: DateTime!
+
+  """
+  Keep it on this device, apart from the session (it outlives sign-out), and send it as `DeviceInput.deviceToken` on the next sign-in: a sign-in without one this account has seen emails a new-device notice. Null on refreshSession.
+  """
+  deviceToken: String
+  user: User!
+}
+
+"""An accepted offer, from checkout to payout."""
+type Booking {
+  id: ID!
+  taskId: ID!
+
+  """
+  The booked task as you may see it: the exact address, access details and on-site contact for the poster, and for the helper only while the booking is active; otherwise the approximate area (hard rule e).
+  """
+  task: Task!
+  offerId: ID!
+
+  """The helper's user ID, for helperProfile."""
+  helperUserId: ID!
+
+  """
+  The helper is a registered business, as the poster saw it at checkout: it decides whether the task itself carries a withdrawal right.
+  """
+  helperIsTrader: Boolean!
+
+  """
+  For the poster of a registered business's booking: its name and OIB. Null for a private helper, and for the helper.
+  """
+  helperBusiness: BookingTrader
+  status: BookingStatus!
+
+  """The offer's price, which the helper gets."""
+  amountCents: Int!
+
+  """
+  TaskBeavo's service fee charged: from the price list in force when the offer was accepted (12% of the price, minimum EUR 2.50 today), less `creditCents`.
+  """
+  feeCents: Int!
+
+  """
+  For the poster: the TaskBeavo credit taken off the fee at checkout (its own line on the receipt screens); null for the helper.
+  """
+  creditCents: Int
+
+  """What the poster pays: price plus fee."""
+  totalCents: Int!
+
+  """When the job starts."""
+  slotStart: DateTime!
+
+  """The terms version this booking is governed by."""
+  termsVersion: String!
+
+  """The cancellation policy version this booking is governed by."""
+  cancellationVersion: String!
+
+  """
+  While AWAITING_PAYMENT: when the checkout ends unpaid. Each card attempt moves it to 30 minutes later, never past 60 minutes after accepting.
+  """
+  checkoutExpiresAt: DateTime
+
+  """While AWAITING_PAYMENT, the last card attempt. Poster only."""
+  lastPaymentAttempt: PaymentAttempt
+
+  """Why the checkout ended, while PAYMENT_FAILED."""
+  checkoutFailureReason: CheckoutFailureReason
+
+  """For the poster while FUNDS_HELD: what cancelling now would refund."""
+  cancelPreview: CancellationPreview
+
+  """
+  For the poster: the withdrawal button is offered now (a registered business helper, inside the 14-day period, before payment is requested).
+  """
+  withdrawalAvailable: Boolean!
+
+  """
+  For the poster of a registered business's booking: when the 14 days end.
+  """
+  withdrawalEndsAt: DateTime
+
+  """Set once the booking was cancelled or withdrawn from."""
+  cancellation: Cancellation
+
+  """For the helper while FUNDS_HELD: what their cancel would mean now."""
+  helperCancelPreview: HelperCancelPreview
+
+  """The open no-fault request, or the last one."""
+  noFaultRequest: NoFaultRequest
+
+  """Either side may cite a no-fault reason now (while FUNDS_HELD)."""
+  canRequestNoFault: Boolean!
+
+  """
+  For the poster after a helper or no-fault cancel: the task can be re-opened to the other offers (reopenTask).
+  """
+  canReopenTask: Boolean!
+
+  """The poster re-opened the task."""
+  taskReopened: Boolean!
+
+  """
+  The day of the job: On my way, arrival, the no-show timeline, early start.
+  """
+  arrival: BookingArrival!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+The day of the job: the helper's On my way, Running late and I've arrived taps, the poster's answers and an early start. Evidence for no-show handling; the taps never change who pays what on their own.
+"""
+type BookingArrival {
+  """The booking's ID (hard rule d)."""
+  id: ID!
+  onMyWayAt: DateTime
+
+  """The helper's latest arrival estimate (On my way or Running late)."""
+  etaAt: DateTime
+  lateReportedAt: DateTime
+
+  """The poster kept the booking after the late report."""
+  lateAcceptedAt: DateTime
+  arrivedAt: DateTime
+  posterConfirmedCameAt: DateTime
+  noShowConfirmedAt: DateTime
+
+  """
+  When the helper was asked 'Are you on your way?' (15 min after the start).
+  """
+  onTheWayPromptSentAt: DateTime
+
+  """When the poster was asked 'Did your helper come?'."""
+  posterAskedAt: DateTime
+
+  """
+  When the poster may say the helper didn't come: 60 min after the start with no word from the helper, or 45 min after the start or the helper's ETA, whichever is later; after 'I've arrived', 45 min after the start or the tap. Null once the poster said they came.
+  """
+  noShowDueAt: DateTime
+
+  """
+  After the poster said the helper didn't come: until then the helper may answer 'I was there' (24 hours). The refund waits until then.
+  """
+  noShowContestBy: DateTime
+  noShowContestedAt: DateTime
+
+  """The no-show became the helper cancellation (uncontested, or upheld)."""
+  noShowSettledAt: DateTime
+
+  """The helper contested the no-show and support is deciding."""
+  noShowAwaitingSupport: Boolean!
+
+  """Support found the helper was there; the booking continues."""
+  noShowRejected: Boolean!
+
+  """
+  For the poster while 'No, they didn't come' is offered: what they would get back.
+  """
+  noShowRefundCents: Int
+
+  """For the poster, with it: TaskBeavo's credit on top (EUR 5 or 0)."""
+  noShowCreditCents: Int
+  earlyStartRequestedAt: DateTime
+  earlyStartConfirmedAt: DateTime
+  earlyStartDeclinedAt: DateTime
+
+  """The helper's Start now waits for the poster (until the booked start)."""
+  earlyStartPending: Boolean!
+
+  """
+  For the helper: On my way, Running late and I've arrived are open (the money is held, from 6 hours before the start, until they arrived).
+  """
+  canTap: Boolean!
+
+  """
+  For the helper: Start now is offered (arrived, before the booked start).
+  """
+  canRequestEarlyStart: Boolean!
+
+  """
+  For the poster: keep the booking or cancel for free after Running late.
+  """
+  canAnswerLate: Boolean!
+
+  """For the poster: 'Yes, they're here' is offered (after the start)."""
+  canConfirmCame: Boolean!
+
+  """For the poster: 'No, they didn't come' is offered now (`noShowDueAt`)."""
+  canConfirmNoShow: Boolean!
+
+  """For the helper: 'I was there' is offered (within `noShowContestBy`)."""
+  canContestNoShow: Boolean!
+
+  """
+  For the poster with an early start to answer: the helper is a registered business still inside the 14-day withdrawal period, so the screen shows the copy that keeps the withdrawal right (arrival.earlyStartBodyWithdrawal).
+  """
+  earlyStartWithdrawal: Boolean!
+
+  """For the poster: confirm or decline the helper's Start now."""
+  canAnswerEarlyStart: Boolean!
+}
+
+"""Which side of a booking."""
+enum BookingSide {
+  POSTER
+  HELPER
+}
+
+"""
+Where a booking is, from checkout (AWAITING_PAYMENT) to CLOSED. FUNDS_HELD and the other money-confirmed statuses are set only from Stripe's webhook.
+"""
+enum BookingStatus {
+  AWAITING_PAYMENT
+  PAYMENT_FAILED
+  FUNDS_HELD
+  CANCEL_REQUESTED
+  NO_ACCESS_REPORTED
+  INCIDENT_PAUSED
+  PAYMENT_REQUESTED
+  DISPUTED
+  RELEASED
+  PAID_OUT
+  PARTIALLY_SETTLED
+  REFUNDED
+  CLOSED
+}
+
+"""
+A registered-business helper as the poster confirmed it at checkout; later profile edits don't change it. Its `id` is the booking's.
+"""
+type BookingTrader {
+  id: ID!
+  businessName: String!
+  businessOib: String!
+}
+
+"""
+A cancellation or withdrawal of the booking and its money. The amounts are set once known; a withdrawal after the start waits for support (`awaitingSupport`). `confirmed` once Stripe confirmed the refund.
+"""
+type Cancellation {
+  """The booking's ID."""
+  id: ID!
+
+  """A withdrawal from the contract."""
+  withdrawal: Boolean!
+  case: CancellationCase
+  refundCents: Int
+  helperCompensationCents: Int
+  keptFeeCents: Int
+  awaitingSupport: Boolean!
+  confirmed: Boolean!
+  requestedAt: DateTime
+
+  """Who cancelled."""
+  requestedBy: BookingSide
+
+  """
+  TaskBeavo's EUR 5 credit to the poster for a helper's late cancel, granted once the refund is confirmed; 0 otherwise.
+  """
+  posterCreditCents: Int!
+
+  """
+  For the poster: the TaskBeavo credit the booking used, back once the refund is confirmed (rule g). Null for the helper, like `refundCents` and `keptFeeCents`, so the poster's credit stays between the poster and TaskBeavo.
+  """
+  creditBackCents: Int
+}
+
+"""
+The numbers of the cancellation policy as bookings/cancellation.py applies them (hard rule g), for the refund table on /fees. Never copy them into a client.
+"""
+type CancellationAmounts {
+  """Always `current`."""
+  id: ID!
+
+  """A cancellation this soon after accepting is a full refund."""
+  gracePeriodMinutes: Int!
+
+  """Cancelling with less than this left before the start is late."""
+  lateWindowHours: Int!
+  latePayPercent: Int!
+  latePayMinCents: Int!
+  latePayMaxCents: Int!
+  callOutPercent: Int!
+  callOutMinCents: Int!
+  callOutMaxCents: Int!
+
+  """The share of the helper's compensation TaskBeavo keeps: the fee rate."""
+  keptFeePercent: Int!
+  helperCancelCreditCents: Int!
+  withdrawalPeriodDays: Int!
+}
+
+"""
+The cancellation policy row that applies (bookings/cancellation.py): which refund the poster gets.
+"""
+enum CancellationCase {
+  """Within 1 h of accepting: full refund."""
+  GRACE_PERIOD
+
+  """24 h or more before the start: full refund."""
+  EARLY
+
+  """Under 24 h before the start: the helper keeps 25% (EUR 5 to 20)."""
+  LATE
+
+  """
+  Late, but a registered business inside its 14-day withdrawal period: full refund.
+  """
+  LATE_TRADER_WITHDRAWAL
+
+  """The helper cancelled: full refund."""
+  HELPER_CANCEL
+
+  """Nobody's fault: full refund."""
+  NO_FAULT
+
+  """The helper couldn't get in: the call-out is paid."""
+  NO_ACCESS_CALL_OUT
+
+  """Withdrawal from the contract before the start: full refund."""
+  WITHDRAWAL
+
+  """
+  Withdrawal after the start: the helper keeps the share of the work done.
+  """
+  WITHDRAWAL_PRO_RATA
+}
+
+"""
+What cancelling the booking now would refund, for its poster while FUNDS_HELD. `refusedWith` is set instead of the amounts when cancelBooking would be refused (WORK_STARTED, BOOKING_ACTION_NOT_ALLOWED).
+"""
+type CancellationPreview {
+  """The booking's ID."""
+  id: ID!
+  case: CancellationCase
+
+  """What the poster paid."""
+  chargeCents: Int!
+
+  """Back to the poster's card."""
+  refundCents: Int!
+
+  """What the helper keeps."""
+  helperCompensationCents: Int!
+
+  """TaskBeavo's share of what the helper keeps, at the booking's fee rate."""
+  keptFeeCents: Int!
+
+  """
+  The TaskBeavo credit the booking used, which comes back to the poster once the refund is confirmed (rule g); 0 when none was used.
+  """
+  creditBackCents: Int!
+  refusedWith: ErrorCode
+}
+
+"""
+An on-site contact of the signed-in poster, e.g. "Mama Kata". The contact has no account. Only the owner reads this type.
+"""
+type CareContact {
+  id: ID!
+  name: String!
+
+  """E.164. Shown to the owner; helpers see it only in an active booking."""
+  phone: String!
+
+  """Whether reminders can reach the number by SMS; false for landlines."""
+  smsCapable: Boolean!
+
+  """Free text, e.g. "Gruž, Dubrovnik"."""
+  area: String!
+
+  """The language SMS to the contact use."""
+  language: Locale!
+
+  """Reminders reach the contact by SMS instead of push."""
+  noSmartphone: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+The two separate, unticked checkout boxes. Both must be ticked, for the cancellation policy version shown, which must be the one in force.
+"""
+input CheckoutConsentInput {
+  """I accept the cancellation and refund policy."""
+  cancellationPolicyAccepted: Boolean!
+
+  """
+  I ask for the booking to be arranged now and the task done on the date I chose, which may be within my 14-day withdrawal period.
+  """
+  earlyStartRequested: Boolean!
+
+  """The CANCELLATION version the checkout showed."""
+  cancellationVersion: String!
+  platform: SessionPlatform!
+
+  """
+  The language the checkout showed the policy in; its version is checked in it.
+  """
+  language: Locale!
+
+  """
+  The tick-box pair shown, from the offer's helperIsTrader; it must match the helper's status when the offer is accepted (CONSENT_WORDING_CHANGED).
+  """
+  variant: CheckoutConsentVariant!
+}
+
+"""
+The wording of the two checkout tick boxes for one helper type, as the lawyer wrote it in this CANCELLATION version and language. Show it as it is; never translate it.
+"""
+type CheckoutConsentText {
+  """The box accepting the cancellation and refund policy."""
+  cancellationPolicy: String!
+
+  """
+  The box asking for the start within the 14-day withdrawal period, with the acknowledgement that the right is lost once the service is fully performed.
+  """
+  earlyStart: String!
+}
+
+"""
+The checkout tick boxes per helper type: show `privateHelper` for an offer from a private individual, `traderHelper` for a registered business, and send that variant with the consent.
+"""
+type CheckoutConsentTexts {
+  privateHelper: CheckoutConsentText!
+  traderHelper: CheckoutConsentText!
+}
+
+"""
+Which of the CANCELLATION policy's two tick-box pairs the checkout showed: the one for a private helper or the one for a registered business (trader).
+"""
+enum CheckoutConsentVariant {
+  PRIVATE_HELPER
+  TRADER_HELPER
+}
+
+"""Why a checkout ended without a payment (PAYMENT_FAILED)."""
+enum CheckoutFailureReason {
+  """
+  Nobody paid within 30 minutes of the last card attempt, or 60 minutes of accepting. The offer is open again unless the helper withdrew it.
+  """
+  CHECKOUT_EXPIRED
+
+  """The helper withdrew the offer during checkout."""
+  OFFER_WITHDRAWN
+
+  """The payment couldn't be started at Stripe."""
+  PAYMENT_NOT_STARTED
+}
+
+"""
+An open checkout: confirm the payment with Stripe's payment sheet using `clientSecret`, then wait for the booking to become FUNDS_HELD.
+"""
+type CheckoutSession {
+  """The booking's ID."""
+  id: ID!
+  booking: Booking!
+
+  """For Stripe's payment sheet only; never store or log it."""
+  clientSecret: String!
+
+  """
+  Stripe already has a payment that is succeeding or still being confirmed: don't pay again, wait for bookingUpdated.
+  """
+  paymentPending: Boolean!
+}
+
+input CreateCareContactInput {
+  name: String!
+
+  """
+  Mobile or landline, international (+49 ...) or national Croatian (020 ...).
+  """
+  phone: String!
+  area: String!
+  language: Locale! = HR
+  noSmartphone: Boolean! = false
+
+  """The poster confirmed the person agreed to having their details saved."""
+  hasTheirAgreement: Boolean!
+}
+
+input CreateUploadUrlInput {
+  purpose: UploadPurpose!
+
+  """"image/jpeg", "image/png" or "image/webp"."""
+  contentType: String!
+
+  """The file's exact size in bytes."""
+  sizeBytes: Int!
+}
+
+"""Date (isoformat)"""
+scalar Date
+
+"""Date with time (isoformat)"""
+scalar DateTime
+
+input DeviceInput {
+  platform: SessionPlatform!
+
+  """E.g. "iPhone" or "Firefox on Mac"."""
+  name: String! = ""
+
+  """The `AuthSession.deviceToken` this device kept from its last sign-in."""
+  deviceToken: String = null
+}
+
+"""
+Codes returned in `errors[].extensions.code`. Clients show the translation `errors.<CODE>` from packages/i18n; the error message itself is for developers only.
+"""
+enum ErrorCode {
+  """
+  Too many calls of this mutation from this client. `extensions.retryAfterSeconds`, when present, says how long to wait (up to a day for SMS codes); otherwise retry after a minute.
+  """
+  RATE_LIMITED
+
+  """A mutation was sent over the WebSocket; send mutations over HTTP."""
+  MUTATIONS_REQUIRE_HTTP
+
+  """The operation needs a signed-in user and none was authenticated."""
+  UNAUTHENTICATED
+
+  """The email address isn't a valid address."""
+  INVALID_EMAIL
+
+  """
+  The name or email address on a withdrawal statement is empty or invalid.
+  """
+  INVALID_WITHDRAWAL_DETAILS
+
+  """
+  The emailed or SMS code is wrong, expired, already used or burnt after too many wrong tries; request a new one.
+  """
+  INVALID_CODE
+
+  """
+  The account-details ticket is invalid, expired or its account already exists; sign in again with a new code.
+  """
+  SIGNUP_TICKET_EXPIRED
+
+  """
+  The Google or Apple sign-in couldn't be verified (expired, for another app, or its nonce is wrong or used); start the sign-in again with a new nonce.
+  """
+  INVALID_PROVIDER_TOKEN
+
+  """
+  Google or Apple couldn't be reached to check the sign-in; try again in a few minutes, or sign in with an email code.
+  """
+  PROVIDER_UNAVAILABLE
+
+  """
+  Google or Apple didn't share a verified email address, which a new account needs; allow sharing the email, or sign in with an email code.
+  """
+  PROVIDER_EMAIL_MISSING
+
+  """The person didn't confirm they are 18 or older."""
+  UNDERAGE
+
+  """
+  A name, country or time zone in the account details is missing or invalid.
+  """
+  INVALID_ACCOUNT_DETAILS
+
+  """
+  The account details or acceptCurrentTerms didn't accept the current terms and conditions: the version is missing or isn't `currentLegalDocument(kind: TERMS)`'s version (they may have just changed). Fetch the current version, show it, and ask again.
+  """
+  TERMS_NOT_ACCEPTED
+
+  """
+  The refresh token is unknown, expired, reused or its session was revoked; sign in again.
+  """
+  SESSION_EXPIRED
+
+  """
+  Too many wrong sign-in codes for this email address: sign-in is locked for 30 minutes. `extensions.retryAfterSeconds` says how long is left.
+  """
+  LOCKED
+
+  """
+  The "This wasn't me" link is invalid or too old; sign in and use "Log out of all devices" in settings instead.
+  """
+  SIGN_OUT_LINK_EXPIRED
+
+  """
+  The web app's /api routes refused a request that didn't come from its own pages (cross-site request forgery check); reload the page and try again.
+  """
+  REQUEST_REJECTED
+
+  """
+  The push token isn't an Expo push token, or is still registered to another signed-in account.
+  """
+  INVALID_PUSH_TOKEN
+
+  """Booking and payment notifications are part of the service and stay on."""
+  NOTIFICATION_PREFERENCE_LOCKED
+
+  """Photos must be JPEG, PNG or WebP."""
+  UPLOAD_TYPE_NOT_ALLOWED
+
+  """The photo is larger than the upload limit, in bytes or in pixels."""
+  UPLOAD_TOO_LARGE
+
+  """
+  Too many uploads not used yet (started, being processed, or ready and not attached to anything); use them or wait for them to expire.
+  """
+  TOO_MANY_PENDING_UPLOADS
+
+  """
+  No such upload of the signed-in user, or it can't be used here (not ready, another purpose, or already attached).
+  """
+  UPLOAD_NOT_FOUND
+
+  """The file hasn't arrived in storage; PUT it to the upload URL first."""
+  UPLOAD_NOT_RECEIVED
+
+  """
+  Evidence photos are taken in the TaskBeavo app, not uploaded from the web.
+  """
+  EVIDENCE_NEEDS_APP
+
+  """The file isn't a readable image of the type it was uploaded as."""
+  UPLOAD_INVALID_IMAGE
+
+  """The phone number isn't a valid mobile number."""
+  INVALID_PHONE_NUMBER
+
+  """
+  TaskBeavo can't send SMS to mobile numbers of this country yet (no sender for it, e.g. +1 numbers, or switched off); use another mobile number.
+  """
+  PHONE_COUNTRY_NOT_SUPPORTED
+
+  """
+  The number is already verified on another account; one number verifies one account. Contact support if it is yours.
+  """
+  PHONE_NUMBER_IN_USE
+
+  """The SMS provider didn't accept the code message; try again later."""
+  SMS_NOT_SENT
+
+  """
+  Posting a task, sending an offer and chatting need a verified mobile number; verify it with requestPhoneCode and verifyPhoneCode.
+  """
+  PHONE_NOT_VERIFIED
+
+  """
+  The terms changed and the user hasn't accepted the version in force (`viewer.accountState` is TERMS_UPDATE_REQUIRED). Until they do they can't post, offer or book, but can view history, finish open bookings, export data and delete the account.
+  """
+  TERMS_UPDATE_REQUIRED
+
+  """
+  The account is suspended: it can't post, offer or book, but can finish open bookings, appeal, export its data and delete the account.
+  """
+  ACCOUNT_SUSPENDED
+
+  """
+  The account is waiting to be deleted once its open bookings and payouts close; it can't post, offer or book.
+  """
+  ACCOUNT_DELETION_PENDING
+
+  """The file was replaced after completeUpload; start a new upload."""
+  UPLOAD_CHANGED
+
+  """
+  The task's location is outside every active TaskBeavo service area: outside Croatia, or in a Croatian city TaskBeavo doesn't serve yet. Offer joinWaitlist.
+  """
+  OUT_OF_SERVICE_AREA
+
+  """Joining the waitlist needs consent to the one launch email."""
+  WAITLIST_CONSENT_REQUIRED
+
+  """
+  The city is missing or too long, or the country code isn't two letters.
+  """
+  INVALID_WAITLIST_DETAILS
+
+  """No such on-site contact of the signed-in user."""
+  CARE_CONTACT_NOT_FOUND
+
+  """
+  The on-site contact's name or area is missing or longer than 100 characters.
+  """
+  INVALID_CARE_CONTACT
+
+  """
+  Saving an on-site contact needs the poster's confirmation that the person agreed to having their details saved.
+  """
+  CARE_CONTACT_AGREEMENT_REQUIRED
+
+  """The on-site contact's phone isn't a valid mobile or landline number."""
+  INVALID_CARE_CONTACT_PHONE
+
+  """
+  An open task or an active booking uses this on-site contact; it can be deleted once the task or booking closes.
+  """
+  CARE_CONTACT_IN_USE
+
+  """
+  A booking visit with this on-site contact has started; it can be changed again once the booking closes.
+  """
+  CARE_CONTACT_LOCKED
+
+  """
+  The OIB isn't 11 digits with a matching check digit (ISO 7064 MOD 11,10).
+  """
+  INVALID_OIB
+
+  """
+  The OIB is already on another helper's profile; one OIB belongs to one helper. Contact support if it is yours.
+  """
+  OIB_IN_USE
+
+  """
+  A company's OIB can't be a person's OIB (the helper's own or another helper's), and an obrt's OIB is its owner's own OIB: leave it out for an obrt.
+  """
+  INVALID_BUSINESS_OIB
+
+  """The IBAN isn't a valid IBAN of a bank account in the EU."""
+  INVALID_IBAN
+
+  """
+  The VAT ID isn't a valid EU VAT number (a Croatian one is HR and the OIB).
+  """
+  INVALID_VAT_ID
+
+  """
+  A helper profile field is missing, too long or invalid: a name, the street, city or Croatian postal code, the country code, an implausible date of birth, or business details without the BUSINESS status.
+  """
+  INVALID_HELPER_DETAILS
+
+  """
+  The country of residence must be an EU member state, as an ISO 3166-1 alpha-2 code (HR, DE, AT, ...).
+  """
+  RESIDENCE_COUNTRY_NOT_ALLOWED
+
+  """
+  Helpers need a home address in Croatia; TaskBeavo isn't open to helpers elsewhere yet. Offer joinWaitlist.
+  """
+  HELPER_ADDRESS_NOT_IN_CROATIA
+
+  """No such active service area; pick one from serviceAreas."""
+  SERVICE_AREA_NOT_FOUND
+
+  """
+  Sending offers needs a complete helper profile; `myHelperProfile.missing` lists what is still missing.
+  """
+  HELPER_PROFILE_INCOMPLETE
+
+  """
+  An obrt or company sends offers only once its registered business address is on file: the contract confirmation shows it to the poster. `myHelperProfile.missing` lists BUSINESS_ADDRESS.
+  """
+  BUSINESS_ADDRESS_REQUIRED
+
+  """
+  Sending offers needs a Stripe payout account that can receive payments: finish Stripe onboarding, or give Stripe the information it asked for (startPayoutOnboarding). `myHelperProfile.payoutAccount` has the status.
+  """
+  PAYOUT_ACCOUNT_NOT_READY
+
+  """
+  Stripe rejected the payout account, so onboarding can't continue; support explains why and how to appeal.
+  """
+  PAYOUT_ACCOUNT_REJECTED
+
+  """
+  TaskBeavo doesn't accept this kind of task: rides (driving people), medical care and personal care are not allowed.
+  """
+  CATEGORY_NOT_ALLOWED
+
+  """
+  A required task field is missing (category, title, description, address, budget), a text is too long, the coordinates are invalid or there are more than 10 photos.
+  """
+  INVALID_TASK_DETAILS
+
+  """
+  The task's time window must start from now, end after it starts and end within 60 days; a task without a flexible date needs one.
+  """
+  INVALID_TASK_DATES
+
+  """The task's budget is below the minimum task price of EUR 10."""
+  BUDGET_BELOW_MINIMUM
+
+  """No such task, or not one the caller may see or change."""
+  TASK_NOT_FOUND
+
+  """
+  The task can't be changed this way: a draft is saved with saveTaskDraft and published once, and a closed task can't be changed.
+  """
+  TASK_NOT_EDITABLE
+
+  """
+  The task no longer takes offers: it is closed, booked, or its date has passed.
+  """
+  TASK_NOT_OPEN_FOR_OFFERS
+
+  """
+  The task lies outside the service areas on your helper profile; add its area with updateHelperProfile to offer on it.
+  """
+  TASK_OUTSIDE_HELPER_AREAS
+
+  """Helpers can't send offers on their own tasks."""
+  OFFER_ON_OWN_TASK
+
+  """You already have an open offer on this task; change or renew that one."""
+  OFFER_ALREADY_SENT
+
+  """No such offer of the signed-in helper."""
+  OFFER_NOT_FOUND
+
+  """
+  The offer is no longer open: it was withdrawn or has expired. An expired offer can be renewed.
+  """
+  OFFER_NOT_EDITABLE
+
+  """The offer's price is below the minimum task price of EUR 10."""
+  OFFER_PRICE_BELOW_MINIMUM
+
+  """
+  The offer's price is too high or its message longer than 1000 characters.
+  """
+  INVALID_OFFER_DETAILS
+
+  """
+  The offer's message may contain a phone number, email address or link; remove it and send the offer again.
+  """
+  OFFER_MESSAGE_CONTACT_DETAILS
+
+  """
+  The task's poster books for a business, so only registered helpers (obrt or company) can offer on it or be booked for it.
+  """
+  BUSINESS_POSTER_REGISTERED_ONLY
+
+  """
+  The business kind is unknown, or its name is empty or over 200 characters.
+  """
+  INVALID_POSTER_BUSINESS
+
+  """
+  You have an open checkout with a private helper; finish or leave it before adding your business.
+  """
+  POSTER_BUSINESS_CHECKOUT_OPEN
+
+  """
+  An offer on the task was accepted, so only its photos and, while the booking is active, its access details can change. A new date goes through a reschedule with the helper.
+  """
+  TASK_BOOKED
+
+  """
+  The task changed since the helper sent this offer, and they haven't confirmed it yet; it can be accepted once they do.
+  """
+  OFFER_NEEDS_UPDATE
+
+  """
+  The helper changed the offer's price since you opened it; check it again.
+  """
+  OFFER_CHANGED
+
+  """
+  The service fee changed since you opened the checkout (a new price list took effect); check the new total.
+  """
+  FEE_CHANGED
+
+  """
+  The task already has a booking in progress; no other offer can be accepted.
+  """
+  TASK_ALREADY_BOOKED
+
+  """No such booking of the signed-in user."""
+  BOOKING_NOT_FOUND
+
+  """
+  The booking's status doesn't allow this action now, or not for you; refetch the booking to see its current status.
+  """
+  BOOKING_ACTION_NOT_ALLOWED
+
+  """
+  The checkout is no longer open: it was paid, expired or ended because the offer was withdrawn. Refetch the booking to see which.
+  """
+  CHECKOUT_CLOSED
+
+  """
+  The booking's start time has passed, so the poster can't cancel it themselves; open a dispute, or use the withdrawal button while it is offered.
+  """
+  WORK_STARTED
+
+  """
+  The arrival time isn't valid: missing, outside 1 to 240 minutes, or for running late, not after the booked start.
+  """
+  INVALID_ETA
+
+  """
+  The time to answer the no-fault request is over (the helper's 48 hours, or support decided), so the answer isn't taken. Refetch the booking.
+  """
+  NO_FAULT_REPLY_CLOSED
+
+  """
+  The refund changed since you opened the cancel screen (a deadline passed, such as 24 hours before the start); check it again. Nothing was cancelled.
+  """
+  CANCELLATION_CHANGED
+
+  """
+  There is no withdrawal right to use on this booking: the helper is a private individual, or the 14-day withdrawal period is over. Cancel instead.
+  """
+  WITHDRAWAL_NOT_AVAILABLE
+
+  """
+  Checkout needs both boxes ticked, the cancellation policy and the early-start request, for the cancellation policy version in force; reload it if it changed.
+  """
+  CONSENT_REQUIRED
+
+  """
+  The helper's private or business status changed since the checkout was shown, so the tick boxes read differently now; nothing was booked. Reload the offer and tick them again.
+  """
+  CONSENT_WORDING_CHANGED
+
+  """
+  The helper's payout account can't receive payments right now, so nothing was charged; the offer stays open. Try again later or choose another offer.
+  """
+  HELPER_CANNOT_TAKE_PAYMENTS
+
+  """
+  This offer can no longer be accepted, so nothing was charged; choose another offer.
+  """
+  OFFER_NOT_AVAILABLE
+
+  """
+  The payment couldn't be started, so nothing was charged; the offer stays open. Try again.
+  """
+  PAYMENT_UNAVAILABLE
+}
+
+input HelperAddressInput {
+  street: String!
+  postalCode: String!
+  city: String!
+
+  """ISO 3166-1 alpha-2; must be HR, else HELPER_ADDRESS_NOT_IN_CROATIA."""
+  country: String!
+}
+
+"""Where the obrt or company is registered; never the home address."""
+input HelperBusinessAddressInput {
+  street: String!
+  postalCode: String!
+  city: String!
+
+  """ISO 3166-1 alpha-2, an EU member state."""
+  country: String!
+}
+
+input HelperBusinessInput {
+  kind: HelperBusinessKind!
+  name: String!
+
+  """
+  The company's OIB, required for COMPANY. An obrt's OIB is its owner's own: leave it out for OBRT (or give the same OIB).
+  """
+  oib: String = null
+
+  """The trader issues a fiscalized invoice for each task."""
+  issuesFiscalizedInvoices: Boolean! = false
+}
+
+enum HelperBusinessKind {
+  OBRT
+  COMPANY
+}
+
+"""
+What the helper's cancel would mean now, for the helper while FUNDS_HELD: the poster always gets everything back, plus a EUR 5 credit from TaskBeavo when it is under 24 h before the start. The helper never pays. `refusedWith` is set instead once payment was requested.
+"""
+type HelperCancelPreview {
+  """The booking's ID."""
+  id: ID!
+
+  """Back to the poster's card."""
+  refundCents: Int!
+
+  """TaskBeavo's credit to the poster."""
+  posterCreditCents: Int!
+  refusedWith: ErrorCode
+}
+
+"""Why the helper cancels. The no-fault reasons have their own flow."""
+enum HelperCancelReason {
+  ILL
+  DOUBLE_BOOKED
+  OTHER
+  CANT_COME
+}
+
+"""
+The signed-in user's own helper profile: status, identity and tax data (DAC7), service areas and categories. Only its owner reads this type.
+"""
+type HelperProfile {
+  id: ID!
+  status: HelperStatus
+
+  """True for the BUSINESS status."""
+  isTrader: Boolean!
+  businessKind: HelperBusinessKind
+  businessName: String
+
+  """The obrt's or company's OIB, shown on the public profile."""
+  businessOib: String
+  issuesFiscalizedInvoices: Boolean!
+
+  """
+  The registered business address. Its poster sees it on each offer; the public profile shows only the town.
+  """
+  businessAddressStreet: String
+  businessAddressPostalCode: String
+  businessAddressCity: String
+
+  """ISO 3166-1 alpha-2, an EU member state."""
+  businessAddressCountry: String
+
+  """
+  A company's name and OIB were confirmed; until then BUSINESS_VERIFICATION is missing. Always true for an obrt.
+  """
+  businessVerified: Boolean!
+  legalFirstName: String
+  legalLastName: String
+  birthDate: Date
+  addressStreet: String
+  addressPostalCode: String
+  addressCity: String
+  addressCountry: String
+
+  """Masked, e.g. "•••••••0698"."""
+  oibMasked: String
+
+  """Masked, e.g. "HR•• •••• •••• •••• •016 0"."""
+  ibanMasked: String
+
+  """Masked, e.g. "HR•••••••0698"."""
+  vatIdMasked: String
+
+  """DAC7 member state of residence, ISO 3166-1 alpha-2."""
+  residenceCountry: String
+  categories: [TaskCategory!]!
+  serviceAreas: [ServiceArea!]!
+
+  """
+  Null until the helper starts Stripe onboarding (startPayoutOnboarding).
+  """
+  payoutAccount: PayoutAccount
+
+  """What is still needed before sending offers; empty when complete."""
+  missing: [HelperRequirement!]!
+  canSendOffers: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""Something a helper still has to provide before sending offers."""
+enum HelperRequirement {
+  STATUS
+  BUSINESS_DETAILS
+  BUSINESS_VERIFICATION
+  BUSINESS_ADDRESS
+  LEGAL_NAME
+  BIRTH_DATE
+  ADDRESS
+  OIB
+  IBAN
+  RESIDENCE_COUNTRY
+  PAYOUT_ACCOUNT
+  SERVICE_AREAS
+  CATEGORIES
+  PHONE_VERIFIED
+}
+
+"""The status a helper declares."""
+enum HelperStatus {
+  PRIVATE_INDIVIDUAL
+
+  """A registered business, obrt or company: shown as a trader."""
+  BUSINESS
+  PENSIONER
+
+  """
+  Helps as a private individual; student-service contracts aren't offered.
+  """
+  STUDENT
+}
+
+input JoinWaitlistInput {
+  email: String!
+
+  """The city the person wanted help in, as typed."""
+  city: String!
+
+  """ISO 3166-1 alpha-2 country of the city."""
+  countryCode: String!
+  category: TaskCategory!
+
+  """The language the consent was shown in; the launch email uses it."""
+  locale: Locale!
+
+  """
+  The person ticked the consent to one email when TaskBeavo launches in this city, and nothing else. Must be true.
+  """
+  consentLaunchEmail: Boolean!
+}
+
+"""One language of one published version of a legal document. Immutable."""
+type LegalDocument {
+  id: ID!
+  kind: LegalDocumentKind!
+
+  """
+  The same in every language; what sign-up sends as acceptedTermsVersion.
+  """
+  version: String!
+  language: Locale!
+
+  """When this version took effect."""
+  effectiveAt: DateTime!
+
+  """The document's Markdown as published, for reading it in the app."""
+  text: String!
+
+  """
+  Placeholder text no lawyer has approved; show it clearly marked. Never served where drafts aren't allowed (production).
+  """
+  isDraft: Boolean!
+
+  """The checkout tick-box texts; CANCELLATION documents only."""
+  checkoutConsent: CheckoutConsentTexts
+}
+
+"""A kind of legal document."""
+enum LegalDocumentKind {
+  TERMS
+  HELPER_TERMS
+  PRIVACY
+  CANCELLATION
+  COOKIES
+  IMPRINT
+}
+
+"""A language TaskBeavo is available in."""
+enum Locale {
+  HR
+  EN
+  DE
+  FR
+}
+
+type Mutation {
+  """
+  Email a 6-digit sign-in code, valid 10 minutes. Always returns true, whether or not the address has an account. `locale` is the app's current language, used for the email when the address has no account yet. At most 5 per address per hour. Errors: INVALID_EMAIL, RATE_LIMITED and LOCKED (both with extensions.retryAfterSeconds).
+  """
+  requestEmailCode(email: String!, locale: Locale!): Boolean!
+
+  """
+  Check a sign-in code. An existing account gets a session; a new address gets AccountDetailsRequired. A sign-in from a new device emails the account a notice. Errors: INVALID_EMAIL, INVALID_CODE, LOCKED (5 wrong codes lock the address for 30 minutes, with extensions.retryAfterSeconds).
+  """
+  verifyEmailCode(email: String!, code: String!, device: DeviceInput!): SignInResult!
+
+  """
+  A one-time nonce, valid until its expiresAt, to start a Google or Apple sign-in.
+  """
+  requestSignInNonce: SignInNonce!
+
+  """
+  Sign in with a Google or Apple ID token. A known provider account gets a session; an email that already has an account gets ProviderLinkRequired (a code is emailed to it); a new one gets AccountDetailsRequired, then completeAccountDetails as for email. Errors: INVALID_PROVIDER_TOKEN, PROVIDER_UNAVAILABLE, PROVIDER_EMAIL_MISSING, and RATE_LIMITED or LOCKED when a link code can't be sent.
+  """
+  signInWithProvider(input: ProviderSignInInput!, device: DeviceInput!): ProviderSignInResult!
+
+  """
+  Add the Google or Apple sign-in from ProviderLinkRequired to the account, using the code emailed to it, and sign in. Errors: INVALID_CODE, LOCKED, SIGNUP_TICKET_EXPIRED (start the Google or Apple sign-in again).
+  """
+  linkProviderWithEmailCode(ticket: String!, code: String!, device: DeviceInput!): AuthSession!
+
+  """
+  Create the account and sign in, recording that it accepted the terms in force. Errors: SIGNUP_TICKET_EXPIRED, UNDERAGE, INVALID_ACCOUNT_DETAILS, TERMS_NOT_ACCEPTED.
+  """
+  completeAccountDetails(details: AccountDetailsInput!, device: DeviceInput!): AuthSession!
+
+  """
+  Trade a refresh token for new tokens; the old one stops working. Errors: SESSION_EXPIRED (sign in again).
+  """
+  refreshSession(refreshToken: String!): AuthSession!
+
+  """
+  Sign out this session and close its open subscription WebSockets. Always returns true.
+  """
+  signOut(refreshToken: String!): Boolean!
+
+  """
+  Log out of all devices: revoke every session of the signed-in user, this one included, and close their open subscription WebSockets. Always returns true. Errors: UNAUTHENTICATED.
+  """
+  signOutEverywhere: Boolean!
+
+  """
+  "This wasn't me": the token from the new-device email's link logs that account out of all devices, without signing in. Always returns true when the token is good. Errors: SIGN_OUT_LINK_EXPIRED.
+  """
+  signOutEverywhereFromEmail(token: String!): Boolean!
+
+  """
+  Save the language the signed-in user chose; emails, push and SMS follow it. Errors: UNAUTHENTICATED.
+  """
+  setLocale(locale: Locale!): User!
+
+  """
+  Accept the updated terms from "We've updated our terms": `version` is `currentLegalDocument(kind: TERMS)`'s version and `language` the language it was shown in. Ends TERMS_UPDATE_REQUIRED; accepting a version again changes nothing. Errors: UNAUTHENTICATED, TERMS_NOT_ACCEPTED (the version isn't the one in force any more: fetch it and show it again).
+  """
+  acceptCurrentTerms(version: String!, language: Locale!): User!
+
+  """
+  Text a 6-digit code to the signed-in user's mobile number, valid 10 minutes. `phone` is international (+49 151 23456789) or national in the account's country. Errors: UNAUTHENTICATED, INVALID_PHONE_NUMBER, PHONE_COUNTRY_NOT_SUPPORTED, RATE_LIMITED (with extensions.retryAfterSeconds), SMS_NOT_SENT.
+  """
+  requestPhoneCode(phone: String!): PhoneCodeSent!
+
+  """
+  Check the SMS code from requestPhoneCode and save the number as verified. Errors: UNAUTHENTICATED, INVALID_CODE, PHONE_NUMBER_IN_USE, RATE_LIMITED.
+  """
+  verifyPhoneCode(code: String!): User!
+
+  """
+  Book for your obrt or company. From then on your tasks take offers from registered helpers only: private helpers' open offers on them are withdrawn and they are told why. Errors: UNAUTHENTICATED, INVALID_POSTER_BUSINESS, INVALID_OIB, INVALID_BUSINESS_OIB, POSTER_BUSINESS_CHECKOUT_OPEN.
+  """
+  setPosterBusiness(input: PosterBusinessInput!): User!
+
+  """
+  Stop booking for a business. Offers withdrawn meanwhile stay withdrawn. Errors: UNAUTHENTICATED.
+  """
+  clearPosterBusiness: User!
+
+  """
+  A token for the subscriptions WebSocket's connection_init `authToken`, valid about a minute. For the web app, whose access token page code can't read. Errors: UNAUTHENTICATED.
+  """
+  webSocketToken: String!
+
+  """
+  Join the waitlist for a city TaskBeavo doesn't serve yet, e.g. after OUT_OF_SERVICE_AREA. Needs no sign-in. Joining again for the same email and city updates that entry. Errors: WAITLIST_CONSENT_REQUIRED, INVALID_EMAIL, INVALID_WAITLIST_DETAILS.
+  """
+  joinWaitlist(input: JoinWaitlistInput!): WaitlistEntry!
+
+  """
+  Leave the waitlist with the token from the launch email's link, withdrawing the consent: the entry is deleted. Needs no sign-in. Always returns true, whether or not the token matched an entry.
+  """
+  leaveWaitlist(token: String!): Boolean!
+
+  """
+  Accept an offer on your task and open its checkout; nothing is charged until you confirm the payment with Stripe. `expectedPriceCents` is the price you saw and `expectedTotalCents` the total on the pay button (price plus the service fee), `expectedFeeScheduleVersion` the price list the fee notice quoted (`Offer.serviceFeeScheduleVersion`); the server computes the fee from the list in force and refuses a total or list that no longer matches it (FEE_CHANGED: reload and show the new total). `slotStart` is the agreed day of a flexible-date task. Errors: UNAUTHENTICATED, TERMS_UPDATE_REQUIRED, ACCOUNT_SUSPENDED, ACCOUNT_DELETION_PENDING, PHONE_NOT_VERIFIED, CONSENT_REQUIRED, OFFER_NOT_FOUND, OFFER_NOT_EDITABLE, OFFER_NEEDS_UPDATE, OFFER_CHANGED, FEE_CHANGED, OFFER_NOT_AVAILABLE, TASK_ALREADY_BOOKED, BUSINESS_POSTER_REGISTERED_ONLY, OUT_OF_SERVICE_AREA, INVALID_TASK_DATES, HELPER_CANNOT_TAKE_PAYMENTS, PAYMENT_UNAVAILABLE.
+  """
+  acceptOffer(offerId: ID!, expectedPriceCents: Int!, expectedTotalCents: Int!, expectedFeeScheduleVersion: String!, consent: CheckoutConsentInput!, slotStart: DateTime = null): CheckoutSession!
+
+  """
+  Cancel your booking as its poster, while the payment is held. The refund is the one `cancelPreview` shows: it is worked out again on the server, and Stripe confirms it (the booking becomes REFUNDED or PARTIALLY_SETTLED). `expectedRefundCents` is the preview's `refundCents` the poster saw. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, WORK_STARTED, CANCELLATION_CHANGED.
+  """
+  cancelBooking(id: ID!, reason: PosterCancelReason!, expectedRefundCents: Int!): Booking!
+
+  """
+  Withdraw from the contract (the withdrawal button), while `withdrawalAvailable`: before the start a full refund, after it support works out the part already done and refunds the rest. `name` and `email` are the poster's, prefilled from the account (ZZP čl. 81.a(3)); the confirmation is emailed to `email`. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, WITHDRAWAL_NOT_AVAILABLE, INVALID_WITHDRAWAL_DETAILS.
+  """
+  withdrawFromContract(id: ID!, name: String!, email: String!): Booking!
+
+  """
+  Cancel your booking as its helper, while the payment is held, before or after the start. The poster gets everything back, plus a EUR 5 credit from TaskBeavo when it is under 24 h before the start; you never pay anything, but the cancel counts against your reliability. Stripe confirms the refund (REFUNDED). Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  cancelAsHelper(id: ID!, reason: HelperCancelReason!): Booking!
+
+  """
+  Ask to cancel for a no-fault reason, as the poster or the helper, while the payment is held (also after the start). The other side has 48 hours to agree (a full refund) or disagree (support decides). With no answer, the poster's request stands; the helper's goes to support. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  requestNoFaultCancellation(id: ID!, reason: NoFaultReason!): Booking!
+
+  """
+  Answer the other side's no-fault request: agree (the poster gets everything back) or disagree (support decides): the helper within the poster's 48 hours (`respondBy`), the poster until support decided. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, NO_FAULT_REPLY_CLOSED.
+  """
+  respondToNoFaultCancellation(id: ID!, agree: Boolean!): Booking!
+
+  """
+  Re-open your task to other offers after your helper cancelled or a no-fault cancel, while `canReopenTask`. The helpers whose offers were declined are told and their offers are live again. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, TASK_NOT_OPEN_FOR_OFFERS.
+  """
+  reopenTask(bookingId: ID!): Booking!
+
+  """
+  As the helper, on the day of the job: On my way, with an optional ETA in minutes (1 to 240). The poster is told. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, INVALID_ETA.
+  """
+  markOnMyWay(bookingId: ID!, etaMinutes: Int = null): Booking!
+
+  """
+  As the helper: Running late, with the new ETA in minutes from now, past the booked start. The poster may keep the booking or cancel for free. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, INVALID_ETA.
+  """
+  reportRunningLate(bookingId: ID!, etaMinutes: Int!): Booking!
+
+  """
+  As the helper: I've arrived. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  markArrived(bookingId: ID!): Booking!
+
+  """
+  As the poster, after Running late (`arrival.canAnswerLate`): keep the booking, or cancel for free (keep false): a full refund, nobody's fault. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  respondToLateArrival(bookingId: ID!, keep: Boolean!): Booking!
+
+  """
+  As the poster: did your helper come? Yes after the start; no once `arrival.noShowDueAt` passed. No cancels the booking as the helper's (a full refund, plus a EUR 5 credit from TaskBeavo when it was under 24 h before the start) once the helper's 24 hours to contest are over, or support upholds it. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  confirmHelperArrival(bookingId: ID!, came: Boolean!): Booking!
+
+  """
+  As the helper, within 24 hours of the poster saying you didn't come (`arrival.canContestNoShow`): 'I was there'. Support decides from the booking's record; nothing is refunded or counted against you until then. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  contestNoShow(bookingId: ID!): Booking!
+
+  """
+  As the arrived helper, before the booked start: ask the poster to start now. Lapses at the booked start. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  requestEarlyStart(bookingId: ID!): Booking!
+
+  """
+  As the poster: confirm the helper's Start now (the job starts now: from then on you can't cancel, you open a dispute instead, or withdraw while that's offered) or decline it (the booked time stays). `locale` is the language the screen showed the confirmation in; it is recorded with it. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  respondToEarlyStart(bookingId: ID!, confirm: Boolean!, locale: Locale = null): Booking!
+
+  """
+  Save an on-site contact. Errors: UNAUTHENTICATED, CARE_CONTACT_AGREEMENT_REQUIRED, INVALID_CARE_CONTACT, INVALID_CARE_CONTACT_PHONE.
+  """
+  createCareContact(input: CreateCareContactInput!): CareContact!
+
+  """
+  Change an on-site contact; omitted fields stay as they are. Active bookings see the change at once. Errors: UNAUTHENTICATED, CARE_CONTACT_NOT_FOUND, CARE_CONTACT_LOCKED, INVALID_CARE_CONTACT, INVALID_CARE_CONTACT_PHONE.
+  """
+  updateCareContact(id: ID!, input: UpdateCareContactInput!): CareContact!
+
+  """
+  Delete an on-site contact; returns it as it was. Errors: UNAUTHENTICATED, CARE_CONTACT_NOT_FOUND, CARE_CONTACT_IN_USE.
+  """
+  deleteCareContact(id: ID!): CareContact!
+
+  """
+  Create or change the signed-in user's helper profile, one onboarding step at a time. Errors: UNAUTHENTICATED, INVALID_OIB, OIB_IN_USE, INVALID_IBAN, INVALID_VAT_ID, INVALID_HELPER_DETAILS, UNDERAGE, HELPER_ADDRESS_NOT_IN_CROATIA (offer joinWaitlist), SERVICE_AREA_NOT_FOUND.
+  """
+  updateHelperProfile(input: UpdateHelperProfileInput!): HelperProfile!
+
+  """
+  Open the signed-in helper's Stripe Express account on first use and return a link to Stripe's onboarding (identity check and IBAN). Also the way to give Stripe the information it asks for later. Errors: UNAUTHENTICATED, HELPER_PROFILE_INCOMPLETE (a Croatian address and the OIB come first), PAYOUT_ACCOUNT_REJECTED.
+  """
+  startPayoutOnboarding: PayoutOnboardingLink!
+
+  """
+  Switch a category on or off for one channel. Errors: UNAUTHENTICATED, NOTIFICATION_PREFERENCE_LOCKED (booking and payment).
+  """
+  setNotificationPreference(category: NotificationCategory!, channel: NotificationChannel!, enabled: Boolean!): NotificationPreference!
+
+  """
+  Register this device's Expo push token for the signed-in session. A token still live for another account is refused: sign out there first, which removes it. Errors: UNAUTHENTICATED, INVALID_PUSH_TOKEN.
+  """
+  registerPushToken(token: String!, platform: PushPlatform!): PushDevice!
+
+  """
+  Stop pushes to this token, e.g. when the user turns notifications off on the device. Returns whether the token was registered to the signed-in user. Errors: UNAUTHENTICATED.
+  """
+  unregisterPushToken(token: String!): Boolean!
+
+  """
+  Send an offer on an open task; it lasts 7 days, never past the task's date. Errors: UNAUTHENTICATED, TERMS_UPDATE_REQUIRED, ACCOUNT_SUSPENDED, ACCOUNT_DELETION_PENDING, PHONE_NOT_VERIFIED, HELPER_PROFILE_INCOMPLETE, PAYOUT_ACCOUNT_NOT_READY, BUSINESS_ADDRESS_REQUIRED, TASK_NOT_FOUND, OFFER_ON_OWN_TASK, OFFER_ALREADY_SENT, TASK_NOT_OPEN_FOR_OFFERS, BUSINESS_POSTER_REGISTERED_ONLY, OUT_OF_SERVICE_AREA, TASK_OUTSIDE_HELPER_AREAS, OFFER_PRICE_BELOW_MINIMUM, INVALID_OFFER_DETAILS, OFFER_MESSAGE_CONTACT_DETAILS.
+  """
+  sendOffer(input: SendOfferInput!): Offer!
+
+  """
+  Change your open offer, or confirm one that NEEDS_UPDATE; it is SENT again. Errors: UNAUTHENTICATED, TERMS_UPDATE_REQUIRED, ACCOUNT_SUSPENDED, ACCOUNT_DELETION_PENDING, PHONE_NOT_VERIFIED, HELPER_PROFILE_INCOMPLETE, PAYOUT_ACCOUNT_NOT_READY, BUSINESS_ADDRESS_REQUIRED, OFFER_NOT_FOUND, OFFER_NOT_EDITABLE, TASK_NOT_OPEN_FOR_OFFERS, BUSINESS_POSTER_REGISTERED_ONLY, OUT_OF_SERVICE_AREA, TASK_OUTSIDE_HELPER_AREAS, OFFER_PRICE_BELOW_MINIMUM, INVALID_OFFER_DETAILS, OFFER_MESSAGE_CONTACT_DETAILS.
+  """
+  updateOffer(id: ID!, input: UpdateOfferInput!): Offer!
+
+  """
+  Give your offer another 7 days from now, never past the task's date; an expired offer is SENT again. Errors: UNAUTHENTICATED, TERMS_UPDATE_REQUIRED, ACCOUNT_SUSPENDED, ACCOUNT_DELETION_PENDING, PHONE_NOT_VERIFIED, HELPER_PROFILE_INCOMPLETE, PAYOUT_ACCOUNT_NOT_READY, BUSINESS_ADDRESS_REQUIRED, OFFER_NOT_FOUND, OFFER_NOT_EDITABLE, OFFER_ALREADY_SENT, TASK_NOT_OPEN_FOR_OFFERS, BUSINESS_POSTER_REGISTERED_ONLY, OUT_OF_SERVICE_AREA, TASK_OUTSIDE_HELPER_AREAS.
+  """
+  renewOffer(id: ID!): Offer!
+
+  """
+  Withdraw your open offer. Errors: UNAUTHENTICATED, OFFER_NOT_FOUND, OFFER_NOT_EDITABLE.
+  """
+  withdrawOffer(id: ID!): Offer!
+
+  """
+  Save a draft: a new one without `id`, or change your draft. Fields may stay empty; the ones given are checked. Errors: UNAUTHENTICATED, TASK_NOT_FOUND, TASK_NOT_EDITABLE, OUT_OF_SERVICE_AREA, INVALID_TASK_DETAILS, INVALID_TASK_DATES, BUDGET_BELOW_MINIMUM, CARE_CONTACT_NOT_FOUND, UPLOAD_NOT_FOUND.
+  """
+  saveTaskDraft(input: TaskInput!, id: ID = null): TaskPayload!
+
+  """
+  Post a task. It is OPEN, or PENDING_REVIEW when its text is held for review. Errors: UNAUTHENTICATED, TERMS_UPDATE_REQUIRED, ACCOUNT_SUSPENDED, ACCOUNT_DELETION_PENDING, PHONE_NOT_VERIFIED, OUT_OF_SERVICE_AREA, INVALID_TASK_DETAILS, INVALID_TASK_DATES, BUDGET_BELOW_MINIMUM, CARE_CONTACT_NOT_FOUND, UPLOAD_NOT_FOUND.
+  """
+  postTask(input: TaskInput!): TaskPayload!
+
+  """
+  Publish your draft as saved. Errors: UNAUTHENTICATED, TERMS_UPDATE_REQUIRED, ACCOUNT_SUSPENDED, ACCOUNT_DELETION_PENDING, PHONE_NOT_VERIFIED, TASK_NOT_FOUND, TASK_NOT_EDITABLE, OUT_OF_SERVICE_AREA, INVALID_TASK_DETAILS, INVALID_TASK_DATES, BUDGET_BELOW_MINIMUM, CARE_CONTACT_NOT_FOUND, UPLOAD_NOT_FOUND.
+  """
+  publishTaskDraft(id: ID!): TaskPayload!
+
+  """
+  Change your published task; omitted fields stay as they are. A new address is checked against the service areas again. Once an offer is accepted only the photos and, while the booking is active, the access details can change. An account in limited mode may change only the photos and access details. Errors: UNAUTHENTICATED, PHONE_NOT_VERIFIED, TERMS_UPDATE_REQUIRED, ACCOUNT_SUSPENDED, ACCOUNT_DELETION_PENDING, TASK_NOT_FOUND, TASK_NOT_EDITABLE, TASK_BOOKED, OUT_OF_SERVICE_AREA, INVALID_TASK_DETAILS, INVALID_TASK_DATES, BUDGET_BELOW_MINIMUM, CARE_CONTACT_NOT_FOUND, UPLOAD_NOT_FOUND.
+  """
+  updateTask(id: ID!, input: TaskInput!): TaskPayload!
+
+  """
+  Start a photo upload: returns a presigned PUT URL into private storage. Errors: UNAUTHENTICATED, UPLOAD_TYPE_NOT_ALLOWED, UPLOAD_TOO_LARGE, TOO_MANY_PENDING_UPLOADS, EVIDENCE_NEEDS_APP (evidence from a web session), RATE_LIMITED.
+  """
+  createUploadUrl(input: CreateUploadUrlInput!): UploadTarget!
+
+  """
+  Tell the API the PUT finished. The photo is checked and cleaned in the background: follow `status` with the `upload` query until READY or REJECTED. Errors: UNAUTHENTICATED, UPLOAD_NOT_FOUND, UPLOAD_NOT_RECEIVED (PUT the file first).
+  """
+  completeUpload(id: ID!): Upload!
+
+  """
+  Delete one of your uploads that nothing uses yet (not attached to a task or booking), with its files, freeing its place in the pending-upload limit. Returns the deleted upload's id. Errors: UNAUTHENTICATED, UPLOAD_NOT_FOUND (also for an attached upload).
+  """
+  discardUpload(id: ID!): ID!
+}
+
+"""Support's decision on a no-fault request."""
+enum NoFaultDecision {
+  """Nobody's fault: full refund."""
+  UPHELD
+
+  """The ordinary policy applies to whoever asked, as of when they asked."""
+  REJECTED
+}
+
+"""
+What the other side sees of a no-fault reason: hospitalisation, bereavement and emergency all show as PERSONAL_EMERGENCY (GDPR Art. 9).
+"""
+enum NoFaultLabel {
+  PERSONAL_EMERGENCY
+  WEATHER
+  MUTUAL_AGREEMENT
+  HELPER_LATE
+}
+
+"""
+A reason that makes a cancellation nobody's fault: a full refund once the other side agrees, or support upholds it.
+"""
+enum NoFaultReason {
+  WEATHER
+  HOSPITALISATION
+  BEREAVEMENT
+  EMERGENCY
+  MUTUAL_AGREEMENT
+  HELPER_LATE
+}
+
+"""
+A no-fault cancellation request on the booking: the open one, or the last one. Shown to both sides; IDs, enum keys and times only.
+"""
+type NoFaultRequest {
+  id: ID!
+
+  """The specific reason, for the side that asked only; null for the other."""
+  reason: NoFaultReason
+
+  """What both sides are shown."""
+  label: NoFaultLabel!
+  requestedBy: BookingSide!
+  requestedByYou: Boolean!
+  requestedAt: DateTime!
+
+  """The other side answers by then (48 hours after the request)."""
+  respondBy: DateTime!
+  response: NoFaultResponse
+
+  """Support is deciding."""
+  awaitingSupport: Boolean!
+
+  """
+  The viewer is the other side and may agree or disagree now: the helper until `respondBy`, the poster until support decided.
+  """
+  canRespond: Boolean!
+  decision: NoFaultDecision
+
+  """Still waiting for an answer or a decision."""
+  open: Boolean!
+}
+
+"""How the other side answered a no-fault request."""
+enum NoFaultResponse {
+  AGREED
+  DISAGREED
+
+  """
+  No answer within 48 hours: the poster's request stands; the helper's goes to support.
+  """
+  NO_REPLY
+}
+
+"""What a notification is about."""
+enum NotificationCategory {
+  BOOKING
+  PAYMENT
+  OFFERS
+  MESSAGES
+}
+
+"""How a notification reaches the user."""
+enum NotificationChannel {
+  PUSH
+  EMAIL
+}
+
+type NotificationPreference {
+  """"<category>:<channel>", e.g. "OFFERS:PUSH"."""
+  id: ID!
+  category: NotificationCategory!
+  channel: NotificationChannel!
+  enabled: Boolean!
+
+  """Booking and payment notifications can't be switched off."""
+  locked: Boolean!
+}
+
+"""A helper's priced offer on a task."""
+type Offer {
+  id: ID!
+  taskId: ID!
+
+  """The helper's user ID, for helperProfile."""
+  helperUserId: ID!
+
+  """
+  The helper is a registered business (obrt or company), not a private person.
+  """
+  helperIsTrader: Boolean!
+
+  """A trader helper's business name; null for a private helper."""
+  helperBusinessName: String
+
+  """A trader helper's business OIB; null for a private helper."""
+  helperBusinessOib: String
+
+  """
+  A trader helper's registered business address on one line, never a home address. Only the task's poster sees it; null for everyone else and for a private helper.
+  """
+  helperBusinessAddress: String
+  status: OfferStatus!
+
+  """
+  Why TaskBeavo withdrew the offer, for its helper only; null when the helper withdrew it, when it isn't withdrawn, and for the poster.
+  """
+  withdrawnReason: OfferWithdrawnReason
+
+  """Euro cents; at least 1000."""
+  priceCents: Int!
+
+  """
+  TaskBeavo's service fee on this price from the price list in force, before any credit.
+  """
+  serviceFeeCents: Int!
+
+  """
+  For the task's poster: the TaskBeavo credit checkout would take off the fee now (show it as its own line); 0 for everyone else.
+  """
+  serviceFeeCreditCents: Int!
+
+  """
+  The price list the fee comes from; send it back as acceptOffer's expectedFeeScheduleVersion.
+  """
+  serviceFeeScheduleVersion: String!
+
+  """The rate of that fee in the price list in force (12 today)."""
+  serviceFeePercent: Int!
+
+  """The minimum fee in the price list in force (250 today)."""
+  serviceFeeMinimumCents: Int!
+
+  """
+  What the poster pays: price plus fee, less `serviceFeeCreditCents`. Show it first on offer cards; send it back as acceptOffer's expectedTotalCents.
+  """
+  totalCents: Int!
+
+  """Contact details are masked."""
+  message: String!
+
+  """Contact details were hidden in the message. Helper only."""
+  messageMasked: Boolean
+
+  """7 days after sending or renewing, never past the task's date."""
+  expiresAt: DateTime!
+  isMine: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum OfferStatus {
+  SENT
+
+  """
+  The poster changed the task's date, address or scope; the helper confirms or changes the offer with updateOffer.
+  """
+  NEEDS_UPDATE
+  WITHDRAWN
+
+  """Past its expiry; the helper may renew it."""
+  EXPIRED
+
+  """The poster accepted it; it is being booked."""
+  ACCEPTED
+
+  """The poster accepted another offer. It reopens if that checkout fails."""
+  DECLINED
+}
+
+enum OfferWithdrawnReason {
+  """
+  The task's poster books for a business, so the task takes offers from registered helpers only. It says nothing about the helper.
+  """
+  BUSINESS_POSTER_REGISTERED_ONLY
+}
+
+"""
+Whom the helper meets on site, as the task's poster or the helper of its active booking sees them. Null for everyone else, and for the helper once the booking closes.
+"""
+type OnSiteContact {
+  id: ID!
+  name: String!
+  area: String!
+  language: Locale!
+
+  """
+  E.164. The poster and the helper of an active booking see it; null otherwise.
+  """
+  phone: String
+}
+
+"""The last card attempt of an open checkout. The poster's only."""
+type PaymentAttempt {
+  id: ID!
+  kind: PaymentAttemptKind!
+
+  """
+  Stripe's decline code as an enum key (for example insufficient_funds), or unknown; null unless DECLINED. Translate it; never show it raw.
+  """
+  declineCode: String
+  at: DateTime!
+}
+
+"""A card attempt during checkout, as Stripe's webhook reported it."""
+enum PaymentAttemptKind {
+  """The card was declined or 3D Secure failed; try again or another card."""
+  DECLINED
+
+  """
+  The bank asked the cardholder to confirm, in 3D Secure or a banking app.
+  """
+  AUTHENTICATION_STARTED
+}
+
+"""
+The helper's Stripe Express account, which receives their payments and pays them out. Its state comes from Stripe. Only its owner reads it.
+"""
+type PayoutAccount {
+  id: ID!
+  status: PayoutAccountStatus!
+
+  """Stripe can pay out to the helper's bank account."""
+  payoutsEnabled: Boolean!
+
+  """
+  Stripe's keys of what it needs now, e.g. "individual.verification.document".
+  """
+  requirementsDue: [String!]!
+
+  """When Stripe pauses the account if the requirements aren't met."""
+  currentDeadline: DateTime
+
+  """Set when the status is REJECTED."""
+  rejection: PayoutAccountRejection
+  updatedAt: DateTime!
+}
+
+"""Why Stripe rejected a payout account, as far as the helper is told."""
+enum PayoutAccountRejection {
+  INCOMPLETE_VERIFICATION
+  TERMS_OF_SERVICE
+  OTHER
+}
+
+"""Where the helper's Stripe payout account stands."""
+enum PayoutAccountStatus {
+  """Stripe onboarding isn't finished: continue with startPayoutOnboarding."""
+  INCOMPLETE
+
+  """
+  Stripe asks for more information; offers are paused until it is given (startPayoutOnboarding).
+  """
+  NEEDS_INFO
+
+  """Everything was given and Stripe is checking it."""
+  VERIFYING
+
+  """Can receive payments."""
+  ACTIVE
+
+  """Stripe paused the account (for example under review); support helps."""
+  RESTRICTED
+
+  """Stripe rejected the account; support explains why and how to appeal."""
+  REJECTED
+}
+
+"""
+A single-use link to Stripe's hosted onboarding. Open `url` in the browser before `expiresAt`; Stripe sends the helper back to /helper/payouts/return, or to /helper/payouts/refresh to ask for a new link.
+"""
+type PayoutOnboardingLink {
+  """The payout account's ID."""
+  id: ID!
+  url: String!
+  expiresAt: DateTime!
+  helperProfile: HelperProfile!
+}
+
+"""An SMS code is on its way to the number."""
+type PhoneCodeSent {
+  id: ID!
+
+  """E.g. "+49 ••• 789"."""
+  phoneNumberMasked: String!
+  expiresAt: DateTime!
+
+  """When requestPhoneCode may be called again."""
+  resendAvailableAt: DateTime!
+}
+
+"""
+The obrt or company the signed-in poster books for. While it is set, their tasks take offers from registered helpers only. Only its owner sees it.
+"""
+type PosterBusiness {
+  id: ID!
+  kind: PosterBusinessKind!
+  name: String!
+
+  """The OIB, all but its last four digits hidden."""
+  oibMasked: String!
+}
+
+input PosterBusinessInput {
+  kind: PosterBusinessKind!
+
+  """The obrt's or company's name, up to 200 characters."""
+  name: String!
+
+  """The company's OIB, or for an obrt its owner's own OIB; 11 digits."""
+  oib: String!
+}
+
+"""The kind of registered business a poster books for."""
+enum PosterBusinessKind {
+  OBRT
+  COMPANY
+}
+
+"""Why the poster cancels. The no-fault reasons have their own flow."""
+enum PosterCancelReason {
+  NO_LONGER_NEEDED
+  DIFFERENT_DATE
+  HELPER_ASKED
+  OTHER
+}
+
+"""
+The Google or Apple email already has an account: a 6-digit code was emailed to it. Send `ticket` and the code to `linkProviderWithEmailCode` to add this sign-in to the account. Accounts are never linked on the provider's word alone.
+"""
+type ProviderLinkRequired {
+  """A digest of the ticket, for the cache."""
+  id: ID!
+
+  """The account's address the code went to."""
+  email: String!
+  ticket: String!
+}
+
+input ProviderSignInInput {
+  provider: SignInProvider!
+
+  """The ID token Google or Apple returned."""
+  idToken: String!
+
+  """The nonce from requestSignInNonce, unhashed."""
+  nonce: String!
+
+  """Apple only: the given name Apple handed the app on the first sign-in."""
+  firstName: String! = ""
+
+  """Apple only: the family name Apple handed the app on the first sign-in."""
+  lastName: String! = ""
+}
+
+union ProviderSignInResult = AuthSession | ProviderLinkRequired | AccountDetailsRequired
+
+"""
+What anyone sees of a helper who can send offers. A trader (obrt or company) shows its business name, OIB and the town of its registered address, as a trader must; nothing else personal is here.
+"""
+type PublicHelperProfile {
+  id: ID!
+  isTrader: Boolean!
+
+  """Null unless a trader (and, for a company, until it is verified)."""
+  businessName: String
+
+  """Null unless a trader (and, for a company, until it is verified)."""
+  businessOib: String
+
+  """
+  The town of the registered business address, never the street: the full address is on the trader's offers, for the task's poster only. Null unless a trader (and, for a company, until it is verified).
+  """
+  businessTown: String
+  categories: [TaskCategory!]!
+  serviceAreas: [ServiceArea!]!
+}
+
+"""A device registered for push notifications."""
+type PushDevice {
+  id: ID!
+  platform: PushPlatform!
+}
+
+"""The mobile platform of a push device."""
+enum PushPlatform {
+  IOS
+  ANDROID
+}
+
+type Query {
+  """The signed-in user, or null when signed out."""
+  viewer: User
+
+  """The active service areas, e.g. for helpers choosing where to help."""
+  serviceAreas: [ServiceArea!]!
+
+  """
+  Every service fee price list, newest effective date first: announced ones, the one checkout charges now, then earlier ones (/fees, /fees/archive, pricelist.csv). Public.
+  """
+  serviceFeeSchedules: [ServiceFeeSchedule!]!
+
+  """The cancellation policy's amounts for the /fees refund table. Public."""
+  cancellationAmounts: CancellationAmounts!
+
+  """
+  One of your bookings, as its poster or its helper. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND.
+  """
+  booking(id: ID!): Booking!
+
+  """
+  Your open checkout again, to pay on the same PaymentIntent after leaving the payment sheet. Poster only, while AWAITING_PAYMENT and before `checkoutExpiresAt`. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, CHECKOUT_CLOSED, PAYMENT_UNAVAILABLE.
+  """
+  checkoutSession(bookingId: ID!): CheckoutSession!
+
+  """
+  The signed-in user's on-site contacts, oldest first. Errors: UNAUTHENTICATED.
+  """
+  myCareContacts: [CareContact!]!
+
+  """
+  The signed-in user's helper profile; null until they start one. Errors: UNAUTHENTICATED.
+  """
+  myHelperProfile: HelperProfile
+
+  """
+  A helper's public profile by user ID; null unless the profile is complete and Stripe onboarding was submitted (offers may still be paused while Stripe asks for more). Needs no sign-in.
+  """
+  helperProfile(userId: ID!): PublicHelperProfile
+
+  """
+  The version of a legal document in force now, in `language`; null while none is. Public: sign-up shows and accepts it before the account exists.
+  """
+  currentLegalDocument(kind: LegalDocumentKind!, language: Locale!): LegalDocument
+
+  """
+  One published version of a legal document in `language`, current, earlier or scheduled; null when it doesn't exist or was withdrawn. Public (legal pages).
+  """
+  legalDocument(kind: LegalDocumentKind!, language: Locale!, version: String!): LegalDocument
+
+  """
+  Every readable version of a legal document in `language`, newest effective date first, including scheduled ones; the legal pages link them. Public.
+  """
+  legalDocumentVersions(kind: LegalDocumentKind!, language: Locale!): [LegalDocument!]!
+
+  """
+  Whether the API looks up locations in MaxMind GeoLite2 (GEOIP_CITY_DATABASE and the MaxMind account are configured); the imprint and the privacy notice then show MaxMind's attribution, as the GeoLite EULA requires.
+  """
+  usesGeolite2: Boolean!
+
+  """
+  The signed-in user's notification settings: every category on every channel. Errors: UNAUTHENTICATED.
+  """
+  notificationPreferences: [NotificationPreference!]!
+
+  """
+  Every offer on your task, newest first, including withdrawn and expired ones. If you book for a business, private helpers' offers aren't listed. Errors: UNAUTHENTICATED, TASK_NOT_FOUND.
+  """
+  taskOffers(taskId: ID!): [Offer!]!
+
+  """Your offers as a helper, newest first. Errors: UNAUTHENTICATED."""
+  myOffers: [Offer!]!
+
+  """
+  A task: the poster sees their own in any state, everyone else only OPEN tasks. Errors: TASK_NOT_FOUND.
+  """
+  task(id: ID!): Task!
+
+  """Your tasks, newest first. Errors: UNAUTHENTICATED."""
+  myTasks: [Task!]!
+
+  """
+  One of the signed-in user's uploads, to follow it to READY. Errors: UNAUTHENTICATED, UPLOAD_NOT_FOUND.
+  """
+  upload(id: ID!): Upload!
+
+  """Version of the API contract, for client compatibility checks."""
+  apiVersion: String!
+}
+
+input SendOfferInput {
+  taskId: ID!
+
+  """Euro cents; at least 1000."""
+  priceCents: Int!
+
+  """Optional, up to 1000 characters."""
+  message: String! = ""
+}
+
+"""A city TaskBeavo is open in."""
+type ServiceArea {
+  id: ID!
+  name: String!
+  slug: String!
+}
+
+"""
+A worked example of a price list: what a poster pays for one task price.
+"""
+type ServiceFeeExample {
+  """The schedule's version and the price."""
+  id: ID!
+
+  """The helper's price for the task."""
+  taskPriceCents: Int!
+
+  """TaskBeavo's service fee on that price."""
+  feeCents: Int!
+
+  """What the poster pays: price plus fee."""
+  totalCents: Int!
+
+  """
+  The VAT inside the fee when the schedule's `vat` is INCLUDED; else null.
+  """
+  vatCents: Int
+}
+
+"""
+One published price list of TaskBeavo's service fee (ZZP čl. 7(9)): `percent` of the task price, at least `minimumCents`, from `effectiveFrom`. The numbers are the ones checkout charges (bookings/money.py); never copy them into a client.
+"""
+type ServiceFeeSchedule {
+  """The same as `version`."""
+  id: ID!
+  version: String!
+
+  """The day this list took (or takes) effect, Europe/Zagreb."""
+  effectiveFrom: Date!
+
+  """The fee as a whole percent of the task price."""
+  percent: Int!
+
+  """The least fee charged, in euro cents."""
+  minimumCents: Int!
+
+  """
+  CURRENT: checkout charges it now. UPCOMING: announced, charged from `effectiveFrom`. EARLIER: replaced, kept for the archive.
+  """
+  status: ServiceFeeScheduleStatus!
+  vat: ServiceFeeVat!
+
+  """The VAT rate when `vat` is INCLUDED."""
+  vatPercent: Int!
+
+  """Worked examples for the /fees page, one of them at the minimum."""
+  examples: [ServiceFeeExample!]!
+}
+
+"""Where a service fee price list stands today."""
+enum ServiceFeeScheduleStatus {
+  UPCOMING
+  CURRENT
+  EARLIER
+}
+
+"""
+Whether the service fee includes VAT. UNDECIDED until the accountant picks INCLUDED (variant A) or NOT_CHARGED (variant B); show neither while UNDECIDED.
+"""
+enum ServiceFeeVat {
+  UNDECIDED
+  INCLUDED
+  NOT_CHARGED
+}
+
+"""Where a session signed in."""
+enum SessionPlatform {
+  WEB
+  IOS
+  ANDROID
+}
+
+"""A one-time nonce for a Google or Apple sign-in."""
+type SignInNonce {
+  """A digest of the nonce, for the cache."""
+  id: ID!
+
+  """
+  Pass it to Google or Apple as the sign-in nonce (as is, or its SHA-256 hex digest), then send it with the ID token to signInWithProvider.
+  """
+  nonce: String!
+  expiresAt: DateTime!
+}
+
+"""A sign-in provider."""
+enum SignInProvider {
+  GOOGLE
+  APPLE
+}
+
+union SignInResult = AuthSession | AccountDetailsRequired
+
+type Subscription {
+  """
+  Your booking changed: its status (FUNDS_HELD once Stripe confirms the payment), or, for the poster, a card attempt of its checkout. Yields the whole booking. Errors: UNAUTHENTICATED.
+  """
+  bookingUpdated(id: ID!): Booking!
+
+  """A helper sent an offer on your task. Errors: UNAUTHENTICATED."""
+  offerReceived(taskId: ID!): Offer!
+
+  """A helper withdrew an offer on your task. Errors: UNAUTHENTICATED."""
+  offerWithdrawn(taskId: ID!): Offer!
+
+  """
+  An offer on your task expires within a day; the helper may renew it. Errors: UNAUTHENTICATED.
+  """
+  offerExpiring(taskId: ID!): Offer!
+
+  """
+  A helper changed or renewed an offer on your task: its price, message or expiry. Errors: UNAUTHENTICATED.
+  """
+  offerUpdated(taskId: ID!): Offer!
+}
+
+"""
+A task. Everyone who may see it gets the public fields. The exact address, access details and on-site contact are for the poster and the helper of the task's active booking; `careContact` and the moderation fields are for the poster only.
+"""
+type Task {
+  id: ID!
+  status: TaskStatus!
+  category: TaskCategory
+  title: String!
+  description: String!
+
+  """About a kilometre off the real place; safe to show on a map."""
+  approximateLat: Float
+  approximateLng: Float
+  serviceAreaName: String
+  windowStart: DateTime
+  windowEnd: DateTime
+  flexibleDate: Boolean!
+
+  """Euro cents; at least 1000."""
+  budgetCents: Int
+  photos: [TaskPhoto!]!
+  isMine: Boolean!
+  createdAt: DateTime!
+  publishedAt: DateTime
+  address: String
+
+  """The exact place. The poster and the helper of an active booking."""
+  lat: Float
+  lng: Float
+
+  """
+  Doorbell, floor, gate code, key. The poster and the helper of an active booking.
+  """
+  accessDetails: String
+
+  """Whom the helper meets. The poster and the helper of an active booking."""
+  onSiteContact: OnSiteContact
+  careContact: CareContact
+
+  """Contact details were hidden in title or description. Poster only."""
+  textMasked: Boolean
+
+  """Why the task is PENDING_REVIEW. Poster only."""
+  holdReasons: [TaskHoldReason!]
+}
+
+"""What kind of help a task asks for."""
+enum TaskCategory {
+  GARDEN
+  ERRANDS
+  REPAIRS
+  CLEANING
+  CHECK_IN
+}
+
+"""Why a task waits for review."""
+enum TaskHoldReason {
+  """The text may contain contact details."""
+  CONTACT_DETAILS
+
+  """The text reads like a ride, medical care or personal care."""
+  EXCLUDED_CATEGORY
+}
+
+"""Every field of a task. Omitted fields stay as they are on edits."""
+input TaskInput {
+  """
+  TaskCategory lists only categories TaskBeavo accepts, so rides, medical and personal care fail schema validation.
+  """
+  category: TaskCategory = null
+  title: String = null
+  description: String = null
+  location: TaskLocationInput = null
+  accessDetails: String = null
+
+  """One of your on-site contacts; "" removes it."""
+  careContactId: ID = null
+  windowStart: DateTime = null
+  windowEnd: DateTime = null
+  flexibleDate: Boolean = null
+  budgetCents: Int = null
+
+  """Your READY task-photo uploads, in order; replaces the task's photos."""
+  photoIds: [ID!] = null
+}
+
+input TaskLocationInput {
+  """The exact address; shown to the poster only."""
+  address: String!
+  lat: Float!
+  lng: Float!
+}
+
+"""A saved task and what the poster should know. Its `id` is the task's."""
+type TaskPayload {
+  id: ID!
+  task: Task!
+  warnings: [TaskWarning!]!
+}
+
+type TaskPhoto {
+  id: ID!
+  url: String!
+}
+
+enum TaskStatus {
+  DRAFT
+
+  """Published but held until staff check it; see `holdReasons`."""
+  PENDING_REVIEW
+  OPEN
+  CLOSED
+}
+
+"""Something the poster should know; not an error."""
+enum TaskWarning {
+  """You already have an open task at this address on this day."""
+  DUPLICATE_TASK
+}
+
+input UpdateCareContactInput {
+  name: String = null
+  phone: String = null
+  area: String = null
+  language: Locale = null
+  noSmartphone: Boolean = null
+}
+
+"""Fields to set; omitted fields stay as they are."""
+input UpdateHelperProfileInput {
+  """Changing away from BUSINESS removes the business details."""
+  status: HelperStatus = null
+
+  """Only with the BUSINESS status."""
+  business: HelperBusinessInput = null
+
+  """
+  The registered business address, only with the BUSINESS status. The poster of a task sees it on the helper's offer, at checkout and in the contract confirmation; the public profile shows only the town.
+  """
+  businessAddress: HelperBusinessAddressInput = null
+  legalFirstName: String = null
+  legalLastName: String = null
+  birthDate: Date = null
+  address: HelperAddressInput = null
+  oib: String = null
+
+  """An EU account; spaces are ignored."""
+  iban: String = null
+
+  """Empty string ("") removes it."""
+  vatId: String = null
+  residenceCountry: String = null
+
+  """Replaces the service areas; IDs from serviceAreas."""
+  serviceAreaIds: [ID!] = null
+
+  """Replaces the categories."""
+  categories: [TaskCategory!] = null
+}
+
+"""Fields to change; omit all of them to confirm the offer as it is."""
+input UpdateOfferInput {
+  priceCents: Int = null
+  message: String = null
+}
+
+"""A photo the signed-in user uploaded."""
+type Upload {
+  id: ID!
+  purpose: UploadPurpose!
+  status: UploadStatus!
+  contentType: String!
+  sizeBytes: Int!
+  width: Int
+  height: Int
+
+  """
+  UPLOAD_INVALID_IMAGE, UPLOAD_TOO_LARGE or UPLOAD_CHANGED when REJECTED.
+  """
+  rejectionCode: ErrorCode
+
+  """
+  Where to load the photo once READY. Until a task photo is published (after a task claims it), and always for an evidence photo, the URL is valid for a few minutes; query again for a fresh one.
+  """
+  url: String
+}
+
+"""What a photo is for. Decides who may see it and what is kept."""
+enum UploadPurpose {
+  """Shown to other users; stored without any metadata (no GPS)."""
+  TASK_PHOTO
+
+  """
+  Proof for a booking. Private; its capture time and position are kept server-side and viewers see a copy without metadata.
+  """
+  EVIDENCE_PHOTO
+}
+
+"""Where an upload is in its life."""
+enum UploadStatus {
+  """Waiting for the PUT and completeUpload."""
+  PENDING
+
+  """Received; being checked and cleaned."""
+  PROCESSING
+
+  """Ready to use; `url` is set for the owner."""
+  READY
+
+  """Not a valid image; see `rejectionCode`."""
+  REJECTED
+}
+
+"""
+Where to PUT the file: send the bytes as the body with exactly `contentType` as the Content-Type header and the declared size, before `expiresAt`. Then call completeUpload. Its `id` is the upload's.
+"""
+type UploadTarget {
+  id: ID!
+  upload: Upload!
+  url: String!
+
+  """Always "PUT"."""
+  method: String!
+  contentType: String!
+  expiresAt: DateTime!
+}
+
+"""The signed-in account, as its owner sees it."""
+type User {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  locale: Locale!
+
+  """ISO 3166-1 alpha-2 country code."""
+  country: String!
+
+  """IANA time zone, e.g. "Europe/Berlin"."""
+  timeZone: String!
+
+  """
+  Whether the mobile number is verified; posting, offering and chat need it.
+  """
+  phoneVerified: Boolean!
+
+  """
+  The verified mobile number, masked ("+385 ••• 678"); null until verified. Only its owner ever sees it.
+  """
+  phoneNumberMasked: String
+
+  """
+  ACTIVE, or the limited mode the account is in: TERMS_UPDATE_REQUIRED until the terms version in force is accepted, SUSPENDED, or DELETION_PENDING.
+  """
+  accountState: AccountState!
+
+  """
+  Whether the terms version in force still has to be accepted: show "We've updated our terms" with `termsToAccept` and call acceptCurrentTerms. True also while the account is SUSPENDED or DELETION_PENDING, whose state `accountState` reports first.
+  """
+  mustAcceptTerms: Boolean!
+
+  """
+  What "We've updated our terms" shows, in `language`: the version in force while it still has to be accepted, null otherwise. The tick box names its `version` and `effectiveAt`; send that version to acceptCurrentTerms. Its `kind` says which document it is (TERMS today; HELPER_TERMS once helpers re-accept helper terms).
+  """
+  termsToAccept(language: Locale!): LegalDocument
+
+  """
+  The obrt or company you book for, or null. While it is set, your tasks take offers from registered helpers only.
+  """
+  posterBusiness: PosterBusiness
+}
+
+"""
+A place on the waitlist for a city. Only what the caller sent comes back, so the answer doesn't tell whether the address was already on the list.
+"""
+type WaitlistEntry {
+  id: ID!
+  city: String!
+  countryCode: String!
+  category: TaskCategory!
+}

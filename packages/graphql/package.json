@@ -1,0 +1,38 @@
+{
+  "name": "@taskbeavo/graphql",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "GraphQL schema, operations, generated types and Apollo type policies",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema.graphql": "./schema.graphql"
+  },
+  "scripts": {
+    "codegen": "graphql-codegen --config codegen.ts",
+    "check:generated": "node scripts/check-generated.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@apollo/client": "4.3.5",
+    "@graphql-codegen/cli": "7.4.6",
+    "@graphql-codegen/client-preset": "6.2.3",
+    "@taskbeavo/eslint-config": "workspace:*",
+    "@taskbeavo/tsconfig": "workspace:*",
+    "eslint": "10.13.0",
+    "rxjs": "7.8.2",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  },
+  "dependencies": {
+    "@graphql-typed-document-node/core": "3.2.0",
+    "graphql": "17.0.2",
+    "graphql-ws": "6.4.1"
+  },
+  "peerDependencies": {
+    "@apollo/client": "^4.3.5"
+  }
+}

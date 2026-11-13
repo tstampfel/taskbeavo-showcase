@@ -1,0 +1,13 @@
+{% extends "email/base.html" %}{% load i18n %}
+{% block title %}{% translate "New login to your account" %}{% endblock %}
+{% block content %}
+<h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#17211C;">{% translate "New login to your account" %}</h1>
+<p style="margin:0 0 16px;">{% translate "Someone just signed in to your TaskBeavo account on a device we haven't seen before." %}</p>
+<p style="margin:0 0 4px;"><strong>{% translate "Device:" %}</strong> {{ device }}</p>
+{% if location %}<p style="margin:0 0 4px;"><strong>{% translate "Approximate location:" %}</strong> {{ location }}</p>{% endif %}
+<p style="margin:0 0 16px;"><strong>{% translate "Time:" %}</strong> {{ signed_in_at|date:"DATETIME_FORMAT" }}</p>
+<p style="margin:0 0 16px;">{% translate "If this was you, you don't need to do anything." %}</p>
+<p style="margin:0 0 24px;">{% translate "If it wasn't you, log out of all devices now. Whoever signed in loses access straight away." %}</p>
+<p style="margin:0;"><a href="{{ link }}" style="display:inline-block;padding:12px 20px;min-height:20px;background-color:#1F5C46;color:#FFFFFF;border-radius:8px;font-weight:700;text-decoration:none;">{% translate "This wasn't me" %}</a></p>
+{% endblock %}
+{% block reason %}{% translate "You're receiving this security notice because a new device signed in to your TaskBeavo account." %}{% endblock %}

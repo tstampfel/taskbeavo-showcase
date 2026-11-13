@@ -1,0 +1,46 @@
+{
+  "name": "@taskbeavo/web",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "Next.js web app (App Router, Vercel fra1)",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@apollo/client": "4.3.5",
+    "@apollo/client-integration-nextjs": "0.14.5",
+    "@sentry/nextjs": "11.7.0",
+    "@stripe/react-stripe-js": "7.0.0",
+    "@stripe/stripe-js": "10.0.0",
+    "@taskbeavo/app-links": "workspace:*",
+    "@taskbeavo/graphql": "workspace:*",
+    "@taskbeavo/i18n": "workspace:*",
+    "@taskbeavo/ui-tokens": "workspace:*",
+    "graphql": "17.0.2",
+    "next": "16.4.3",
+    "next-intl": "4.14.9",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "16.4.3",
+    "@playwright/test": "1.64.1",
+    "@taskbeavo/eslint-config": "workspace:*",
+    "@taskbeavo/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "10.13.0",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  }
+}

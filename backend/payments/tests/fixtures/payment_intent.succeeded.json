@@ -1,0 +1,28 @@
+{
+  "id": "evt_3TestPaymentIntentSucceeded",
+  "object": "event",
+  "api_version": "2026-09-30.endive",
+  "created": 1793520000,
+  "data": {
+    "object": {
+      "id": "pi_3TestDestinationCharge",
+      "object": "payment_intent",
+      "amount": 3360,
+      "amount_received": 3360,
+      "application_fee_amount": 360,
+      "automatic_payment_methods": {"allow_redirects": "never", "enabled": true},
+      "currency": "eur",
+      "latest_charge": "ch_3TestDestinationCharge",
+      "livemode": false,
+      "metadata": {"booking_id": "42"},
+      "on_behalf_of": "acct_1TestHelperExpress",
+      "status": "succeeded",
+      "transfer_data": {"destination": "acct_1TestHelperExpress"},
+      "transfer_group": "group_pi_3TestDestinationCharge"
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {"id": "req_TestAcceptOffer", "idempotency_key": "booking:42:payment_intent:v1"},
+  "type": "payment_intent.succeeded"
+}

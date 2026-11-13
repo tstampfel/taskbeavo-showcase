@@ -1,0 +1,6 @@
+{% extends "email/base.txt" %}{% load i18n %}
+{% block content %}{{ title }}
+
+{{ body }}
+
+{% translate "Open TaskBeavo" %}: {{ link }}{% endblock %}

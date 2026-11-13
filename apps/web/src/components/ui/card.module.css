@@ -1,0 +1,22 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-md);
+  box-sizing: border-box;
+  padding: var(--tb-space-lg);
+  border-radius: var(--tb-radius-lg);
+  background: var(--tb-color-white);
+  color: var(--tb-color-ink);
+}
+
+.raised {
+  box-shadow: var(--tb-shadow-card);
+}
+
+.flat {
+  border: var(--tb-border-thin) solid var(--tb-color-line);
+}
+
+.selected {
+  outline: var(--tb-border-focus) solid var(--tb-color-green);
+}

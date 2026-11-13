@@ -1,0 +1,31 @@
+# Share project Claude Code config (overrides **/.claude/ in the global gitignore)
+!/.claude/
+/.claude/settings.local.json
+!/.claude/settings.json
+
+# Generated HTML mockups
+/design/mockups/dist/
+
+# Review reports written by the taskbeavo-reviewer skill
+/.reviews/
+
+# Local secrets (Stripe keys, FINA certificate path, etc.); commit .env.example only
+.env
+.env.*
+!.env.example
+
+# Python bytecode (backend/.gitignore covers backend/; this covers scripts/ and the rest)
+__pycache__/
+*.pyc
+
+# JS tooling
+node_modules/
+.turbo/
+dist/
+*.tsbuildinfo
+
+# Certificates and keys (the FINA certificate is a Render secret file)
+*.p12
+*.pfx
+*.pem
+*.key

@@ -1,0 +1,1 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate %}{{ code }} is your TaskBeavo code{% endblocktranslate %}{% endautoescape %}

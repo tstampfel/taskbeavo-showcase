@@ -1,0 +1,30 @@
+{% extends "email/base.txt" %}{% load i18n %}
+{% block content %}{% translate "Your booking is confirmed" %}
+
+{% blocktranslate %}Hello, {{ first_name }}!{% endblocktranslate %}
+
+{% translate "Your payment is held and your booking is confirmed. Please keep this email: it confirms your contract." %}
+
+{% translate "Your booking" %}
+{% translate "Task" %}: {{ task_title }}
+{% translate "Start (Croatian time)" %}: {{ start }}
+{% translate "Helper" %}: {{ helper_name }}, {% if helper_is_trader %}{% if trader_name %}{% blocktranslate %}Registered business: {{ trader_name }}, OIB {{ trader_oib }}{% endblocktranslate %}{% if trader_address %}
+{% blocktranslate %}Registered address: {{ trader_address }}{% endblocktranslate %}{% endif %}{% else %}{% translate "Registered business" %}{% endif %}{% else %}{% translate "Private individual" %}{% endif %}
+{% translate "Task price" %}: {{ price }}
+{% translate "TaskBeavo service fee" %}: {{ fee }}
+{% translate "Total paid" %}: {{ total }}
+
+{% translate "Your payment is held until you release it. TaskBeavo arranges this booking as the helper's agent; the contract for the task is between you and the helper." %}
+
+{% translate "Cancellation and withdrawal" %}
+{% blocktranslate %}The attached cancellation policy, version {{ cancellation_version }}, applies to this booking. It includes the information on your right of withdrawal and the model withdrawal form.{% endblocktranslate %}
+
+{% if helper_is_trader %}{% translate "Your right of withdrawal covers both your service fee contract with TaskBeavo and the task contract with the helper's registered business." %}
+
+{% blocktranslate %}On {{ early_start_at }} (Croatian time) you expressly asked for the booking to be arranged and the task performed within your 14-day withdrawal period, and you acknowledged that you lose your right of withdrawal from each contract once that service has been fully performed.{% endblocktranslate %}{% else %}{% translate "Your right of withdrawal covers only your service fee contract with TaskBeavo. The task is agreed with a private individual, so the task itself has no statutory right of withdrawal." %}
+
+{% blocktranslate %}On {{ early_start_at }} (Croatian time) you expressly asked TaskBeavo to arrange the booking within your 14-day withdrawal period for the service fee, and you acknowledged that you lose that right of withdrawal once TaskBeavo's service has been fully performed.{% endblocktranslate %}{% endif %}
+
+{% blocktranslate %}Your service fee contract is with {{ taskbeavo_name }}, OIB {{ taskbeavo_oib }}, {{ taskbeavo_address }}, {{ taskbeavo_email }}.{% endblocktranslate %}
+
+{% translate "Open TaskBeavo" %}: {{ link }}{% endblock %}

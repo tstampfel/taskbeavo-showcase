@@ -1,0 +1,4 @@
+{
+  "extends": "@taskbeavo/tsconfig/library.json",
+  "include": ["src", "codegen.ts"]
+}

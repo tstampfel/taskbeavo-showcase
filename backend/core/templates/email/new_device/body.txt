@@ -1,0 +1,12 @@
+{% extends "email/base.txt" %}{% load i18n %}
+{% block content %}{% translate "Someone just signed in to your TaskBeavo account on a device we haven't seen before." %}
+
+{% translate "Device:" %} {{ device }}
+{% if location %}{% translate "Approximate location:" %} {{ location }}
+{% endif %}{% translate "Time:" %} {{ signed_in_at|date:"DATETIME_FORMAT" }}
+
+{% translate "If this was you, you don't need to do anything." %}
+{% translate "If it wasn't you, log out of all devices now. Whoever signed in loses access straight away." %}
+
+{% translate "This wasn't me" %}: {{ link }}{% endblock %}
+{% block reason %}{% translate "You're receiving this security notice because a new device signed in to your TaskBeavo account." %}{% endblock %}

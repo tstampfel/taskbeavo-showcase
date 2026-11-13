@@ -1,0 +1,81 @@
+[project]
+name = "taskbeavo-backend"
+version = "0.1.0"
+description = "TaskBeavo API: Django, Strawberry GraphQL, Channels and Celery"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "django>=5.2,<6",
+    "strawberry-graphql[channels]>=0.270",
+    "strawberry-graphql-django>=0.60",
+    "channels>=4.2",
+    "channels-redis>=4.2",
+    "celery[redis]>=5.5",
+    "redis>=5.2",
+    "psycopg[binary]>=3.2",
+    "dj-database-url>=2.3",
+    "gunicorn>=23",
+    "uvicorn[standard]>=0.34",
+    "uvicorn-worker>=0.3",
+    "opentelemetry-api>=1.30",
+    "pyjwt>=2.10",
+    # Expo push and Resend HTTP APIs (notifications/expo.py, core/resend.py).
+    "requests>=2.32",
+    "sentry-sdk[celery,django]>=2.70",
+    "opentelemetry-sdk>=1.30",
+    "opentelemetry-exporter-otlp-proto-http>=1.30",
+    "opentelemetry-instrumentation-django>=0.51b0",
+    "opentelemetry-instrumentation-asgi>=0.51b0",
+    "opentelemetry-instrumentation-celery>=0.51b0",
+    "opentelemetry-instrumentation-psycopg>=0.51b0",
+    "opentelemetry-instrumentation-redis>=0.51b0",
+    "opentelemetry-instrumentation-requests>=0.51b0",
+    "boto3>=1.40",
+    "pillow>=11",
+    "phonenumberslite>=9",
+    "cryptography>=45",
+    "stripe>=16",
+    "maxminddb>=2.6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.10",
+    "ruff>=0.11",
+    "pyright>=1.1.400",
+    "django-types>=0.20",
+    "celery-types>=0.23",
+    # channels.testing imports daphne.
+    "daphne>=4.1",
+]
+
+[tool.uv]
+package = false
+# Supply-chain age rule, like pnpm's minimumReleaseAge: never lock a release that is
+# less than 14 days old.
+exclude-newer = "14 days"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+addopts = "-ra --strict-markers"
+testpaths = ["."]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["**/migrations/*.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ", "S", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/*.py" = ["S101", "S105", "S106"]
+
+[tool.pyright]
+include = ["accounts", "areas", "config", "core", "moderation", "notifications", "payments", "uploads", "manage.py"]
+exclude = ["**/migrations", ".venv"]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"

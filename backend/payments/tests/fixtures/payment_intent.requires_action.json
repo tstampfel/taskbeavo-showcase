@@ -1,0 +1,39 @@
+{
+  "id": "evt_3TestPaymentIntentRequiresAction",
+  "object": "event",
+  "api_version": "2026-09-30.endive",
+  "created": 1793520000,
+  "data": {
+    "object": {
+      "id": "pi_3TestDestinationCharge",
+      "object": "payment_intent",
+      "amount": 3360,
+      "amount_received": 0,
+      "application_fee_amount": 360,
+      "automatic_payment_methods": {
+        "allow_redirects": "never",
+        "enabled": true
+      },
+      "currency": "eur",
+      "livemode": false,
+      "metadata": {
+        "booking_id": "42"
+      },
+      "on_behalf_of": "acct_1TestHelperExpress",
+      "status": "requires_action",
+      "transfer_data": {
+        "destination": "acct_1TestHelperExpress"
+      },
+      "next_action": {
+        "type": "use_stripe_sdk"
+      }
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": null,
+    "idempotency_key": null
+  },
+  "type": "payment_intent.requires_action"
+}

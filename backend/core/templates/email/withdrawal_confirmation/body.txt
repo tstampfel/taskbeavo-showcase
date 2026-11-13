@@ -1,0 +1,16 @@
+{% extends "email/base.txt" %}{% load i18n %}
+{% block content %}{% if legal_text %}{{ legal_text }}
+{% else %}{% translate "Withdrawal received" %}
+
+{% blocktranslate %}Hello, {{ first_name }}!{% endblocktranslate %}
+
+{% translate "Received (Croatian time)" %}: {{ submitted_at }}
+{% translate "Your statement" %}: {% translate "Withdraw from contract" %}
+{% translate "Booking" %}: {{ booking_id }}
+{% translate "Task" %}: {{ task_title }}
+{% translate "Start (Croatian time)" %}: {{ start }}
+{% translate "Work started" %}: {% if work_started %}{% translate "Yes" %}{% else %}{% translate "No" %}{% endif %}
+{% translate "Total paid" %}: {{ total }}
+{% translate "Refund" %}: {% if work_started %}{% translate "The part not yet done, once our team has worked it out" %}{% else %}{% blocktranslate %}{{ total }} to your card{% endblocktranslate %}{% endif %}
+{% endif %}
+{% translate "Open TaskBeavo" %}: {{ link }}{% endblock %}

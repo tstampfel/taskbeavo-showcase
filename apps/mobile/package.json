@@ -1,0 +1,81 @@
+{
+  "name": "@taskbeavo/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "Expo mobile app (Expo Router, development builds, EAS)",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "dev": "expo start --dev-client",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "prebuild": "expo prebuild --clean",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --no-watchman"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(?:\\.pnpm/[^/]+/node_modules/)?((jest-)?react-native|@sentry/.*|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|expo-router|intl-messageformat|@formatjs/.*|react-navigation|@react-navigation/.*|standard-navigation))"
+    ],
+    "moduleNameMapper": {
+      "^@stripe/stripe-react-native$": "@stripe/stripe-react-native/jest/mock.js"
+    }
+  },
+  "dependencies": {
+    "@apollo/client": "4.3.5",
+    "@expo-google-fonts/manrope": "^0.4.2",
+    "@formatjs/intl-pluralrules": "6.3.16",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@sentry/react-native": "~8.28.0",
+    "@stripe/stripe-react-native": "0.81.0",
+    "@taskbeavo/app-links": "workspace:*",
+    "@taskbeavo/graphql": "workspace:*",
+    "@taskbeavo/i18n": "workspace:*",
+    "@taskbeavo/ui-tokens": "workspace:*",
+    "apollo3-cache-persist": "0.15.0",
+    "expo": "~58.0.19",
+    "expo-apple-authentication": "58.0.2",
+    "expo-auth-session": "58.0.13",
+    "expo-build-properties": "58.0.11",
+    "expo-constants": "~58.0.13",
+    "expo-crypto": "58.0.7",
+    "expo-dev-client": "~58.0.15",
+    "expo-font": "~58.0.10",
+    "expo-image-picker": "~58.0.10",
+    "expo-linking": "~58.0.14",
+    "expo-localization": "~58.0.5",
+    "expo-router": "~58.0.26",
+    "expo-secure-store": "~58.0.2",
+    "expo-splash-screen": "~58.0.11",
+    "expo-status-bar": "~58.0.4",
+    "expo-system-ui": "~58.0.6",
+    "expo-updates": "~58.0.18",
+    "expo-web-browser": "58.0.6",
+    "graphql": "17.0.2",
+    "i18next": "^26.5.11",
+    "i18next-icu": "^2.6.1",
+    "intl-messageformat": "^12.1.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-i18next": "^17.1.9",
+    "react-native": "0.88.0",
+    "react-native-credentials-manager": "0.9.0",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@taskbeavo/eslint-config": "workspace:*",
+    "@taskbeavo/tsconfig": "workspace:*",
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.3.0",
+    "eslint": "10.13.0",
+    "jest": "^30.5.2",
+    "jest-expo": "^58.0.12",
+    "typescript": "6.0.3"
+  }
+}

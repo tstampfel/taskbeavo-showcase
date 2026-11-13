@@ -1,0 +1,98 @@
+<div class="screen" id="19a Settings · Privacy & data">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Privacy &amp; data</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="card" style="padding:4px 14px;gap:0">
+   <div class="row" style="height:64px"><div class="col grow" style="gap:0"><span class="p" style="font-weight:700">Analytics</span><span class="c mut">Helps us improve the app. Off until you agree.</span></div><span class="toggle"></span></div><div class="hr"></div>
+   <div class="row" style="height:64px"><div class="col grow" style="gap:0"><span class="p" style="font-weight:700">News and offers</span><span class="c mut">Email and push. Booking messages always arrive.</span></div><span class="toggle"></span></div><div class="hr"></div>
+   <div class="row" style="height:64px"><div class="col grow" style="gap:0"><span class="p" style="font-weight:700">Price-suggestion statistics</span><span class="c mut">Use my tasks, anonymously, for price ranges</span></div><span class="toggle on"></span></div>
+  </div>
+  <div class="card" style="padding:4px 14px;gap:0">
+   <div class="row p" style="height:52px">{{i:download:20:#1F5C46}}<span class="grow">Download my data</span>{{i:right:18:#5E6661}}</div><div class="hr"></div>
+   <div class="row p" style="height:52px">{{i:logout:20:#1F5C46}}<span class="grow">Log out of all devices</span>{{i:right:18:#5E6661}}</div><div class="hr"></div>
+   <div class="row p" style="height:52px">{{i:shield:20:#1F5C46}}<span class="grow">Privacy notice</span>{{i:right:18:#5E6661}}</div><div class="hr"></div>
+   <div class="row p err" style="height:52px">{{i:trash:20:#C8452F}}<span class="grow">Delete my account</span>{{i:right:18:#C8452F}}</div>
+  </div>
+  <span class="c mut">Every choice is saved with the date and version of the text you agreed to.</span>
+ </div>
+ {{tab:profile}}
+</div>
+
+<div class="screen" id="19b Onboarding · Analytics consent">{{sb}}
+ <div class="body center" style="justify-content:center;gap:14px">
+  {{beaver:140:stand}}
+  <div class="h1">Help us improve TaskBeavo?</div>
+  <div class="p mut" style="max-width:310px">We'd like to count which screens you use. No ads, no tracking across other apps. You can change this anytime in Settings.</div>
+ </div>
+ <div class="foot"><div class="btn pri">Allow analytics</div><div class="btn sec">No thanks</div></div>
+</div>
+
+<div class="screen" id="19c Download my data">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Download my data</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <span class="p">We'll build a ZIP with everything we hold about you and email you a link.</span>
+  <div class="card flat" style="gap:6px;padding:14px"><span class="c" style="font-weight:800">INCLUDED</span>
+   <span class="s">Profile · tasks · offers · bookings · payments · reviews · messages · photos · consents</span>
+   <span class="c mut">JSON and CSV. Other people's phone numbers and addresses are removed; their messages in your chats stay.</span></div>
+  <div class="card" style="gap:6px;padding:14px;flex-direction:row;align-items:center">{{i:clock:22:#C77A12}}<div class="col grow" style="gap:0"><span class="s" style="font-weight:800">Preparing your data…</span><span class="c mut">Requested 25 Oct · link valid for 7 days</span></div><span class="badge b-orange">In progress</span></div>
+ </div>
+ <div class="foot"><div class="btn dis">Request data export</div><span class="c mut" style="text-align:center">You'll get an email at ana.kovac@example.com</span></div>
+</div>
+
+<div class="screen" id="19d Delete account · confirm">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Delete my account</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="card flat" style="gap:6px;padding:14px"><span class="s" style="font-weight:800">We delete</span><span class="s mut">Profile, photos, saved addresses, family contacts, chats and device tokens. Your name in reviews becomes "Former user".</span></div>
+  <div class="card flat" style="gap:6px;padding:14px"><span class="s" style="font-weight:800">We must keep, locked away</span><span class="s mut">Fee receipts and booking amounts for 11 years (Croatian Accounting Act). Nothing else uses them.</span></div>
+  <div class="label">Enter the code we emailed you</div>
+  <div class="row" style="gap:8px"><div class="input focus num" style="width:50px;height:56px;justify-content:center;font-size:22px;font-weight:800;padding:0">2</div><div class="input focus num" style="width:50px;height:56px;justify-content:center;font-size:22px;font-weight:800;padding:0">9</div><div class="input focus num" style="width:50px;height:56px;justify-content:center;font-size:22px;font-weight:800;padding:0">1</div><div class="input focus num" style="width:50px;height:56px;justify-content:center;font-size:22px;font-weight:800;padding:0">5</div><div class="input focus num" style="width:50px;height:56px;justify-content:center;font-size:22px;font-weight:800;padding:0">0</div><div class="input focus num" style="width:50px;height:56px;justify-content:center;font-size:22px;font-weight:800;padding:0">4</div></div>
+ </div>
+ <div class="foot"><div class="btn danger">Delete my account</div><div class="btn ghost sm">Keep my account</div></div>
+</div>
+
+<div class="screen" id="19e Delete account · blocked by open booking">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Delete my account</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="note warn" style="padding:14px">{{i:lock:22:#7A4806}}<span style="font-size:14px;line-height:20px">You have <b>€33.60 held via Stripe</b> for "Grocery run for Mama" on Sat. We can't delete your account until it's released, refunded or the dispute is closed.</span></div>
+  <div class="card" style="gap:6px;padding:14px"><span class="s" style="font-weight:800">Schedule deletion instead</span><span class="s mut">We'll lock your account for new tasks now and delete it automatically when the booking closes. You'll get an email when it's done.</span></div>
+ </div>
+ <div class="foot"><div class="btn danger">Schedule deletion</div><div class="btn ghost sm">Go to the booking</div></div>
+</div>
+
+<div class="screen" id="19f Deletion confirmation email">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Mail</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="card" style="gap:10px;padding:20px">
+   <div class="row" style="gap:10px">{{beaver:40:stand}}<div class="col" style="gap:0"><span class="s" style="font-weight:800">TaskBeavo</span><span class="c mut">2 Nov · request DR-0093</span></div></div>
+   <div class="h2">Your account has been deleted</div>
+   <div class="col" style="gap:4px"><span class="c" style="font-weight:800">DELETED</span><span class="s mut">Profile, photos, 2 saved addresses, 1 family contact, 38 messages, 4 device tokens</span></div>
+   <div class="col" style="gap:4px"><span class="c" style="font-weight:800">KEPT, RESTRICTED</span><span class="s mut">6 fee receipts and booking amounts, until 31 Dec 2037 (Accounting Act)</span></div>
+   <div class="col" style="gap:4px"><span class="c" style="font-weight:800">STRIPE</span><span class="s mut">Stripe keeps its own payment records. Contact Stripe for your copy.</span></div>
+   <span class="c mut">Questions? Reply to this email, or contact AZOP, the Croatian data protection agency.</span>
+  </div>
+ </div>
+</div>
+
+<div class="screen" id="19g On-site contact · consent note">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Add on-site contact</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:10px;padding-top:0">
+  <div class="label">Name</div><div class="input" style="color:#17211C">Mama Kata</div>
+  <div class="label">Phone</div><div class="input" style="color:#17211C">+385 98 ••• ••••</div>
+  <div class="label">Area</div><div class="input" style="color:#17211C">Gruž, Dubrovnik</div>
+  <div class="label">Language</div><div class="seg" style="height:44px"><span class="on">HR</span><span>EN</span><span>DE</span><span>FR</span></div>
+  <div class="row s" style="height:44px"><span class="grow">Doesn't use a smartphone</span><span class="toggle on"></span></div>
+  <div class="note warn">{{i:info:18:#7A4806}}<span>Please make sure Mama Kata agrees to this. Don't add health details. She'll get one SMS reminder before each visit, which explains how to contact us.</span></div>
+ </div>
+ <div class="foot"><div class="btn pri">Save contact</div></div>
+</div>
+
+<div class="screen web" id="19h Web cookie banner 1440" style="height:900px">
+ <div class="row between" style="height:72px;padding:0 120px;background:#fff;border-bottom:1px solid #E3E1D8;flex:none">
+  <div class="row" style="gap:10px">{{beaver:40:stand}}<span class="h2 green" style="font-weight:800">TaskBeavo</span></div>
+  <div class="row" style="gap:12px"><span class="chip">{{i:globe:16:#1F5C46}} FR {{i:down:14}}</span><span class="btn pri sm">Post a task</span></div>
+ </div>
+ <div class="row" style="padding:80px 120px;gap:48px;opacity:.5"><div class="col grow" style="gap:20px"><div style="font-size:56px;line-height:62px;font-weight:800;max-width:620px">Everyday help, done by trusted locals</div><div class="p mut">Post a task in Dubrovnik and pay only when it's done.</div></div>{{beaver:300:wave}}</div>
+ <div class="card" style="position:absolute;left:120px;right:120px;bottom:40px;flex-direction:row;align-items:center;gap:24px;padding:24px">
+  <div class="col grow" style="gap:4px"><span class="h2">Cookies on TaskBeavo</span><span class="s mut">We use essential cookies to log you in and keep you safe. With your OK, we also use analytics cookies to improve the site. <span class="link">Cookie settings</span></span></div>
+  <div class="btn pri" style="width:160px">Reject</div><div class="btn sec" style="width:160px">Settings</div><div class="btn pri" style="width:160px">Accept</div>
+ </div>
+</div>

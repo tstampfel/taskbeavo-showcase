@@ -1,0 +1,88 @@
+{
+  "keep": {
+    "contactFilter.masked": "Tells the author why text was masked (moderation/contact_filter.py verdict MASKED); task, question, chat and review screens use it from BEAV-85 on",
+    "contactFilter.heldForReview": "Tells the author their text waits for review (moderation/contact_filter.py verdict NEEDS_REVIEW); task, question, chat and review screens use it from BEAV-85 on",
+    "enums.TaskHoldReason.CONTACT_DETAILS": "Statement of reasons for a task held for review (tasks API holdReasons); the post-a-task wizards (BEAV-86, BEAV-87) use it",
+    "enums.TaskHoldReason.EXCLUDED_CATEGORY": "Statement of reasons for a task held for review (tasks API holdReasons); the post-a-task wizards (BEAV-86, BEAV-87) use it",
+    "enums.TaskWarning.DUPLICATE_TASK": "Duplicate-task warning returned by postTask, publishTaskDraft and updateTask; the post-a-task wizards (BEAV-86, BEAV-87) use it",
+    "helperOnboarding.businessAddressNotice": "Tells obrt and company owners where their registered business address is shown (BEAV-192, user decision 2026-11-07); the trader onboarding screen that collects the address (BEAV-97) shows it next to the address fields"
+  },
+  "sameAsEnglish": {
+    "legal.geolite": {
+      "locales": ["hr", "de", "fr"],
+      "reason": "MaxMind's attribution in the English original, shown in every language next to legal.geoliteLocal (BEAV-190, GeoliteAttribution)"
+    }
+  },
+  "layouts": [
+    {
+      "pattern": "errorBoundary.retry",
+      "note": "button"
+    },
+    {
+      "pattern": "notFound.backHome",
+      "note": "button"
+    },
+    {
+      "pattern": "languageSwitcher.label",
+      "note": "mobile switcher label"
+    },
+    {
+      "pattern": "offers.accept",
+      "note": "button on each offer card; wraps, checked in de/fr at 375px (e2e/offers.spec.ts)",
+      "maxRatio": 2.5,
+      "maxLength": 12
+    },
+    {
+      "pattern": "offers.sort.*",
+      "note": "sort chip; wraps, checked in de/fr at 375px (e2e/offers.spec.ts)",
+      "maxRatio": 2.5,
+      "maxLength": 20
+    },
+    {
+      "pattern": "offers.compare",
+      "note": "toggle button next to the sort chips; wraps, checked in de/fr at 375px (e2e/offers.spec.ts)",
+      "maxRatio": 2.5,
+      "maxLength": 14
+    },
+    {
+      "pattern": "offers.statusShort.*",
+      "maxLength": 14,
+      "note": "compare table cell, 3 columns at 375px; wraps, checked in de/fr at 375px (e2e/offers.spec.ts)",
+      "maxRatio": 2.5
+    },
+    {
+      "pattern": "offers.ratingNone",
+      "maxLength": 14,
+      "note": "compare table cell; wraps, checked in de/fr at 375px (e2e/offers.spec.ts)",
+      "maxRatio": 2.5
+    },
+    {
+      "pattern": "checkout.pay",
+      "note": "full-width pay button with the statutory wording (ZZP čl. 74(3)); wraps, checked in de/fr at 375px (e2e/checkout.spec.ts)",
+      "maxRatio": 3,
+      "maxLength": 40
+    },
+    {
+      "pattern": "checkout.declined.tryAgain",
+      "note": "full-width pay button; wraps, checked in de/fr at 375px (e2e/checkout.spec.ts)",
+      "maxRatio": 2.5,
+      "maxLength": 24
+    },
+    {
+      "pattern": "checkout.held.viewBooking",
+      "note": "button on its own row; wraps rather than truncates",
+      "maxRatio": 2,
+      "maxLength": 24
+    },
+    {
+      "pattern": "checkout.withdrawn.others",
+      "note": "button on its own row; wraps rather than truncates",
+      "maxRatio": 2,
+      "maxLength": 24
+    },
+    {
+      "pattern": "checkout.title",
+      "note": "page heading"
+    }
+  ]
+}

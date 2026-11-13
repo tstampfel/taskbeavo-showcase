@@ -1,0 +1,112 @@
+# The day of the job (BEAV-124; docs/PLAN.md "Helper no-show and late arrival"; mockup 18).
+#
+# The helper taps On my way (an optional ETA), Running late (a new ETA) and I've arrived;
+# these are evidence only. The poster answers a late report (keep it or cancel for free),
+# "Did your helper come?" and an early start. The `can*` flags on `arrival` say which
+# buttons the viewer gets now; the server checks again. Amounts are the server's.
+
+fragment ArrivalFields on Booking {
+  id
+  status
+  helperUserId
+  slotStart
+  arrival {
+    id
+    onMyWayAt
+    etaAt
+    lateReportedAt
+    lateAcceptedAt
+    arrivedAt
+    posterConfirmedCameAt
+    noShowConfirmedAt
+    onTheWayPromptSentAt
+    posterAskedAt
+    noShowDueAt
+    noShowContestBy
+    noShowContestedAt
+    noShowSettledAt
+    noShowAwaitingSupport
+    noShowRejected
+    noShowRefundCents
+    noShowCreditCents
+    earlyStartRequestedAt
+    earlyStartConfirmedAt
+    earlyStartDeclinedAt
+    earlyStartPending
+    canTap
+    canRequestEarlyStart
+    canAnswerLate
+    canConfirmCame
+    canConfirmNoShow
+    canContestNoShow
+    canAnswerEarlyStart
+    earlyStartWithdrawal
+  }
+}
+
+query BookingArrival($id: ID!) {
+  booking(id: $id) {
+    ...BookingFields
+    ...ArrivalFields
+  }
+}
+
+mutation MarkOnMyWay($bookingId: ID!, $etaMinutes: Int) {
+  markOnMyWay(bookingId: $bookingId, etaMinutes: $etaMinutes) {
+    ...BookingFields
+    ...ArrivalFields
+  }
+}
+
+mutation ReportRunningLate($bookingId: ID!, $etaMinutes: Int!) {
+  reportRunningLate(bookingId: $bookingId, etaMinutes: $etaMinutes) {
+    ...BookingFields
+    ...ArrivalFields
+  }
+}
+
+mutation MarkArrived($bookingId: ID!) {
+  markArrived(bookingId: $bookingId) {
+    ...BookingFields
+    ...ArrivalFields
+  }
+}
+
+# "I can't come" is the helper cancellation: CancelAsHelper with reason CANT_COME.
+
+mutation RespondToLateArrival($bookingId: ID!, $keep: Boolean!) {
+  respondToLateArrival(bookingId: $bookingId, keep: $keep) {
+    ...BookingFields
+    ...ArrivalFields
+  }
+}
+
+# came: false starts the helper's 24 hours to contest; the refund follows only after them.
+mutation ConfirmHelperArrival($bookingId: ID!, $came: Boolean!) {
+  confirmHelperArrival(bookingId: $bookingId, came: $came) {
+    ...BookingFields
+    ...ArrivalFields
+  }
+}
+
+mutation ContestNoShow($bookingId: ID!) {
+  contestNoShow(bookingId: $bookingId) {
+    ...BookingFields
+    ...ArrivalFields
+  }
+}
+
+mutation RequestEarlyStart($bookingId: ID!) {
+  requestEarlyStart(bookingId: $bookingId) {
+    ...BookingFields
+    ...ArrivalFields
+  }
+}
+
+# `locale` is the language the confirmation was shown in; the server records it.
+mutation RespondToEarlyStart($bookingId: ID!, $confirm: Boolean!, $locale: Locale) {
+  respondToEarlyStart(bookingId: $bookingId, confirm: $confirm, locale: $locale) {
+    ...BookingFields
+    ...ArrivalFields
+  }
+}

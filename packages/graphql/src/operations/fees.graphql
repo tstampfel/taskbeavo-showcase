@@ -1,0 +1,45 @@
+# The public price list of TaskBeavo's service fee (BEAV-191, ZZP čl. 7(9)): /{locale}/fees,
+# /{locale}/fees/archive and /fees/pricelist.csv. The numbers come from the API (the same
+# schedule checkout charges, bookings/money.py), never from the page.
+
+fragment ServiceFeeScheduleFields on ServiceFeeSchedule {
+  id
+  version
+  effectiveFrom
+  percent
+  minimumCents
+  status
+  vat
+  vatPercent
+  examples {
+    id
+    taskPriceCents
+    feeCents
+    totalCents
+    vatCents
+  }
+}
+
+fragment CancellationAmountsFields on CancellationAmounts {
+  id
+  gracePeriodMinutes
+  lateWindowHours
+  latePayPercent
+  latePayMinCents
+  latePayMaxCents
+  callOutPercent
+  callOutMinCents
+  callOutMaxCents
+  keptFeePercent
+  helperCancelCreditCents
+  withdrawalPeriodDays
+}
+
+query ServiceFeeSchedules {
+  serviceFeeSchedules {
+    ...ServiceFeeScheduleFields
+  }
+  cancellationAmounts {
+    ...CancellationAmountsFields
+  }
+}

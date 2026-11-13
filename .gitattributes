@@ -1,0 +1,5 @@
+# Kept out of the public export (git archive); see docs/public-release.md.
+docs/decisions/A4-private-helper-payer export-ignore
+docs/decisions/A4-private-helper-payer/** export-ignore
+.reviews export-ignore
+.reviews/** export-ignore

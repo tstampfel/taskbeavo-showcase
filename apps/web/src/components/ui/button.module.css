@@ -1,0 +1,70 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-space-sm);
+  box-sizing: border-box;
+  min-width: var(--tb-tap-target);
+  min-height: var(--tb-control-md);
+  padding: var(--tb-space-md) var(--tb-space-xl);
+  border: var(--tb-border-control) solid var(--border);
+  border-radius: var(--tb-radius-pill);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: var(--tb-font-button-size);
+  line-height: var(--tb-font-button-line);
+  font-weight: var(--tb-font-button-weight);
+  text-align: center;
+  /* Long German and French labels wrap instead of being cut off. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.button:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-input-focus-border);
+  outline-offset: var(--tb-border-focus);
+}
+
+.button:disabled {
+  --bg: var(--tb-button-disabled-bg);
+  --fg: var(--tb-button-disabled-fg);
+  --border: var(--tb-button-disabled-border);
+  cursor: not-allowed;
+}
+
+.primary {
+  --bg: var(--tb-button-primary-bg);
+  --fg: var(--tb-button-primary-fg);
+  --border: var(--tb-button-primary-border);
+}
+
+.secondary {
+  --bg: var(--tb-button-secondary-bg);
+  --fg: var(--tb-button-secondary-fg);
+  --border: var(--tb-button-secondary-border);
+}
+
+.ghost {
+  --bg: var(--tb-button-ghost-bg);
+  --fg: var(--tb-button-ghost-fg);
+  --border: var(--tb-button-ghost-border);
+}
+
+.danger {
+  --bg: var(--tb-button-danger-bg);
+  --fg: var(--tb-button-danger-fg);
+  --border: var(--tb-button-danger-border);
+}
+
+.sm {
+  min-height: var(--tb-control-sm);
+  padding: var(--tb-space-sm) var(--tb-space-lg);
+  font-size: var(--tb-font-small-size);
+  line-height: var(--tb-font-small-line);
+}
+
+.fullWidth {
+  width: 100%;
+}

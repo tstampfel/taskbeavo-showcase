@@ -1,0 +1,43 @@
+/* Narrow phones scroll the table sideways rather than the page. */
+.tableWrap {
+  overflow-x: auto;
+  margin: 0 0 var(--tb-space-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tb-font-small-size);
+}
+
+.table thead th {
+  font-weight: 800;
+}
+
+.table th,
+.table td {
+  font-weight: inherit;
+  padding: var(--tb-space-sm) var(--tb-space-md);
+  border-bottom: var(--tb-border-thin) solid var(--tb-color-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.archiveList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.archiveList li {
+  padding: var(--tb-space-md) 0;
+  border-bottom: var(--tb-border-thin) solid var(--tb-color-line);
+}
+
+.archiveList h2,
+.archiveList p {
+  margin: 0 0 var(--tb-space-xs);
+}

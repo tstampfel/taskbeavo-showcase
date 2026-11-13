@@ -1,0 +1,8 @@
+{
+  "extends": "@taskbeavo/tsconfig/base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["jest"]
+  },
+  "include": ["app", "src", "__tests__", "*.ts", "expo-env.d.ts", ".expo/types/**/*.ts"]
+}

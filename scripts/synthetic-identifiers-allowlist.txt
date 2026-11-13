@@ -1,0 +1,8 @@
+# Exceptions to scripts/check_synthetic_identifiers.py: one value per line, then why it
+# is not a real OIB or IBAN, or why an email address outside the RFC 2606 reserved
+# domains (example.com, .test, ...) may stay. Prefer a synthetic value
+# (backend/core/synthetic_identifiers.py, or an address on example.com) to a new entry.
+38592123456 Not an OIB: the first digits of the made-up phone numbers +385921234560..5 in backend/accounts/tests/test_phone.py
+18047150+tstampfel@users.noreply.github.com GitHub's noreply address for the owner's account, used on purpose as the public commit author in docs/public-release.md step 4; it delivers no mail
+git@github.com Not a mailbox: the SSH user of a GitHub remote URL in docs/public-release.md
+no-reply@taskbeavo.hr The product's own sender address, the DEFAULT_FROM_EMAIL default in backend/config/settings/base.py and its test

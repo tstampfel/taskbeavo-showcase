@@ -1,0 +1,182 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-md);
+  box-sizing: border-box;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--tb-space-lg);
+}
+
+.h1 {
+  margin: 0;
+  font-size: var(--tb-font-h1-size);
+  line-height: var(--tb-font-h1-line);
+  font-weight: var(--tb-font-h1-weight);
+}
+
+.h2 {
+  margin: 0;
+  font-size: var(--tb-font-h2-size);
+  line-height: var(--tb-font-h2-line);
+  font-weight: var(--tb-font-h2-weight);
+}
+
+.small {
+  margin: 0;
+  font-size: var(--tb-font-small-size);
+  line-height: var(--tb-font-small-line);
+}
+
+.muted {
+  color: var(--tb-color-ink-muted);
+}
+
+.label {
+  margin: 0;
+  font-size: var(--tb-font-label-size);
+  line-height: var(--tb-font-label-line);
+  font-weight: var(--tb-font-label-weight);
+}
+
+.price {
+  margin: 0;
+  font-size: var(--tb-font-h1-size);
+  line-height: var(--tb-font-h1-line);
+  font-weight: var(--tb-font-h1-weight);
+  white-space: nowrap;
+}
+
+.priceBox {
+  text-align: right;
+}
+
+.link {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  min-height: var(--tb-tap-target);
+  color: var(--tb-color-green);
+  font-size: var(--tb-font-small-size);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.link:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-color-green);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-sm);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-sm);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.chip {
+  min-height: var(--tb-tap-target);
+  padding: 0 var(--tb-space-lg);
+  border: var(--tb-border-thin) solid var(--tb-color-line);
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-white);
+  color: var(--tb-color-ink);
+  font: inherit;
+  font-size: var(--tb-font-small-size);
+  cursor: pointer;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--tb-color-green);
+  background: var(--tb-color-green);
+  color: var(--tb-color-white);
+}
+
+.chip:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-color-green);
+  outline-offset: var(--tb-border-focus);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-space-md);
+}
+
+.grow {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--tb-space-xs);
+  min-width: 0;
+}
+
+.quote {
+  overflow-wrap: anywhere;
+}
+
+/* The mockup's .5 opacity fails AA on text, so closed offers keep ink text on a tinted card. */
+.closed {
+  flex-direction: row;
+  align-items: center;
+  background: var(--tb-color-grey-tint);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tb-font-small-size);
+}
+
+.table th,
+.table td {
+  padding: var(--tb-space-sm) var(--tb-space-xs);
+  border-bottom: var(--tb-border-thin) solid var(--tb-color-line);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.table thead th {
+  font-size: var(--tb-font-label-size);
+  font-weight: var(--tb-font-label-weight);
+  white-space: nowrap;
+}
+
+.table thead th:first-child,
+.table th[scope='row'] {
+  color: var(--tb-color-ink-muted);
+  font-weight: inherit;
+  text-align: start;
+}

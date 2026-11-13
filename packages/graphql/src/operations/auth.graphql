@@ -1,0 +1,148 @@
+# Sign-in and sessions (BEAV-70). On web, the operations that return tokens run only in
+# the Next.js route handlers (apps/web/src/app/api/auth), which keep the tokens in
+# httpOnly cookies; page code never sees them.
+
+fragment ViewerFields on User {
+  id
+  email
+  firstName
+  lastName
+  locale
+  country
+  timeZone
+  phoneVerified
+  phoneNumberMasked
+}
+
+fragment AuthSessionFields on AuthSession {
+  id
+  accessToken
+  accessTokenExpiresAt
+  refreshToken
+  refreshTokenExpiresAt
+  deviceToken
+  user {
+    ...ViewerFields
+  }
+}
+
+query Viewer {
+  viewer {
+    ...ViewerFields
+  }
+}
+
+mutation RequestEmailCode($email: String!, $locale: Locale!) {
+  requestEmailCode(email: $email, locale: $locale)
+}
+
+mutation VerifyEmailCode($email: String!, $code: String!, $device: DeviceInput!) {
+  verifyEmailCode(email: $email, code: $code, device: $device) {
+    __typename
+    ... on AuthSession {
+      ...AuthSessionFields
+    }
+    ... on AccountDetailsRequired {
+      id
+      email
+      ticket
+    }
+  }
+}
+
+# Google and Apple (BEAV-71): get a nonce, give it to the provider's SDK, then send the ID
+# token with it. New accounts continue with completeAccountDetails, as for email.
+mutation RequestSignInNonce {
+  requestSignInNonce {
+    id
+    nonce
+    expiresAt
+  }
+}
+
+mutation SignInWithProvider($input: ProviderSignInInput!, $device: DeviceInput!) {
+  signInWithProvider(input: $input, device: $device) {
+    __typename
+    ... on AuthSession {
+      ...AuthSessionFields
+    }
+    ... on ProviderLinkRequired {
+      id
+      email
+      ticket
+    }
+    ... on AccountDetailsRequired {
+      id
+      email
+      ticket
+      firstName
+      lastName
+    }
+  }
+}
+
+# The provider's email already has an account: the code emailed to it links the provider.
+mutation LinkProviderWithEmailCode($ticket: String!, $code: String!, $device: DeviceInput!) {
+  linkProviderWithEmailCode(ticket: $ticket, code: $code, device: $device) {
+    ...AuthSessionFields
+  }
+}
+
+mutation CompleteAccountDetails($details: AccountDetailsInput!, $device: DeviceInput!) {
+  completeAccountDetails(details: $details, device: $device) {
+    ...AuthSessionFields
+  }
+}
+
+mutation RefreshSession($refreshToken: String!) {
+  refreshSession(refreshToken: $refreshToken) {
+    ...AuthSessionFields
+  }
+}
+
+mutation SignOut($refreshToken: String!) {
+  signOut(refreshToken: $refreshToken)
+}
+
+# Log out of all devices (BEAV-76): every session of the signed-in user, this one too.
+# On web it runs only in /api/auth/sign-out-everywhere, which also deletes the cookies.
+mutation SignOutEverywhere {
+  signOutEverywhere
+}
+
+# "This wasn't me", from the new-device email's link; needs no sign-in.
+mutation SignOutEverywhereFromEmail($token: String!) {
+  signOutEverywhereFromEmail(token: $token)
+}
+
+mutation WebSocketToken {
+  webSocketToken
+}
+
+# Phone verification (BEAV-72): needed before posting, offering or chatting.
+mutation RequestPhoneCode($phone: String!) {
+  requestPhoneCode(phone: $phone) {
+    id
+    phoneNumberMasked
+    expiresAt
+    resendAvailableAt
+  }
+}
+
+mutation VerifyPhoneCode($code: String!) {
+  verifyPhoneCode(code: $code) {
+    ...ViewerFields
+  }
+}
+
+# The terms version the account-details step shows and sends as acceptedTermsVersion
+# (BEAV-80). Public, so it works before the account exists.
+query CurrentTerms($language: Locale!) {
+  currentLegalDocument(kind: TERMS, language: $language) {
+    id
+    kind
+    version
+    language
+    effectiveAt
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@taskbeavo/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "ICU translation catalogues for hr, en, de and fr",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./locales/*.json": "./src/locales/*.json"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check:catalogues": "node scripts/check-catalogues.mjs"
+  },
+  "devDependencies": {
+    "@formatjs/icu-messageformat-parser": "3.5.22",
+    "@taskbeavo/eslint-config": "workspace:*",
+    "@taskbeavo/tsconfig": "workspace:*",
+    "eslint": "10.13.0",
+    "intl-messageformat": "12.1.4",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  }
+}

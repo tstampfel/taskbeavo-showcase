@@ -1,0 +1,221 @@
+# Render Blueprint for the backend (docs/PLAN.md, "Deployment: Docker on Render now").
+# One Docker image (backend/Dockerfile) runs as three services per environment, all in
+# Frankfurt: the API (web), the Celery worker and a single Celery Beat, plus a Key Value
+# instance for the Celery broker and the Channels layer.
+#
+#   staging     deploys from `develop`
+#   production  deploys from `main`
+#
+# Secrets are never written here. Render generates SECRET_KEY and JWT_SIGNING_KEY; every
+# other secret and per-environment URL is added by hand to the env group in the dashboard after the
+# Blueprint is applied (Render ignores `sync: false` inside env groups, and never
+# overwrites group variables this file doesn't declare). The FINA certificate is a
+# secret file named fina.p12 on each env group, mounted at /etc/secrets/fina.p12.
+# Setup steps and the full variable list: docs/deploy-render.md.
+# backend/core/tests/test_render_blueprint.py keeps the two environments in step.
+
+services:
+  # ---------------------------------------------------------------- staging (develop)
+  - type: web
+    name: taskbeavo-api-staging
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: develop
+    autoDeployTrigger: checksPass
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    # Runs on the new image before it takes traffic; uses DATABASE_URL_DIRECT when set.
+    preDeployCommand: sh scripts/predeploy.sh
+    envVars:
+      - fromGroup: taskbeavo-backend-staging
+      - key: OTEL_SERVICE_NAME
+        value: taskbeavo-api
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: taskbeavo-kv-staging
+          property: connectionString
+
+  - type: worker
+    name: taskbeavo-worker-staging
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: develop
+    autoDeployTrigger: checksPass
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: celery -A config worker -l info --concurrency 4
+    envVars:
+      - fromGroup: taskbeavo-backend-staging
+      - key: OTEL_SERVICE_NAME
+        value: taskbeavo-worker
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: taskbeavo-kv-staging
+          property: connectionString
+
+  # Exactly one instance, never scaled: a second Beat would run every scheduled job twice.
+  # The schedule file goes to /tmp because /app is read-only for the app user.
+  - type: worker
+    name: taskbeavo-beat-staging
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: develop
+    autoDeployTrigger: checksPass
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: celery -A config beat -l info --schedule /tmp/celerybeat-schedule
+    numInstances: 1
+    envVars:
+      - fromGroup: taskbeavo-backend-staging
+      - key: OTEL_SERVICE_NAME
+        value: taskbeavo-beat
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: taskbeavo-kv-staging
+          property: connectionString
+
+  # noeviction: the Celery broker and the Channels layer must never lose keys.
+  # An empty allow list keeps it reachable only from services in this workspace.
+  - type: keyvalue
+    name: taskbeavo-kv-staging
+    region: frankfurt
+    plan: starter
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+  # --------------------------------------------------------------- production (main)
+  - type: web
+    name: taskbeavo-api
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: main
+    autoDeployTrigger: checksPass
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    preDeployCommand: sh scripts/predeploy.sh
+    envVars:
+      - fromGroup: taskbeavo-backend-production
+      - key: OTEL_SERVICE_NAME
+        value: taskbeavo-api
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: taskbeavo-kv
+          property: connectionString
+
+  - type: worker
+    name: taskbeavo-worker
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: main
+    autoDeployTrigger: checksPass
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: celery -A config worker -l info --concurrency 4
+    envVars:
+      - fromGroup: taskbeavo-backend-production
+      - key: OTEL_SERVICE_NAME
+        value: taskbeavo-worker
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: taskbeavo-kv
+          property: connectionString
+
+  - type: worker
+    name: taskbeavo-beat
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: main
+    autoDeployTrigger: checksPass
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: celery -A config beat -l info --schedule /tmp/celerybeat-schedule
+    numInstances: 1
+    envVars:
+      - fromGroup: taskbeavo-backend-production
+      - key: OTEL_SERVICE_NAME
+        value: taskbeavo-beat
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: taskbeavo-kv
+          property: connectionString
+
+  - type: keyvalue
+    name: taskbeavo-kv
+    region: frankfurt
+    plan: starter
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+# Shared by the api, worker and beat of one environment. Only non-secret values live
+# here; the dashboard-only variables are listed in docs/deploy-render.md.
+envVarGroups:
+  - name: taskbeavo-backend-staging
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: APP_ENV
+        value: staging
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SIGNING_KEY
+        generateValue: true
+      - key: SENTRY_ENVIRONMENT
+        value: staging
+      - key: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: https://api.eu1.honeycomb.io
+      - key: FINA_CERT_PATH
+        value: /etc/secrets/fina.p12
+      # Porezna's CIS test environment: staging never fiscalizes for real.
+      - key: CIS_URL
+        value: https://cistest.apis-it.hr:8449/FiskalizacijaServiceTest
+      # The launch date: the first service fee price list takes effect on it (BEAV-191).
+      # Staging uses the same date; the first list also applies before it.
+      - key: FEE_LAUNCH_DATE
+        value: '2027-01-01'
+      # The launch VAT position (BEAV-194, user decision 2026-11-07): outside the VAT
+      # system (ZPDV čl. 90 st. 1), so the fee carries no VAT; docs/vat-position.md.
+      - key: FEE_VAT
+        value: NOT_CHARGED
+
+  - name: taskbeavo-backend-production
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SIGNING_KEY
+        generateValue: true
+      - key: SENTRY_ENVIRONMENT
+        value: production
+      - key: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: https://api.eu1.honeycomb.io
+      - key: FINA_CERT_PATH
+        value: /etc/secrets/fina.p12
+      - key: CIS_URL
+        value: https://cis.porezna-uprava.hr:8449/FiskalizacijaService
+      - key: FEE_LAUNCH_DATE
+        value: '2027-01-01'
+      - key: FEE_VAT
+        value: NOT_CHARGED

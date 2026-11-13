@@ -1,0 +1,43 @@
+# The public legal pages (BEAV-81): /{locale}/terms, privacy, helper-terms, cancellation,
+# cookies and imprint, rendered by server components. Every version is listed so the page can
+# link earlier and scheduled ones; usesGeolite2 adds MaxMind's attribution to the imprint and the privacy notice.
+
+fragment LegalDocumentPageFields on LegalDocument {
+  id
+  kind
+  version
+  language
+  effectiveAt
+  isDraft
+  text
+}
+
+fragment LegalDocumentVersionFields on LegalDocument {
+  id
+  version
+  effectiveAt
+  isDraft
+}
+
+query LegalPage($kind: LegalDocumentKind!, $language: Locale!) {
+  currentLegalDocument(kind: $kind, language: $language) {
+    ...LegalDocumentPageFields
+  }
+  legalDocumentVersions(kind: $kind, language: $language) {
+    ...LegalDocumentVersionFields
+  }
+  usesGeolite2
+}
+
+query LegalVersionPage($kind: LegalDocumentKind!, $language: Locale!, $version: String!) {
+  legalDocument(kind: $kind, language: $language, version: $version) {
+    ...LegalDocumentPageFields
+  }
+  currentLegalDocument(kind: $kind, language: $language) {
+    id
+  }
+  legalDocumentVersions(kind: $kind, language: $language) {
+    ...LegalDocumentVersionFields
+  }
+  usesGeolite2
+}

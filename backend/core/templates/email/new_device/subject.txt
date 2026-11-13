@@ -1,0 +1,1 @@
+{% load i18n %}{% autoescape off %}{% if location %}{% blocktranslate %}New login to TaskBeavo from {{ device }}, {{ location }}{% endblocktranslate %}{% else %}{% blocktranslate %}New login to TaskBeavo from {{ device }}{% endblocktranslate %}{% endif %}{% endautoescape %}

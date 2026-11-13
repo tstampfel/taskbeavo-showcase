@@ -1,0 +1,145 @@
+<!--
+  Built in BEAV-156 as the Django admin (backend/staff, backend/bookings/admin.py): staff roles,
+  the audit log, and the read-only booking evidence view from 11a's detail card (timeline of
+  booking_events, consent, chat section, photos, payment amounts) plus staff notes. Kept here
+  for what isn't built yet: the sidebar, the disputes table, SLA timers and the resolution panel
+  (BEAV-126), 11b release on the poster's behalf and the cancellations queue (BEAV-157), 11c
+  fiscal receipts (tax jobs), 11d helper status and DAC7, 11e reports and appeals (BEAV-139,
+  BEAV-141) and 11f data requests (BEAV-151). Delete each frame once built.
+-->
+<div class="screen web" id="11a Admin · Disputes" style="flex-direction:row;height:900px">
+ {{admin:Disputes}}
+ <div class="col grow" style="padding:28px 32px;gap:16px">
+  <div class="row between"><span class="h1">Disputes</span><div class="row"><span class="chip on">Open (4)</span><span class="chip">Waiting for release (3)</span><span class="chip">Cancellations &amp; withdrawals (5)</span><span class="chip">Resolved</span></div></div>
+  <div class="card" style="padding:8px 16px">
+   <table class="tbl">
+    <tr><th>Booking</th><th>Poster</th><th>Helper</th><th>Held in helper's Stripe balance</th><th>Reason</th><th>Opened</th><th>SLA</th><th>Status</th></tr>
+    <tr style="background:#EEF4F0"><td><b>#B-2291</b></td><td>Ana K.</td><td>Marko P. <span class="badge b-grey">Private</span></td><td>€30.00</td><td>Work not as agreed</td><td>Sat 14:20</td><td class="err" style="font-weight:800">5 h left</td><td><span class="badge b-orange">In review</span></td></tr>
+    <tr><td><b>#B-2287</b></td><td>Petra V.</td><td>Stjepan <span class="badge b-grey">Business</span></td><td>€38.00</td><td>Helper no-show</td><td>Fri 09:02</td><td>21 h left</td><td><span class="badge b-grey">New</span></td></tr>
+    <tr><td><b>#B-2270</b></td><td>Marija H.</td><td>Ivana M. <span class="badge b-grey">Private</span></td><td>€25.00</td><td>No access dispute</td><td>Thu 18:40</td><td>30 h left</td><td><span class="badge b-grey">New</span></td></tr>
+    <tr><td><b>#B-2251</b></td><td>Tomo R.</td><td>Luka B. <span class="badge b-grey">Private</span></td><td>€45.00</td><td>Damage claim</td><td>Wed 11:15</td><td>2 d left</td><td><span class="badge b-orange">Waiting on poster</span></td></tr>
+   </table>
+  </div>
+  <div class="row" style="gap:16px;align-items:stretch">
+   <div class="card grow" style="gap:12px">
+    <div class="row between"><span class="h2">#B-2291 · Mow lawn &amp; trim hedge</span><span class="badge b-orange">In review</span></div>
+    <div class="col" style="gap:8px">
+     <div class="row s">{{i:check:16:#2E8B57}}<span class="grow">Offer accepted · €30.00 + €3.60 fee</span><span class="c mut">2 Nov 18:00</span></div>
+     <div class="row s">{{i:check:16:#2E8B57}}<span class="grow">Early-start consent captured</span><span class="c mut">2 Nov 18:01</span></div>
+     <div class="row s">{{i:lock:16:#2E8B57}}<span class="grow">Payment held (webhook confirmed)</span><span class="c mut">2 Nov 18:01</span></div>
+     <div class="row s">{{i:camera:16:#C77A12}}<span class="grow">Payment requested · 3 photos</span><span class="c mut">7 Nov 11:10</span></div>
+     <div class="row s">{{i:bell:16:#5E6661}}<span class="grow">Reminder sent to poster</span><span class="c mut">8 Nov 11:10</span></div>
+     <div class="row s">{{i:msg:16:#5E6661}}<span class="grow">Chat excerpt: "The hedge on the left side wasn't touched."</span><span class="c mut">8 Nov 12:02</span></div>
+    </div>
+    <div class="row" style="gap:8px"><div class="ph" style="width:110px;height:76px"></div><div class="ph b" style="width:110px;height:76px"></div><div class="ph c" style="width:110px;height:76px"></div></div>
+   </div>
+   <div class="card" style="width:400px;flex:none;gap:12px">
+    <span class="h2">Resolution</span>
+    <div class="row s"><span class="radio"></span> Release to helper</div>
+    <div class="row s"><span class="radio"></span> Full refund</div>
+    <div class="row s"><span class="radio on"></span> Partial split</div>
+    <div style="height:6px;border-radius:9px;background:#E3E1D8;position:relative;margin:8px 0"><div style="width:70%;height:6px;border-radius:9px;background:#1F5C46"></div><div style="position:absolute;left:67%;top:-9px;width:24px;height:24px;border-radius:99px;background:#fff;border:3px solid #1F5C46"></div></div>
+    <div class="line"><span>Helper gets</span><span>€21.00</span></div><div class="line"><span>Service fee (12% of €21.00)</span><span>€2.52</span></div><div class="line"><span>Poster refund</span><span>€10.08</span></div>
+    <div class="label">Written reason (sent to both parties)*</div>
+    <div class="input textarea" style="height:80px">Photos confirm lawn done; left hedge not trimmed…</div>
+    <div class="btn pri sm">Resolve dispute</div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<div class="screen web" id="11b Admin · Waiting for release & cancellations" style="flex-direction:row;height:900px">
+ {{admin:Disputes}}
+ <div class="col grow" style="padding:28px 32px;gap:16px">
+  <span class="h1">Waiting for release</span>
+  <span class="s mut" style="margin-top:-10px">Payment requests older than 48 h. Releasing on the poster's behalf needs a written reason and is logged.</span>
+  <div class="card" style="padding:8px 16px"><table class="tbl">
+   <tr><th>Booking</th><th>Poster</th><th>Helper</th><th>Amount</th><th>Requested</th><th>Reminders</th><th>Proof</th><th></th></tr>
+   <tr><td><b>#B-2240</b></td><td>Ana K. (München)</td><td>Marko P.</td><td>€30.00</td><td>3 d ago</td><td>2 of 2</td><td>3 photos</td><td><span class="btn sec sm">Release on poster's behalf</span></td></tr>
+   <tr><td><b>#B-2233</b></td><td>Dario S. (Dublin)</td><td>Ivana M.</td><td>€15.00</td><td>2 d ago</td><td>1 of 2</td><td>1 photo</td><td><span class="btn sec sm">Release on poster's behalf</span></td></tr>
+  </table></div>
+  <span class="h1">Cancellations &amp; withdrawals</span>
+  <div class="card" style="padding:8px 16px"><table class="tbl">
+   <tr><th>Booking</th><th>Type</th><th>Reason / evidence</th><th>Helper</th><th>Days since booking</th><th>Policy split (€30 task)</th><th></th></tr>
+   <tr><td><b>#B-2295</b></td><td>Disagreed late cancel</td><td>Weather · helper says already en route</td><td><span class="badge b-grey">Private</span></td><td>4</td><td>Helper €7.50 · fee €0.90 · refund €25.20</td><td class="row" style="gap:6px"><span class="btn pri sm">Approve</span><span class="btn sec sm">Adjust</span></td></tr>
+   <tr><td><b>#B-2288</b></td><td>Withdrawal after start</td><td>Withdrawal button · 40% done (photos)</td><td><span class="badge b-grey">Business</span></td><td>2</td><td>Pay for part done · rest refunded</td><td class="row" style="gap:6px"><span class="btn pri sm">Approve</span><span class="btn sec sm">Adjust</span></td></tr>
+   <tr><td><b>#B-2279</b></td><td>No-fault request</td><td>Hospitalisation · discharge letter</td><td><span class="badge b-grey">Private</span></td><td>6</td><td>Full refund €33.60</td><td class="row" style="gap:6px"><span class="btn pri sm">Approve</span><span class="btn sec sm">Adjust</span></td></tr>
+  </table></div>
+ </div>
+</div>
+
+<div class="screen web" id="11c Admin · Fiscal receipts" style="flex-direction:row;height:900px">
+ {{admin:Fiscal}}
+ <div class="col grow" style="padding:28px 32px;gap:16px">
+  <div class="row between"><span class="h1">Fiscal receipts</span><div class="card" style="flex-direction:row;align-items:center;padding:12px 16px">{{i:shield:22:#1F5C46}}<div class="col" style="gap:0"><span class="s" style="font-weight:800">FINA certificate expires in 212 days</span><span class="c mut">Valid until 25 May 2027</span></div></div></div>
+  <div class="note red" style="padding:14px;font-size:14px">{{i:alert:20:#C8452F}}<span><b>2 receipts without JIR.</b> CIS didn't answer in time. They're retried automatically every 15 minutes; issue within 48 h.</span></div>
+  <div class="card" style="padding:8px 16px"><table class="tbl">
+   <tr><th>Receipt no.</th><th>Booking</th><th>Amount</th><th>Method</th><th>ZKI</th><th>JIR</th><th>Status</th></tr>
+   <tr><td><b>1042/WEB1/1</b></td><td>#B-2291</td><td>€3.60</td><td>K</td><td>a3f9…c21e</td><td>4b7e-…-91d0</td><td><span class="badge b-green">Fiscalized</span></td></tr>
+   <tr><td><b>1043/WEB1/1</b></td><td>#B-2292</td><td>€4.56</td><td>K</td><td>77c1…0b9a</td><td class="mut">—</td><td><span class="badge b-orange">Pending retry</span></td></tr>
+   <tr><td><b>1044/WEB1/1</b></td><td>#B-2293</td><td>€2.40</td><td>K</td><td>e019…ff42</td><td class="mut">—</td><td><span class="badge b-orange">Pending retry</span></td></tr>
+   <tr><td><b>1045/WEB1/1</b></td><td>#B-2279</td><td>−€3.60</td><td>K</td><td>5d2a…118c</td><td>9c11-…-4e2f</td><td><span class="badge b-grey">Storno</span></td></tr>
+   <tr><td><b>1046/WEB1/1</b></td><td>#B-2295</td><td>€0.90</td><td>K</td><td>b6e4…a70d</td><td>02af-…-c7b3</td><td><span class="badge b-green">Fiscalized</span></td></tr>
+  </table></div>
+ </div>
+</div>
+
+<div class="screen web" id="11d Admin · Helper status & DAC7" style="flex-direction:row;height:900px">
+ {{admin:Helper}}
+ <div class="col grow" style="padding:28px 32px;gap:16px">
+  <div class="row between"><span class="h1">Helper status &amp; DAC7</span><div class="row"><div class="btn sec sm">{{i:mail:18:#1F5C46}} Send helper statements</div><div class="btn pri sm">{{i:download:18:#fff}} Export DAC7 report (31 Jan)</div></div></div>
+  <div class="row"><span class="chip on">All (48)</span><span class="chip">Missing data (5)</span><span class="chip">Payout on hold (2)</span></div>
+  <div class="card" style="padding:8px 16px"><table class="tbl">
+   <tr><th>Helper</th><th>Declared status</th><th>OIB valid</th><th>IBAN</th><th>DOB</th><th>Reminders</th><th>Payout hold</th><th>2026 total paid</th><th>Activities</th></tr>
+   <tr><td><b>Marko P.</b></td><td>Private individual</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td>0</td><td><span class="toggle"></span></td><td>€1,284.00</td><td>47</td></tr>
+   <tr><td><b>Ivana M.</b></td><td>Pensioner</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td>0</td><td><span class="toggle"></span></td><td>€1,960.50</td><td>63</td></tr>
+   <tr><td><b>Stjepan</b></td><td>Registered business</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td>0</td><td><span class="toggle"></span></td><td>€4,410.00</td><td>130</td></tr>
+   <tr style="background:#FDF1DE"><td><b>Luka B.</b></td><td>Student</td><td class="ok">✓</td><td class="ok">✓</td><td class="err">✗ missing</td><td>1</td><td><span class="toggle"></span></td><td>€412.00</td><td>14</td></tr>
+   <tr style="background:#F7E1DC"><td><b>Petar Z.</b></td><td>Private individual</td><td class="err">✗ invalid</td><td class="ok">✓</td><td class="ok">✓</td><td>2</td><td><span class="toggle on"></span></td><td>€72.00</td><td>3</td></tr>
+  </table></div>
+  <div class="c mut">Names, OIB and IBAN appear only in this restricted admin area and are encrypted at rest.</div>
+ </div>
+</div>
+
+<div class="screen web" id="11e Admin · Reports & appeals" style="flex-direction:row;height:900px">
+ {{admin:Reports}}
+ <div class="col grow" style="padding:28px 32px;gap:16px">
+  <div class="row between"><span class="h1">Reports &amp; appeals</span><div class="row"><span class="chip on">Reports (6)</span><span class="chip">Incidents (1)</span><span class="chip">Appeals (2)</span><span class="chip">Web form (DSA) (1)</span></div></div>
+  <div class="card" style="padding:8px 16px"><table class="tbl">
+   <tr><th>Case</th><th>Reported</th><th>Reason</th><th>From</th><th>Evidence</th><th>Received</th><th>Status</th></tr>
+   <tr style="background:#F7E1DC"><td><b>#I-0031</b></td><td>Booking #B-2301</td><td>Incident · welfare concern</td><td>Helper</td><td>Form, 0 photos</td><td>Today 9:22</td><td><span class="badge b-red">Contact today</span></td></tr>
+   <tr style="background:#EEF4F0"><td><b>#R-0418</b></td><td>Marko P.</td><td>Asked to pay outside TaskBeavo</td><td>Poster</td><td>Chat excerpt</td><td>Today 8:40</td><td><span class="badge b-orange">In review</span></td></tr>
+   <tr><td><b>#R-0415</b></td><td>Review on Ivana M.</td><td>Fake review</td><td>Helper</td><td>Review text</td><td>Fri</td><td><span class="badge b-grey">New</span></td></tr>
+   <tr><td><b>#A-0007</b></td><td>Petar Z.</td><td>Appeal of restriction</td><td>User</td><td>Statement</td><td>Thu</td><td><span class="badge b-orange">Second reviewer</span></td></tr>
+  </table></div>
+  <div class="row" style="gap:16px;align-items:stretch">
+   <div class="card grow" style="gap:10px"><span class="h2">#R-0418 · Marko P.</span><span class="s mut">Chat, 24 Oct 18:02: "Next time pay me cash, we skip the fee."</span><span class="s">2 earlier reports in 30 days · 41 completed tasks · rating 4.8</span><span class="c mut">Ratings never restrict anyone automatically. A person decides.</span></div>
+   <div class="card" style="width:400px;flex:none;gap:12px">
+    <span class="h2">Decision</span>
+    <div class="row s"><span class="radio"></span> No breach, close</div>
+    <div class="row s"><span class="radio on"></span> Warning</div>
+    <div class="row s"><span class="radio"></span> Remove content</div>
+    <div class="row s"><span class="radio"></span> Restrict account</div>
+    <div class="label">Statement of reasons (sent to the user)*</div>
+    <div class="input textarea" style="height:80px">Asking for payment outside TaskBeavo breaks the terms…</div>
+    <div class="btn pri sm">Send decision</div>
+   </div>
+  </div>
+ </div>
+</div>
+
+<div class="screen web" id="11f Admin · Data requests" style="flex-direction:row;height:900px">
+ {{admin:Data}}
+ <div class="col grow" style="padding:28px 32px;gap:16px">
+  <div class="row between"><span class="h1">Data requests</span><div class="row"><span class="chip on">Open (4)</span><span class="chip">Due this week (2)</span><span class="chip">Closed</span></div></div>
+  <div class="note warn" style="padding:14px;font-size:14px">{{i:clock:20:#7A4806}}<span><b>DR-0091 is due in 3 days.</b> Every request must be answered within one month of receipt.</span></div>
+  <div class="card" style="padding:8px 16px"><table class="tbl">
+   <tr><th>Request</th><th>Type</th><th>Who</th><th>Identity check</th><th>Received</th><th>Due</th><th>Blocker</th><th>Status</th></tr>
+   <tr><td><b>DR-0091</b></td><td>Deletion</td><td>User #4102</td><td>Logged in + email code</td><td>1 Oct</td><td class="err" style="font-weight:800">28 Oct</td><td>—</td><td><span class="badge b-orange">Job running</span></td></tr>
+   <tr><td><b>DR-0093</b></td><td>Deletion</td><td>User #3877</td><td>Logged in + email code</td><td>25 Oct</td><td>25 Nov</td><td>Funds held #B-2306</td><td><span class="badge b-grey">Scheduled</span></td></tr>
+   <tr><td><b>DR-0094</b></td><td>Export</td><td>User #5210</td><td>Logged in</td><td>25 Oct</td><td>25 Nov</td><td>—</td><td><span class="badge b-green">Link sent</span></td></tr>
+   <tr><td><b>DR-0095</b></td><td>Non-user contact</td><td>On-site contact of #3877</td><td>SMS code pending</td><td>24 Oct</td><td>24 Nov</td><td>Clock paused</td><td><span class="badge b-grey">Awaiting verification</span></td></tr>
+  </table></div>
+  <div class="c mut">Rows show internal IDs only. Kept records (receipts 11 years, DAC7) move to the restricted archive and are purged by the yearly job.</div>
+ </div>
+</div>

@@ -1,0 +1,6 @@
+{% load i18n %}{% autoescape off %}{% block content %}{% endblock %}
+
+--
+{% block reason %}{% translate "You're receiving this email because you have a TaskBeavo account." %}{% endblock %}
+{% translate "TaskBeavo · Local help in Croatia" %}
+{% endautoescape %}

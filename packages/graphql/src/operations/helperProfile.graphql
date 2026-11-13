@@ -1,0 +1,102 @@
+# The helper profile (docs/PLAN.md "Becoming a helper"). updateHelperProfile saves one
+# onboarding step at a time; `missing` and `canSendOffers` say what is still needed.
+# On HELPER_ADDRESS_NOT_IN_CROATIA, offer joinWaitlist for the helper's city.
+# startPayoutOnboarding returns a single-use Stripe link; Stripe sends the helper back to
+# /helper/payouts/return, or to /helper/payouts/refresh to ask for a new link. Refetch
+# myHelperProfile on return: payoutAccount changes only when Stripe's webhook arrives.
+
+fragment ServiceAreaFields on ServiceArea {
+  id
+  name
+  slug
+}
+
+fragment PayoutAccountFields on PayoutAccount {
+  id
+  status
+  payoutsEnabled
+  requirementsDue
+  currentDeadline
+  rejection
+  updatedAt
+}
+
+fragment HelperProfileFields on HelperProfile {
+  id
+  status
+  isTrader
+  businessKind
+  businessName
+  businessOib
+  issuesFiscalizedInvoices
+  businessAddressStreet
+  businessAddressPostalCode
+  businessAddressCity
+  businessAddressCountry
+  businessVerified
+  legalFirstName
+  legalLastName
+  birthDate
+  addressStreet
+  addressPostalCode
+  addressCity
+  addressCountry
+  oibMasked
+  ibanMasked
+  vatIdMasked
+  residenceCountry
+  categories
+  serviceAreas {
+    ...ServiceAreaFields
+  }
+  payoutAccount {
+    ...PayoutAccountFields
+  }
+  missing
+  canSendOffers
+  createdAt
+  updatedAt
+}
+
+query MyHelperProfile {
+  myHelperProfile {
+    ...HelperProfileFields
+  }
+}
+
+query ServiceAreas {
+  serviceAreas {
+    ...ServiceAreaFields
+  }
+}
+
+query PublicHelperProfile($userId: ID!) {
+  helperProfile(userId: $userId) {
+    id
+    isTrader
+    businessName
+    businessOib
+    businessTown
+    categories
+    serviceAreas {
+      ...ServiceAreaFields
+    }
+  }
+}
+
+mutation UpdateHelperProfile($input: UpdateHelperProfileInput!) {
+  updateHelperProfile(input: $input) {
+    ...HelperProfileFields
+  }
+}
+
+mutation StartPayoutOnboarding {
+  startPayoutOnboarding {
+    id
+    url
+    expiresAt
+    helperProfile {
+      ...HelperProfileFields
+    }
+  }
+}

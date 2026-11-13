@@ -1,0 +1,189 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+{% comment %}
+  The booking evidence view (staff.evidence), built from design/mockups/screens/11-admin-console.html
+  (11a, the dispute detail's timeline, chat and photos). Read-only; sections the staff member's
+  role doesn't include are left out. Opening it writes a staff audit row.
+{% endcomment %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .evidence { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; }
+  .evidence section { border: 1px solid var(--hairline-color); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+  .evidence h2 { margin-top: 0; }
+  .evidence dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
+  .evidence dt { font-weight: 600; }
+  .evidence dd { margin: 0; }
+  .evidence .photos { display: flex; flex-wrap: wrap; gap: 8px; }
+  .evidence .photos img { width: 160px; height: 120px; object-fit: cover; border-radius: 6px; }
+  .evidence .restricted { border-left: 4px solid #C8452F; padding-left: 8px; }
+  .evidence .muted { color: var(--body-quiet-color); }
+  @media (max-width: 1024px) { .evidence { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+  &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+  &rsaquo; {{ evidence.booking.pk }}
+</div>
+{% endblock %}
+
+{% block content %}
+{% with b=evidence.booking p=evidence.payments %}
+<p class="muted">{% translate "Personal data. Your opening of this page is logged. Use it only for the case you are working on." %}</p>
+<div class="evidence">
+  <div>
+    <section>
+      <h2>{% translate "Booking" %}</h2>
+      <dl>
+        <dt>{% translate "Status" %}</dt><dd>{{ b.status }}</dd>
+        <dt>{% translate "Task" %}</dt><dd>{{ b.task_id }}</dd>
+        <dt>{% translate "Poster" %}</dt><dd>{% if can_view_users %}<a href="{% url 'admin:accounts_user_change' b.poster_id %}">{% endif %}{% blocktranslate with id=b.poster_id %}User {{ id }}{% endblocktranslate %}{% if can_view_users %}</a>{% endif %}</dd>
+        <dt>{% translate "Helper" %}</dt><dd>{% if can_view_users %}<a href="{% url 'admin:accounts_user_change' b.helper_id %}">{% endif %}{% blocktranslate with id=b.helper_id %}User {{ id }}{% endblocktranslate %}{% if can_view_users %}</a>{% endif %}
+          · {% if evidence.helper_is_trader %}{% translate "Registered business" %}{% else %}{% translate "Private individual" %}{% endif %}</dd>
+        <dt>{% translate "Start" %}</dt><dd>{{ b.slot_start }}</dd>
+        <dt>{% translate "Created" %}</dt><dd>{{ b.created_at }}</dd>
+        {% if b.closed_at %}<dt>{% translate "Closed" %}</dt><dd>{{ b.closed_at }}</dd>{% endif %}
+        <dt>{% translate "Terms version" %}</dt><dd>{{ b.terms_version|default:"—" }}</dd>
+        <dt>{% translate "Cancellation policy version" %}</dt><dd>{{ b.cancellation_version|default:"—" }}</dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2>{% translate "Timeline" %}</h2>
+      {% if evidence.events %}
+      <table>
+        <thead><tr><th>{% translate "When" %}</th><th>{% translate "Event" %}</th><th>{% translate "By" %}</th><th>{% translate "Details" %}</th></tr></thead>
+        <tbody>
+        {% for event in evidence.events %}
+          <tr><td>{{ event.created_at }}</td><td>{{ event.type }}</td><td>{{ event.actor_kind }}</td>
+            <td>{% for k, v in event.data.items %}{{ k }}: {{ v }}{% if not forloop.last %} · {% endif %}{% endfor %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}<p class="muted">{% translate "No events yet." %}</p>{% endif %}
+      {% if evidence.consent %}
+      <p>{% blocktranslate with at=evidence.consent.express_request_at terms=evidence.consent.terms_version notice=evidence.consent.withdrawal_notice_version %}Early-start consent captured {{ at }} (terms {{ terms }}, withdrawal notice {{ notice }}).{% endblocktranslate %}</p>
+      {% endif %}
+    </section>
+
+    {% if evidence.chat is not None %}
+    <section>
+      <h2>{% translate "Chat" %}</h2>
+      {% for message in evidence.chat %}<p>{{ message }}</p>{% empty %}<p class="muted">{% translate "No chat messages are stored for this booking." %}</p>{% endfor %}
+    </section>
+    {% endif %}
+
+    {% if evidence.photos is not None %}
+    <section>
+      <h2>{% translate "Photos" %}</h2>
+      <div class="photos">
+      {% for photo in evidence.photos %}
+        {% if photo.url %}<a href="{{ photo.url }}" rel="noreferrer" target="_blank"><img src="{{ photo.url }}" alt="{% blocktranslate with id=photo.id %}Photo {{ id }}{% endblocktranslate %}" referrerpolicy="no-referrer"></a>
+        {% else %}<span class="muted">{% blocktranslate with id=photo.id %}Photo {{ id }} isn't ready.{% endblocktranslate %}</span>{% endif %}
+      {% empty %}<p class="muted">{% translate "No photos." %}</p>{% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  </div>
+
+  <div>
+    <section>
+      <h2>{% translate "Place" %}</h2>
+      <dl>
+        <dt>{% translate "Area" %}</dt><dd>{{ evidence.place.area|default:"—" }}</dd>
+        {% if evidence.place.exact %}
+        <dt>{% translate "Exact address" %}</dt><dd>{{ evidence.place.address|default:"—" }}</dd>
+        <dt>{% translate "Access details" %}</dt><dd>{{ evidence.place.access_details|default:"—"|linebreaksbr }}</dd>
+        {% endif %}
+        {% if evidence.contact %}
+        {% if evidence.contact.name %}<dt>{% translate "On-site contact" %}</dt><dd>{{ evidence.contact.name }}</dd>{% endif %}
+        <dt>{% translate "Contact's phone" %}</dt><dd>{{ evidence.contact.phone }}</dd>
+        {% endif %}
+      </dl>
+    </section>
+
+    <section>
+      <h2>{% translate "Payment" %}</h2>
+      <p class="muted">{% translate "Read-only. Releasing or refunding is not done here." %}</p>
+      <dl>
+        <dt>{% translate "Task price (helper gets)" %}</dt><dd>{{ p.amount_cents }} {% translate "cents" %}</dd>
+        <dt>{% translate "Service fee" %}</dt><dd>{{ p.fee_cents }} {% translate "cents" %}</dd>
+        <dt>{% translate "Tip" %}</dt><dd>{{ p.tip_cents }} {% translate "cents" %}</dd>
+        {% if p.refund_cents is not None %}<dt>{% translate "Refund" %}</dt><dd>{{ p.refund_cents }} {% translate "cents" %}</dd>{% endif %}
+        {% if p.helper_compensation_cents is not None %}<dt>{% translate "Helper compensation" %}</dt><dd>{{ p.helper_compensation_cents }} {% translate "cents" %}</dd>{% endif %}
+        {% if p.payment_intent_id is not None %}
+        <dt>{% translate "PaymentIntent" %}</dt><dd>{{ p.payment_intent_id|default:"—" }}</dd>
+        {% if p.late_payment_refund_id %}<dt>{% translate "Late payment refund" %}</dt><dd>{{ p.late_payment_refund_id }}</dd>{% endif %}
+        <dt>{% translate "Helper's Stripe account" %}</dt><dd>{{ p.stripe_account_id|default:"—" }} {% if p.account_status %}({{ p.account_status }}){% endif %}</dd>
+        {% endif %}
+      </dl>
+    </section>
+
+    {% if share_form %}
+    <section>
+      <h2>{% translate "Withdrawal after the start" %}</h2>
+      <p>{% translate "The poster withdrew from the contract after the work started. Enter the share of the work already done; the helper keeps that share of the price and the rest is refunded." %}</p>
+      <form method="post" action="{% url 'admin:bookings_booking_withdrawal_share' b.pk %}">
+        {% csrf_token %}
+        {{ share_form.as_p }}
+        <input type="submit" value="{% translate 'Save share and refund' %}">
+      </form>
+    </section>
+    {% endif %}
+
+    {% if no_fault_request %}
+    <section>
+      <h2>{% translate "No-fault cancellation request" %}</h2>
+      <p>{% blocktranslate with reason=no_fault_reason by=no_fault_request.requested_by at=no_fault_request.requested_at %}Reason {{ reason }}, asked by the {{ by }} at {{ at }}.{% endblocktranslate %}
+        {% if no_fault_request.response %}{% blocktranslate with response=no_fault_request.response %}Response: {{ response }}.{% endblocktranslate %}{% else %}{% blocktranslate with by=no_fault_request.respond_by %}Waiting for a response until {{ by }}.{% endblocktranslate %}{% endif %}</p>
+      {% if no_fault_form %}
+      <p>{% translate "Lean towards the family; ask for light evidence if needed. Upholding refunds everything. Rejecting a helper's reason makes it a helper cancel (full refund, the EUR 5 credit if it was under 24 h, a reliability fault); rejecting a poster's reason applies the ordinary policy as of when they asked." %}</p>
+      <form method="post" action="{% url 'admin:bookings_booking_no_fault_decision' b.pk %}">
+        {% csrf_token %}
+        {{ no_fault_form.as_p }}
+        <input type="submit" value="{% translate 'Save decision' %}">
+      </form>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if no_show_waiting %}
+    <section>
+      {% if no_show_settle_failed %}
+      <h2>{% translate "No-show not settled" %}</h2>
+      <p>{% translate "The poster said the helper didn't come and the helper didn't answer within 24 hours, but settling it failed. It is retried automatically; you can also decide it here. Upholding settles it now (full refund, the EUR 5 credit if it was under 24 h, a no-show fault that only queues a human review). It can't be rejected: the helper didn't contest it." %}</p>
+      {% else %}
+      <h2>{% translate "Contested no-show" %}</h2>
+      <p>{% translate "The poster said the helper didn't come and the helper answered that they were there. Check the On my way, Running late and I've arrived taps and the reminders in the booking events, and the chat. Upholding cancels the booking as the helper's (full refund, the EUR 5 credit if it was under 24 h, a no-show fault that only queues a human review). Rejecting keeps the booking: the helper was there." %}</p>
+      {% endif %}
+      {% if no_show_form %}
+      <form method="post" action="{% url 'admin:bookings_booking_no_show_decision' b.pk %}">
+        {% csrf_token %}
+        {{ no_show_form.as_p }}
+        <input type="submit" value="{% translate 'Save decision' %}">
+      </form>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    <section>
+      <h2>{% translate "Staff notes" %}</h2>
+      {% for note in evidence.notes %}
+        <div{% if note.restricted %} class="restricted"{% endif %}>
+          <p class="muted">{{ note.created_at }} · {% if note.author_id %}{% blocktranslate with id=note.author_id %}User {{ id }}{% endblocktranslate %}{% else %}{% translate "Former staff member" %}{% endif %}{% if note.restricted %} · {% translate "Restricted" %}{% endif %}</p>
+          {% if note.redacted_at %}<p class="muted">{% translate "Removed after an account deletion." %}</p>{% else %}<p>{{ note.body|linebreaksbr }}</p>{% endif %}
+        </div>
+      {% empty %}<p class="muted">{% translate "No notes yet." %}</p>{% endfor %}
+      <form method="post" action="{% url 'admin:bookings_booking_add_note' b.pk %}">
+        {% csrf_token %}
+        {{ note_form.as_p }}
+        <input type="submit" value="{% translate 'Add note' %}">
+      </form>
+    </section>
+  </div>
+</div>
+{% endwith %}
+{% endblock %}

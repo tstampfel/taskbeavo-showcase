@@ -1,0 +1,52 @@
+{
+  "id": "evt_1TestAccountUpdated",
+  "object": "event",
+  "account": "acct_1TestHelperExpress",
+  "api_version": "2026-09-30.endive",
+  "created": 1793516400,
+  "data": {
+    "object": {
+      "capabilities": {
+        "card_payments": "active",
+        "transfers": "active"
+      },
+      "charges_enabled": true,
+      "country": "HR",
+      "default_currency": "eur",
+      "details_submitted": true,
+      "id": "acct_1TestHelperExpress",
+      "metadata": {
+        "helper_profile_id": "1"
+      },
+      "object": "account",
+      "payouts_enabled": true,
+      "requirements": {
+        "current_deadline": null,
+        "currently_due": [],
+        "disabled_reason": null,
+        "errors": [],
+        "eventually_due": [],
+        "past_due": [],
+        "pending_verification": []
+      },
+      "settings": {
+        "payouts": {
+          "schedule": {
+            "interval": "manual"
+          }
+        }
+      },
+      "type": "express"
+    },
+    "previous_attributes": {
+      "charges_enabled": false
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": null,
+    "idempotency_key": null
+  },
+  "type": "account.updated"
+}

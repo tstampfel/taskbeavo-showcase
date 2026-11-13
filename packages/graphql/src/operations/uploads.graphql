@@ -1,0 +1,42 @@
+# Photo uploads straight to Cloudflare R2 (BEAV-63). src/uploads.ts runs the whole flow.
+
+fragment UploadFields on Upload {
+  id
+  purpose
+  status
+  contentType
+  sizeBytes
+  width
+  height
+  rejectionCode
+  url
+}
+
+mutation CreateUploadUrl($input: CreateUploadUrlInput!) {
+  createUploadUrl(input: $input) {
+    id
+    url
+    method
+    contentType
+    expiresAt
+    upload {
+      ...UploadFields
+    }
+  }
+}
+
+mutation CompleteUpload($id: ID!) {
+  completeUpload(id: $id) {
+    ...UploadFields
+  }
+}
+
+mutation DiscardUpload($id: ID!) {
+  discardUpload(id: $id)
+}
+
+query Upload($id: ID!) {
+  upload(id: $id) {
+    ...UploadFields
+  }
+}

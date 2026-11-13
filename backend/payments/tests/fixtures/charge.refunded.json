@@ -1,0 +1,32 @@
+{
+  "id": "evt_3TestChargeRefunded",
+  "object": "event",
+  "api_version": "2026-09-30.endive",
+  "created": 1793523600,
+  "data": {
+    "object": {
+      "id": "ch_3TestDestinationCharge",
+      "object": "charge",
+      "amount": 3360,
+      "amount_refunded": 3360,
+      "application_fee_amount": 360,
+      "billing_details": {
+        "address": {"city": "München", "country": "DE", "line1": "Teststraße 1", "postal_code": "80331"},
+        "email": "ana.test@example.com",
+        "name": "Ana Test",
+        "phone": "+4915112345678"
+      },
+      "currency": "eur",
+      "livemode": false,
+      "metadata": {"booking_id": "42"},
+      "on_behalf_of": "acct_1TestHelperExpress",
+      "payment_intent": "pi_3TestDestinationCharge",
+      "refunded": true,
+      "transfer_data": {"destination": "acct_1TestHelperExpress"}
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {"id": "req_TestCancel", "idempotency_key": "booking:42:cancel:no_fault:v1"},
+  "type": "charge.refunded"
+}

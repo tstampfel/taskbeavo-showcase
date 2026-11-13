@@ -1,0 +1,6 @@
+# Push tokens. Sign-out removes this device's token first, since registerPushToken refuses
+# a token that is still live for another account.
+
+mutation UnregisterPushToken($token: String!) {
+  unregisterPushToken(token: $token)
+}

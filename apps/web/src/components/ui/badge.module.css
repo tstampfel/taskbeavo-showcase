@@ -1,0 +1,35 @@
+.badge {
+  display: inline-flex;
+  /* Hug the label even inside a column flex container such as Card. */
+  width: fit-content;
+  align-items: center;
+  gap: var(--tb-space-xs);
+  min-height: var(--tb-space-xl);
+  padding: 0 var(--tb-space-sm);
+  border-radius: var(--tb-radius-pill);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: var(--tb-font-caption-size);
+  line-height: var(--tb-font-caption-line);
+  font-weight: var(--tb-font-label-weight);
+}
+
+.green {
+  --bg: var(--tb-badge-green-bg);
+  --fg: var(--tb-badge-green-fg);
+}
+
+.orange {
+  --bg: var(--tb-badge-orange-bg);
+  --fg: var(--tb-badge-orange-fg);
+}
+
+.grey {
+  --bg: var(--tb-badge-grey-bg);
+  --fg: var(--tb-badge-grey-fg);
+}
+
+.red {
+  --bg: var(--tb-badge-red-bg);
+  --fg: var(--tb-badge-red-fg);
+}

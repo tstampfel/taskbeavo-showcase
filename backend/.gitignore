@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+staticfiles/
+celerybeat-schedule*
+# The GeoLite2 City database the update job downloads (accounts/geolite.py)
+var/

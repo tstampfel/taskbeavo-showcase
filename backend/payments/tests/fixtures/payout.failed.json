@@ -1,0 +1,26 @@
+{
+  "id": "evt_1TestPayoutFailed",
+  "object": "event",
+  "account": "acct_1TestHelperExpress",
+  "api_version": "2026-09-30.endive",
+  "created": 1793520000,
+  "data": {
+    "object": {
+      "id": "po_1TestPayout",
+      "object": "payout",
+      "amount": 3000,
+      "currency": "eur",
+      "failure_code": "account_closed",
+      "failure_message": "The bank account has been closed.",
+      "livemode": false,
+      "metadata": {"booking_id": "42"},
+      "method": "standard",
+      "status": "failed",
+      "type": "bank_account"
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {"id": null, "idempotency_key": null},
+  "type": "payout.failed"
+}

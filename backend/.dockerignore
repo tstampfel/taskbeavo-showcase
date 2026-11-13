@@ -1,0 +1,18 @@
+.venv/
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.ruff_cache/
+staticfiles/
+.env
+.env.*
+Dockerfile
+.dockerignore
+celerybeat-schedule*
+# Certificates and keys (the FINA certificate is a Render secret file, never in the image)
+*.p12
+*.pfx
+*.pem
+*.key
+# Downloaded GeoLite2 data never goes into the image
+var/

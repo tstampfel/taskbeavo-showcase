@@ -1,0 +1,89 @@
+<!--
+  Built in BEAV-82 (apps/web components/terms-update and /[locale]/terms-update, apps/mobile
+  src/screens/terms-update-screen.tsx and src/components/terms-banner.tsx): 21b with the
+  version line, the unticked agree box, Accept, "Not now" and the full-terms link, and 21c's
+  limited-mode note with "Review and accept". Kept here for what isn't built yet: 21b's real
+  "What's changed" bullets (a draft placeholder until the lawyer's per-version summary,
+  BEAV-182), the beaver, and 21c's home feed around the note (open booking card, disabled
+  "Post a task"); 21a the 30-day notice card (BEAV-182); 21d Settings, Legal; 21e the web
+  terms page. Delete each frame once built.
+-->
+<div class="screen" id="21a Terms change · 30-day notice">{{sb}}
+ <div class="body" style="gap:12px;padding-top:4px">
+  <div class="row between"><div class="col" style="gap:2px"><span class="h1">Hi, Ana</span><span class="chip" style="height:36px;padding:0 12px">{{i:pin:16:#1F5C46}} Gruž, Dubrovnik {{i:down:16}}</span></div><span class="ibtn">{{i:bell}}</span></div>
+  <div class="card" style="gap:8px;border:2px solid #1F5C46">
+   <span class="row p" style="font-weight:800">{{i:info:20:#1F5C46}} Our terms change on 1 Dec</span>
+   <span class="s">What changes: how no-access call-outs are paid, and the €5 credit when a helper cancels late.</span>
+   <div class="row" style="gap:8px"><span class="btn sec sm">Read the changes</span><span class="btn ghost sm">Dismiss</span></div>
+  </div>
+  <span class="c mut">Sent by email and shown in the app 30 days before a material change (fees, cancellation rules, liability). Small fixes are published without notice.</span>
+ </div>
+ {{tab:home}}
+</div>
+
+<div class="screen" id="21b We've updated our terms">{{sb}}
+ <div class="body" style="gap:14px;padding-top:20px">
+  {{beaver:110:stand}}
+  <div class="h1">We've updated our terms</div>
+  <span class="s mut">Terms and conditions, version 1.2 · in effect from 1 Dec 2026</span>
+  <div class="card" style="gap:10px;padding:16px">
+   <span class="c" style="font-weight:800">WHAT'S CHANGED</span>
+   <div class="row s" style="align-items:flex-start">{{i:check:18:#2E8B57}}<span>If a helper can't get in, you can reschedule for free, accept a 25% call-out, or dispute.</span></div>
+   <div class="row s" style="align-items:flex-start">{{i:check:18:#2E8B57}}<span>If a helper cancels less than 24 h before, you get a €5 credit on top of your full refund.</span></div>
+   <div class="row s" style="align-items:flex-start">{{i:check:18:#2E8B57}}<span>Bookings you already made keep the terms you booked under.</span></div>
+  </div>
+  <span class="link s">Read the full Terms and conditions</span>
+ </div>
+ <div class="foot"><div class="btn pri">Accept</div><div class="btn ghost sm">Not now</div></div>
+</div>
+
+<div class="screen" id="21c Limited mode · terms not accepted">{{sb}}
+ <div class="body" style="gap:12px;padding-top:4px">
+  <div class="row between"><span class="h1">Hi, Ana</span><span class="ibtn">{{i:bell}}</span></div>
+  <div class="note warn" style="padding:14px">{{i:lock:22:#7A4806}}<div class="col" style="gap:6px"><b style="font-size:15px">Accept the updated terms to post or book</b><span>You can still see your history, finish open bookings and delete your account.</span><span class="link" style="color:#7A4806">Review and accept</span></div></div>
+  <div class="card" style="padding:14px;gap:6px"><div class="row between"><span class="p" style="font-weight:800">Grocery run for Mama</span><span class="badge b-green">Payment held</span></div><span class="c mut">Sat 9:00 · Marko P. · continues under version 1.1</span></div>
+  <div class="btn dis">{{i:plus:20:#fff}} Post a task</div>
+ </div>
+ {{tab:home}}
+</div>
+
+<div class="screen" id="21d Settings · Legal">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Legal</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="card" style="padding:4px 14px;gap:0">
+   <div class="row" style="height:60px"><div class="col grow" style="gap:0"><span class="p" style="font-weight:700">Terms and conditions</span><span class="c mut">v1.2 · you accepted 1 Dec 2026</span></div>{{i:right:18:#5E6661}}</div><div class="hr"></div>
+   <div class="row" style="height:60px"><div class="col grow" style="gap:0"><span class="p" style="font-weight:700">Privacy notice</span><span class="c mut">v1.0 · shown at sign-up</span></div>{{i:right:18:#5E6661}}</div><div class="hr"></div>
+   <div class="row" style="height:60px"><div class="col grow" style="gap:0"><span class="p" style="font-weight:700">Cancellation and refund policy</span><span class="c mut">accepted at each checkout</span></div>{{i:right:18:#5E6661}}</div><div class="hr"></div>
+   <div class="row" style="height:60px"><div class="col grow" style="gap:0"><span class="p" style="font-weight:700">Helper terms</span><span class="c mut">accepted in helper onboarding</span></div>{{i:right:18:#5E6661}}</div><div class="hr"></div>
+   <div class="row" style="height:60px"><div class="col grow" style="gap:0"><span class="p" style="font-weight:700">Withdrawal information</span><span class="c mut">model notice and form</span></div>{{i:right:18:#5E6661}}</div><div class="hr"></div>
+   <div class="row" style="height:60px"><div class="col grow" style="gap:0"><span class="p" style="font-weight:700">Company information</span><span class="c mut">TaskBeavo j.d.o.o., Dubrovnik</span></div>{{i:right:18:#5E6661}}</div>
+  </div>
+  <span class="c mut">Available in HR, EN, DE and FR.</span>
+ </div>
+ {{tab:profile}}
+</div>
+
+<div class="screen web" id="21e Web · Terms and conditions page" style="height:900px">
+ <div class="row between" style="height:72px;padding:0 120px;background:#fff;border-bottom:1px solid #E3E1D8;flex:none">
+  <div class="row" style="gap:10px">{{beaver:40:stand}}<span class="h2 green" style="font-weight:800">TaskBeavo</span></div>
+  <div class="row" style="gap:12px"><span class="chip">{{i:globe:16:#1F5C46}} EN {{i:down:14}}</span><span class="btn pri sm">Post a task</span></div>
+ </div>
+ <div class="note warn" style="margin:24px 120px 0;padding:14px;font-size:14px">{{i:alert:20:#7A4806}}<span><b>Draft for testing.</b> Not for real users or payments until the lawyer-approved version is published.</span></div>
+ <div class="row" style="padding:32px 120px;gap:48px;align-items:flex-start">
+  <div class="col" style="width:260px;flex:none;gap:4px">
+   <span class="c mut" style="font-weight:800;margin-bottom:8px">LEGAL</span>
+   <span class="p" style="font-weight:800;color:#1F5C46;padding:8px 12px;background:#E3EFE9;border-radius:10px">Terms and conditions</span>
+   <span class="p" style="padding:8px 12px">Helper terms</span><span class="p" style="padding:8px 12px">Privacy notice</span><span class="p" style="padding:8px 12px">Cancellation and refund policy</span><span class="p" style="padding:8px 12px">Cookie policy</span><span class="p" style="padding:8px 12px">Company information</span>
+  </div>
+  <div class="col grow" style="gap:16px;max-width:760px">
+   <span class="display">Terms and conditions</span>
+   <div class="row" style="gap:8px"><span class="badge b-grey">Version 1.2</span><span class="badge b-grey">In effect from 1 Dec 2026</span><span class="link s">Earlier versions</span></div>
+   <span class="h2">1. What TaskBeavo does</span>
+   <span class="p mut">TaskBeavo arranges tasks between posters and helpers. The agreement for each task is between the poster and the helper. TaskBeavo acts as the helper's agent and collects payment on the helper's behalf; payments are held via Stripe until the poster releases them.</span>
+   <span class="h2">2. Your account</span>
+   <span class="p mut">You must be 18 or older. Your account is created only after you agree to these terms…</span>
+   <span class="h2">3. Cancellations and refunds</span>
+   <span class="p mut">See the <span class="link">Cancellation and refund policy</span>, which you accept at each checkout…</span>
+  </div>
+ </div>
+</div>

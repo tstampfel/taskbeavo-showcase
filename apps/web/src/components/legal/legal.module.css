@@ -1,0 +1,215 @@
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--tb-space-xl);
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--tb-space-xl) var(--tb-space-lg) var(--tb-space-xxl);
+  box-sizing: border-box;
+}
+
+.article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-lg);
+  min-width: 0;
+  max-width: 760px;
+}
+
+/* Mockup 21e: the list of legal pages sits left on wide screens, after the text on phones. */
+.nav {
+  order: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-xs);
+}
+
+@media (min-width: 900px) {
+  .main {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: var(--tb-space-xxl) 48px;
+  }
+
+  .nav {
+    order: 0;
+  }
+}
+
+.navTitle {
+  margin: 0 0 var(--tb-space-sm);
+  color: var(--tb-color-ink-muted);
+  font-size: var(--tb-font-caption-size);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  min-height: var(--tb-tap-target);
+  padding: 0 var(--tb-space-md);
+  border-radius: var(--tb-radius-md);
+  color: var(--tb-color-ink);
+  text-decoration: none;
+}
+
+.navLink[aria-current='page'] {
+  background: var(--tb-color-green-tint);
+  color: var(--tb-color-green);
+  font-weight: 800;
+}
+
+.navLink:focus-visible,
+.link:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-color-green);
+  outline-offset: 2px;
+}
+
+.title {
+  margin: 0;
+  color: var(--tb-color-ink);
+  font-size: var(--tb-font-display-size);
+  line-height: var(--tb-font-display-line);
+  font-weight: var(--tb-font-display-weight);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-sm);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tb-tap-target);
+  color: var(--tb-color-green);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-xs);
+  margin: 0;
+  padding: var(--tb-space-md) var(--tb-space-lg);
+  border-radius: var(--tb-radius-md);
+  background: var(--tb-color-orange-tint);
+  color: var(--tb-color-orange-tint-text);
+  font-size: var(--tb-font-small-size);
+  line-height: var(--tb-font-small-line);
+}
+
+.info {
+  background: var(--tb-color-grey-tint);
+  color: var(--tb-color-grey-tint-text);
+}
+
+/* The lawyer's text: readable measure, headings below the page h1. */
+.body {
+  font-size: var(--tb-font-body-size);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.body h2,
+.body h3,
+.body h4,
+.body h5,
+.body h6 {
+  margin: var(--tb-space-xl) 0 var(--tb-space-sm);
+  line-height: 1.3;
+}
+
+.body h2 {
+  font-size: var(--tb-font-h2-size);
+}
+
+.body h3 {
+  font-size: 1.1rem;
+}
+
+.body p,
+.body ul,
+.body ol {
+  margin: 0 0 var(--tb-space-md);
+}
+
+.body a {
+  color: var(--tb-color-green);
+}
+
+.versions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-sm);
+  padding-top: var(--tb-space-lg);
+  border-top: var(--tb-border-thin) solid var(--tb-color-line);
+}
+
+.versions h2 {
+  margin: 0;
+  font-size: var(--tb-font-h2-size);
+}
+
+.versionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.versionList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--tb-space-sm);
+  min-height: var(--tb-tap-target);
+}
+
+.muted {
+  color: var(--tb-color-ink-muted);
+  font-size: var(--tb-font-small-size);
+}
+
+.attribution {
+  margin: 0;
+  color: var(--tb-color-ink-muted);
+  font-size: var(--tb-font-small-size);
+}
+
+.footer {
+  border-top: var(--tb-border-thin) solid var(--tb-color-line);
+  padding: var(--tb-space-lg);
+}
+
+.footerList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 var(--tb-space-lg);
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.footerList a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tb-tap-target);
+  color: var(--tb-color-ink);
+  font-size: var(--tb-font-small-size);
+}

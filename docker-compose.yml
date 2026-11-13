@@ -1,0 +1,103 @@
+# Local backend stack. Web and mobile run on the host.
+#   docker compose up -d postgis redis   # only the databases, for `manage.py runserver` on the host
+#   docker compose up                    # full stack; Django at http://localhost:8000
+# Optional local settings and the Stripe test key go in backend/.env (git-ignored, see .env.example).
+# PostGIS is published on host port 55432 (5432 is often taken by another Postgres).
+# Override a taken host port from the shell, e.g. DJANGO_HOST_PORT=8001 docker compose up.
+
+x-backend: &backend
+  build:
+    context: ./backend
+    target: dev
+  image: taskbeavo-backend:dev
+  env_file:
+    - path: ./backend/.env
+      required: false
+  environment:
+    DATABASE_URL: postgis://taskbeavo:taskbeavo@postgis:5432/taskbeavo
+    REDIS_URL: redis://redis:6379/0
+    # "django" is the host name stripe-cli forwards webhooks to; 10.0.2.2 is the host
+    # machine as the Android emulator sees it (apps/mobile/src/apollo/endpoint.ts).
+    ALLOWED_HOSTS: localhost,127.0.0.1,django,10.0.2.2
+  volumes:
+    - ./backend:/app
+  depends_on:
+    postgis:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    # The image is published for amd64 only; Docker Desktop emulates it on Apple silicon.
+    platform: linux/amd64
+    environment:
+      POSTGRES_USER: taskbeavo
+      POSTGRES_PASSWORD: taskbeavo
+      POSTGRES_DB: taskbeavo
+    # Published on localhost only: these are dev services with fixed or no passwords.
+    ports:
+      - '127.0.0.1:${POSTGIS_HOST_PORT:-55432}:5432'
+    volumes:
+      - postgis-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U taskbeavo -d taskbeavo']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7
+    ports:
+      - '127.0.0.1:${REDIS_HOST_PORT:-6379}:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  django:
+    <<: *backend
+    command: >
+      sh -c "uv run python manage.py migrate --noinput &&
+             exec uv run uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - '127.0.0.1:${DJANGO_HOST_PORT:-8000}:8000'
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  celery:
+    <<: *backend
+    # Beat runs inside the worker locally; in production it is its own single-instance service.
+    command: uv run celery -A config worker -B -l info --schedule /tmp/celerybeat-schedule
+    healthcheck:
+      test: ['CMD-SHELL', 'celery -A config inspect ping -d celery@$$HOSTNAME --timeout 5']
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+
+  stripe-cli:
+    image: stripe/stripe-cli:v1.55.2
+    entrypoint: ['/bin/sh', '/stripe-listen.sh']
+    env_file:
+      - path: ./backend/.env
+        required: false
+    volumes:
+      - ./docker/stripe-listen.sh:/stripe-listen.sh:ro
+    depends_on:
+      django:
+        condition: service_healthy
+    restart: 'no'
+
+volumes:
+  postgis-data:

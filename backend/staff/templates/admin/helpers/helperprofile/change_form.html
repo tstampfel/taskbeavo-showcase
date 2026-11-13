@@ -1,0 +1,11 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+{% block content %}{{ block.super }}
+{% if can_reveal and original %}
+<form method="post" action="{% url 'admin:helpers_helperprofile_reveal' original.pk %}">
+  {% csrf_token %}
+  <p>{% translate "Revealing the full OIB, IBAN and VAT ID is logged. Do it only when the task needs the full value." %}</p>
+  <input type="submit" value="{% translate 'Reveal tax IDs' %}">
+</form>
+{% endif %}
+{% endblock %}

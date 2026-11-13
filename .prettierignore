@@ -1,0 +1,20 @@
+pnpm-lock.yaml
+docs/
+design/
+backend/
+.claude/
+CLAUDE.md
+**/dist/
+**/.next/
+**/.turbo/
+next-env.d.ts
+.next/
+playwright-report/
+test-results/
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+apps/mobile/expo-env.d.ts
+# Generated: export_schema and GraphQL Code Generator own their formatting.
+packages/graphql/schema.graphql
+packages/graphql/src/generated/

@@ -1,0 +1,16 @@
+# The waitlist for places TaskBeavo doesn't serve yet (BEAV-84), offered after
+# OUT_OF_SERVICE_AREA.
+
+mutation JoinWaitlist($input: JoinWaitlistInput!) {
+  joinWaitlist(input: $input) {
+    id
+    city
+    countryCode
+    category
+  }
+}
+
+# The launch email's "leave the waitlist" link opens a page that sends its token here.
+mutation LeaveWaitlist($token: String!) {
+  leaveWaitlist(token: $token)
+}

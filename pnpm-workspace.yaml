@@ -1,0 +1,25 @@
+packages:
+  - apps/*
+  - packages/*
+# The 14-day package age rule (BEAV-176 turns on minimumReleaseAge): expo-build-properties
+# 58.0.11 would resolve @expo/schema-utils 58.0.3 (2026-10-31). Remove after 2026-11-14.
+overrides:
+  'expo-build-properties>@expo/schema-utils': 58.0.2
+minimumReleaseAgeExclude:
+  - '@typescript-eslint/eslint-plugin@8.72.1'
+  - '@typescript-eslint/parser@8.72.1'
+  - '@typescript-eslint/project-service@8.72.1'
+  - '@typescript-eslint/scope-manager@8.72.1'
+  - '@typescript-eslint/tsconfig-utils@8.72.1'
+  - '@typescript-eslint/type-utils@8.72.1'
+  - '@typescript-eslint/types@8.72.1'
+  - '@typescript-eslint/typescript-estree@8.72.1'
+  - '@typescript-eslint/utils@8.72.1'
+  - '@typescript-eslint/visitor-keys@8.72.1'
+  - typescript-eslint@8.72.1
+# next-intl's optional message extractor pulls in @parcel/watcher and @swc/core, jest-expo pulls in unrs-resolver, and the Sentry SDKs pull in @sentry/cli (source map upload); all ship prebuilt binaries as optional platform packages, so their install scripts aren't needed.
+allowBuilds:
+  '@sentry/cli': false
+  '@parcel/watcher': false
+  '@swc/core': false
+  unrs-resolver: false

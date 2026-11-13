@@ -1,0 +1,71 @@
+<div class="screen" id="7a Helper · Request payment">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Request payment</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="card" style="padding:14px;gap:6px"><span class="p" style="font-weight:800">Grocery run for Mama</span><span class="c mut">Sat 7 Nov · Gruž · for Ana K.</span><div class="line tot" style="margin-top:6px"><span>Agreed price</span><span>€30.00</span></div></div>
+  <div class="label">Add photos of the finished job (optional)</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><div class="ph" style="height:100px"></div><div class="ph b" style="height:100px"></div><div class="ph c" style="height:100px"></div><div class="card flat center" style="height:100px;justify-content:center;border-style:dashed">{{i:camera:26:#1F5C46}}</div></div>
+  <div class="label">Note (optional)</div>
+  <div class="input textarea" style="height:90px;color:#17211C">All delivered. Mama says hvala! Receipt from the pharmacy is on the kitchen table.</div>
+ </div>
+ <div class="foot"><div class="btn pri">Request payment</div></div>
+</div>
+
+<div class="screen" id="7b Helper · Waiting for release">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Grocery run for Mama</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:14px;padding-top:4px">
+  <div class="card center" style="padding:20px;gap:8px">{{i:clock:44:#C77A12}}<span class="h2">Payment requested</span><span class="s mut">Waiting for Ana to release €30.00</span></div>
+  <div class="card" style="gap:12px;padding:14px">
+   <span class="s" style="font-weight:800">Timeline</span>
+   <div class="row s">{{i:check:18:#2E8B57}}<span class="grow">You requested payment · 3 photos</span><span class="c mut">Sat 11:10</span></div>
+   <div class="row s">{{i:bell:18:#5E6661}}<span class="grow">Reminder sent to Ana</span><span class="c mut">Sun 11:10</span></div>
+   <div class="row s mut">{{i:bell:18:#C9C6BA}}<span class="grow">Next reminder</span><span class="c">Mon 11:10</span></div>
+  </div>
+  <div class="note">{{i:info:18:#1F5C46}}<span>Ana hasn't responded after 48 h? <b class="link">Contact support</b></span></div>
+ </div>
+</div>
+
+<div class="screen" id="7c Poster · Notification">
+ <div style="position:absolute;inset:0;background:linear-gradient(180deg,#2E5F4B,#17211C)"></div>
+ <div style="position:relative;color:#fff;text-align:center;padding-top:90px"><div style="font-size:84px;font-weight:300;line-height:90px">9:41</div><div class="p" style="opacity:.8">Saturday 7 November</div></div>
+ <div class="card" style="position:relative;margin:40px 12px 0;background:rgba(255,255,255,.92);gap:4px;padding:14px">
+  <div class="row between"><span class="row c" style="gap:6px"><span style="width:20px;height:20px;border-radius:5px;background:#1F5C46"></span>TASKBEAVO</span><span class="c mut">now</span></div>
+  <span class="s" style="font-weight:800">Marko has requested payment</span>
+  <span class="s">for Grocery run for Mama · 3 photos. Tap to review and release €30.00.</span>
+ </div>
+</div>
+
+<div class="screen" id="7d Poster · Release payment">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Release payment</span><span style="width:44px"></span></div>
+ <div class="body" style="gap:12px;padding-top:0">
+  <div class="row"><div class="av">MP</div><div class="col grow" style="gap:0"><span class="p" style="font-weight:800">Marko P. finished the job</span><span class="c mut">Grocery run for Mama · Sat 11:10</span></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><div class="ph" style="height:96px"></div><div class="ph b" style="height:96px"></div><div class="ph c" style="height:96px"></div></div>
+  <div class="bubble them" style="max-width:none">"All delivered. Mama says hvala! Receipt from the pharmacy is on the kitchen table."</div>
+  <div class="line tot"><span>Amount</span><span>€30.00</span></div>
+  <div class="label">Add a tip? (optional)</div>
+  <div class="chips"><span class="chip">€2</span><span class="chip on">€5</span><span class="chip">€10</span><span class="chip">No tip</span></div>
+  <div class="note">{{i:phone:18:#1F5C46}}<span>Not sure? Call Mama Kata first or chat with Marko.</span></div>
+ </div>
+ <div class="foot"><div class="btn pri">Release payment</div><div class="btn ghost sm">Something's wrong? Report a problem</div></div>
+</div>
+
+<div class="screen" id="7e Poster · Confirm release (sheet)">{{sb}}
+ <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Release payment</span><span style="width:44px"></span></div>
+ <div class="scrim"></div>
+ <div class="sheet">
+  <div class="grab"></div>
+  <div class="h2">Release €35.00 to Marko?</div>
+  <div class="col" style="gap:6px"><div class="line"><span>Task price</span><span>€30.00</span></div><div class="line"><span>Tip</span><span>€5.00</span></div></div>
+  <div class="p mut">This can't be undone.</div>
+  <div class="btn pri">Release</div><div class="btn sec">Cancel</div>
+ </div>
+</div>
+
+<div class="screen" id="7f Payment released · success">{{sb}}
+ <div class="body center" style="justify-content:center;gap:16px">
+  <div style="width:220px;height:220px;border-radius:999px;background:#E3EFE9;display:flex;align-items:center;justify-content:center">{{beaver:180:thumb}}</div>
+  <div class="h1">Payment released!</div>
+  <div class="p mut" style="max-width:300px">€35.00 is on its way to Marko.</div>
+  <div class="card flat" style="flex-direction:row;align-items:center;width:100%">{{i:clock:22:#1F5C46}}<span class="s grow">Payout to Marko's bank</span><b class="s">3–5 business days</b></div>
+ </div>
+ <div class="foot"><div class="btn pri">{{i:star:20:#fff}} Leave a review</div><div class="btn ghost">Back to task</div></div>
+</div>

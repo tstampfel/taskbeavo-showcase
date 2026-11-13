@@ -1,0 +1,24 @@
+{% extends "email/base.html" %}{% load i18n %}
+{% block title %}{% translate "Your booking is confirmed" %}{% endblock %}
+{% block content %}
+<h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#17211C;">{% translate "Your booking is confirmed" %}</h1>
+<p style="margin:0 0 16px;">{% blocktranslate %}Hello, {{ first_name }}!{% endblocktranslate %}</p>
+<p style="margin:0 0 24px;">{% translate "Your payment is held and your booking is confirmed. Please keep this email: it confirms your contract." %}</p>
+<h2 style="margin:0 0 8px;font-size:18px;color:#17211C;">{% translate "Your booking" %}</h2>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;width:100%;">
+<tr><td style="padding:4px 12px 4px 0;color:#4A544E;">{% translate "Task" %}</td><td style="padding:4px 0;">{{ task_title }}</td></tr>
+<tr><td style="padding:4px 12px 4px 0;color:#4A544E;">{% translate "Start (Croatian time)" %}</td><td style="padding:4px 0;">{{ start }}</td></tr>
+<tr><td style="padding:4px 12px 4px 0;color:#4A544E;">{% translate "Helper" %}</td><td style="padding:4px 0;">{{ helper_name }}<br>{% if helper_is_trader %}{% if trader_name %}{% blocktranslate %}Registered business: {{ trader_name }}, OIB {{ trader_oib }}{% endblocktranslate %}{% if trader_address %}<br>{% blocktranslate %}Registered address: {{ trader_address }}{% endblocktranslate %}{% endif %}{% else %}{% translate "Registered business" %}{% endif %}{% else %}{% translate "Private individual" %}{% endif %}</td></tr>
+<tr><td style="padding:4px 12px 4px 0;color:#4A544E;">{% translate "Task price" %}</td><td style="padding:4px 0;">{{ price }}</td></tr>
+<tr><td style="padding:4px 12px 4px 0;color:#4A544E;">{% translate "TaskBeavo service fee" %}</td><td style="padding:4px 0;">{{ fee }}</td></tr>
+<tr><td style="padding:4px 12px 4px 0;color:#4A544E;font-weight:700;">{% translate "Total paid" %}</td><td style="padding:4px 0;font-weight:700;">{{ total }}</td></tr>
+</table>
+<p style="margin:0 0 24px;">{% translate "Your payment is held until you release it. TaskBeavo arranges this booking as the helper's agent; the contract for the task is between you and the helper." %}</p>
+<h2 style="margin:0 0 8px;font-size:18px;color:#17211C;">{% translate "Cancellation and withdrawal" %}</h2>
+<p style="margin:0 0 16px;">{% blocktranslate %}The attached cancellation policy, version {{ cancellation_version }}, applies to this booking. It includes the information on your right of withdrawal and the model withdrawal form.{% endblocktranslate %}</p>
+{% if helper_is_trader %}<p style="margin:0 0 16px;">{% translate "Your right of withdrawal covers both your service fee contract with TaskBeavo and the task contract with the helper's registered business." %}</p>
+<p style="margin:0 0 24px;">{% blocktranslate %}On {{ early_start_at }} (Croatian time) you expressly asked for the booking to be arranged and the task performed within your 14-day withdrawal period, and you acknowledged that you lose your right of withdrawal from each contract once that service has been fully performed.{% endblocktranslate %}</p>{% else %}<p style="margin:0 0 16px;">{% translate "Your right of withdrawal covers only your service fee contract with TaskBeavo. The task is agreed with a private individual, so the task itself has no statutory right of withdrawal." %}</p>
+<p style="margin:0 0 24px;">{% blocktranslate %}On {{ early_start_at }} (Croatian time) you expressly asked TaskBeavo to arrange the booking within your 14-day withdrawal period for the service fee, and you acknowledged that you lose that right of withdrawal once TaskBeavo's service has been fully performed.{% endblocktranslate %}</p>{% endif %}
+<p style="margin:0 0 24px;color:#4A544E;">{% blocktranslate %}Your service fee contract is with {{ taskbeavo_name }}, OIB {{ taskbeavo_oib }}, {{ taskbeavo_address }}, {{ taskbeavo_email }}.{% endblocktranslate %}</p>
+<p style="margin:0;"><a href="{{ link }}" style="display:inline-block;padding:12px 20px;min-height:20px;background-color:#1F5C46;color:#FFFFFF;border-radius:8px;font-weight:700;text-decoration:none;">{% translate "Open TaskBeavo" %}</a></p>
+{% endblock %}

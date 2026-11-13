@@ -1,0 +1,8 @@
+# The signed-in user's language (BEAV-65). Emails, push and SMS go out in it.
+
+mutation SetLocale($locale: Locale!) {
+  setLocale(locale: $locale) {
+    id
+    locale
+  }
+}
