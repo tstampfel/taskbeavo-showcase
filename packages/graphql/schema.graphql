@@ -539,7 +539,9 @@ enum ConsentPurpose {
 The current choice about one purpose: the latest CONSENT row, or off while the user never chose.
 """
 type ConsentState {
-  """The purpose, e.g. "ANALYTICS"."""
+  """
+  Whose choice and the purpose: "user:<account id>:<purpose>" signed in, "visitor:<visitorId>:<purpose>" for the signed-out cookie banner, so the two never share a cache entry.
+  """
   id: ID!
   purpose: ConsentPurpose!
   granted: Boolean!

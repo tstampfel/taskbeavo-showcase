@@ -52,7 +52,7 @@ export function PrivacySettings() {
     // The switch moves at once; a refusal rolls it back. __typename lets the cache file it.
     const optimistic = {
       __typename: 'ConsentState' as const,
-      id: purpose,
+      id: current?.id ?? purpose,
       purpose,
       granted: value,
       version: current?.version ?? null,

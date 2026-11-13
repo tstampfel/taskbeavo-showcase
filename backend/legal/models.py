@@ -227,6 +227,11 @@ class ConsentQuerySet(models.QuerySet["Consent"]):
             raise ImmutableRowError("Consents are append-only; record a new choice instead.")
         return super().update(**kwargs)
 
+    def delete(self) -> NoReturn:  # pyright: ignore[reportIncompatibleMethodOverride]
+        # The retention purge (BEAV-153) removes detached rows with _raw_delete, like
+        # TermsAcceptanceQuerySet.purge_detached.
+        raise ImmutableRowError("Consents are proof of consent and can't be deleted.")
+
 
 class Consent(models.Model):
     """One choice about an optional purpose: analytics, or news and offers by email or push
@@ -240,8 +245,8 @@ class Consent(models.Model):
 
     A signed-in choice names its `user`; the web cookie banner before sign-in names the
     browser's random `visitor_id` instead (no IP address, no other identifier). Rows are
-    append-only, refused by the model and the queryset, because they are the proof of
-    consent. Deleting the account keeps them as that proof, detached like
+    append-only and can't be deleted (refused by the model and the queryset), because they
+    are the proof of consent. Deleting the account keeps them as that proof, detached like
     `TermsAcceptance`: `user` becomes NULL (SET_NULL) and `user_reference`, the account's
     numeric id, is the pseudonymous link the archive uses; no name or email is kept.
     TODO(BEAV-153): include `legal.consents.export_consents` in "Download my data", move
@@ -297,3 +302,6 @@ class Consent(models.Model):
         if self.user_id is not None:
             self.user_reference = self.user_id
         super().save(*args, **kwargs)
+
+    def delete(self, *args: Any, **kwargs: Any) -> NoReturn:
+        raise ImmutableRowError("Consents are proof of consent and can't be deleted.")

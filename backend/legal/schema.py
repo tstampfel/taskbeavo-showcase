@@ -133,7 +133,13 @@ class ConsentPurpose(Enum):
     ),
 )
 class ConsentStateType:
-    id: strawberry.ID = strawberry.field(description='The purpose, e.g. "ANALYTICS".')
+    id: strawberry.ID = strawberry.field(
+        description=(
+            'Whose choice and the purpose: "user:<account id>:<purpose>" signed in, '
+            '"visitor:<visitorId>:<purpose>" for the signed-out cookie banner, so the two '
+            "never share a cache entry."
+        )
+    )
     purpose: ConsentPurpose
     granted: bool
     version: str | None = strawberry.field(
@@ -145,9 +151,10 @@ class ConsentStateType:
     given_at: dt.datetime | None
 
     @classmethod
-    def of(cls, purpose: str, row: Consent | None) -> "ConsentStateType":
+    def of(cls, subject: str, purpose: str, row: Consent | None) -> "ConsentStateType":
+        """`subject` is "user:<id>" or "visitor:<uuid>"."""
         return cls(
-            id=strawberry.ID(purpose),
+            id=strawberry.ID(f"{subject}:{purpose}"),
             purpose=ConsentPurpose(purpose),
             granted=row.granted if row else False,
             version=(row.version or None) if row else None,
@@ -166,7 +173,9 @@ class Query:
     async def consents(self, info: Info) -> list[ConsentStateType]:
         user = _signed_in_user(info)
         found = await sync_to_async(consents.current_consents)(user)
-        return [ConsentStateType.of(purpose, row) for purpose, row in found.items()]
+        return [
+            ConsentStateType.of(f"user:{user.pk}", purpose, row) for purpose, row in found.items()
+        ]
 
     @strawberry.field(
         description=(
@@ -244,15 +253,17 @@ class Mutation:
         user = info.context.user if isinstance(info.context.user, User) else None
         session = getattr(info.context, "session", None)
         platform = session.platform if isinstance(session, Session) else Session.Platform.WEB
+        visitor = _visitor(visitor_id)
         row = await sync_to_async(consents.record_consent)(
             purpose=purpose.value,
             granted=granted,
             language=language.value,
             platform=platform,
             user=user,
-            visitor_id=_visitor(visitor_id),
+            visitor_id=visitor,
         )
-        return ConsentStateType.of(purpose.value, row)
+        subject = f"user:{user.pk}" if user else f"visitor:{visitor}"
+        return ConsentStateType.of(subject, purpose.value, row)
 
 
 def _signed_in_user(info: Info[Any, Any]) -> User:

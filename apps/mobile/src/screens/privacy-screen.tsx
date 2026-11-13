@@ -51,7 +51,7 @@ export function PrivacyScreen({ onBack }: { onBack(): void }) {
     // The switch moves at once; a refusal rolls it back. __typename lets the cache file it.
     const optimistic = {
       __typename: 'ConsentState' as const,
-      id: purpose,
+      id: current?.id ?? purpose,
       purpose,
       granted,
       version: current?.version ?? null,

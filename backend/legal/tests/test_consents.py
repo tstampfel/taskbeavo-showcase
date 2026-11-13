@@ -40,12 +40,19 @@ def policies() -> None:
 
 
 def test_every_purpose_is_off_until_the_user_agrees(client: Client) -> None:
-    token = sign_in(make_user()).access_token
+    user = make_user()
+    token = sign_in(user).access_token
 
     found = gql(client, CONSENTS, token=token)["data"]["consents"]
 
     assert found == [
-        {"id": purpose, "purpose": purpose, "granted": False, "version": None, "givenAt": None}
+        {
+            "id": f"user:{user.pk}:{purpose}",
+            "purpose": purpose,
+            "granted": False,
+            "version": None,
+            "givenAt": None,
+        }
         for purpose in ("ANALYTICS", "MARKETING_EMAIL", "MARKETING_PUSH")
     ]
 
@@ -64,6 +71,7 @@ def test_each_toggle_change_writes_a_consent_row_with_the_version(client: Client
     gql(client, SET, {"purpose": "ANALYTICS", "granted": True}, token=token)
 
     assert on["data"]["setConsent"]["granted"] is True
+    assert on["data"]["setConsent"]["id"] == f"user:{user.pk}:MARKETING_EMAIL"
     assert on["data"]["setConsent"]["version"] == "privacy-1"
     assert off["data"]["setConsent"]["granted"] is False
     rows = list(Consent.objects.filter(user=user).order_by("given_at", "pk"))
@@ -89,6 +97,8 @@ def test_a_signed_out_visitor_logs_the_cookie_banner_choice(client: Client) -> N
     body = gql(client, SET, {"purpose": "ANALYTICS", "granted": False, "visitorId": VISITOR})
 
     assert body["data"]["setConsent"]["granted"] is False
+    # Its own cache id, so it never overwrites a signed-in account's state in the client.
+    assert body["data"]["setConsent"]["id"] == f"visitor:{VISITOR}:ANALYTICS"
     row = Consent.objects.get()
     assert row.user is None
     assert row.visitor_id == uuid.UUID(VISITOR)
@@ -142,6 +152,11 @@ def test_consent_rows_are_append_only() -> None:
         row.save()
     with pytest.raises(ImmutableRowError):
         Consent.objects.filter(pk=row.pk).update(granted=False)
+    with pytest.raises(ImmutableRowError):
+        row.delete()
+    with pytest.raises(ImmutableRowError):
+        Consent.objects.filter(pk=row.pk).delete()
+    assert Consent.objects.filter(pk=row.pk).exists()
 
 
 @pytest.mark.usefixtures("policies")
