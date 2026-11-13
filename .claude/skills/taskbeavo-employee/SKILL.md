@@ -72,7 +72,7 @@ Use `--outcome failed` if you couldn't meet the acceptance criteria, and say wha
 
 1. Re-run verification. If anything fails now, fix it, and if you can't, send `worker_done --outcome failed`.
 2. Rebase on `develop` if it moved (`git fetch origin && git rebase origin/develop`). Resolve conflicts, re-verify. If a conflict touches another ticket's work and the right resolution isn't obvious, `ask`.
-3. Push: `git push -u origin HEAD`.
+3. Push: `git push -u origin HEAD`. The repository is public, so everything pushed is published, even an unmerged branch. Never push with `--no-verify` or any other way around the local pre-push guard. If the guard blocks the push, fix the commits (amend or rebase your own unpushed commits) and push again; if you can't tell why it failed, `ask`.
 4. Open the PR against `develop` with `gh pr create --base develop --title "<KEY>: <summary>" --body-file <file>`. Body:
 
    ```markdown
