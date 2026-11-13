@@ -4,14 +4,19 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import { textStyle } from '../components/ui/text-style';
 import { Page } from './sign-in-screen';
 
-/** Settings: Business details (BEAV-199) and Legal and licences (BEAV-190), until the account tab exists. */
+/**
+ * Settings: Business details (BEAV-199), Privacy and data (BEAV-83) and Legal and licences
+ * (BEAV-190), until the account tab exists.
+ */
 export function SettingsScreen({
   onBack,
   onBusiness,
+  onPrivacy,
   onLegal,
 }: {
   onBack(): void;
   onBusiness(): void;
+  onPrivacy(): void;
   onLegal(): void;
 }) {
   const { t } = useTranslation();
@@ -25,6 +30,18 @@ export function SettingsScreen({
         testID="settings-business"
       >
         <Text style={styles.label}>{t('businessDetails.title')}</Text>
+        <Text style={styles.chevron} importantForAccessibility="no" accessibilityElementsHidden>
+          ›
+        </Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t('privacySettings.title')}
+        onPress={onPrivacy}
+        style={styles.row}
+        testID="settings-privacy"
+      >
+        <Text style={styles.label}>{t('privacySettings.title')}</Text>
         <Text style={styles.chevron} importantForAccessibility="no" accessibilityElementsHidden>
           ›
         </Text>

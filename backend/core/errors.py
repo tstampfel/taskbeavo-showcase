@@ -550,6 +550,14 @@ class ErrorCode(Enum):
             "and tick them again."
         ),
     )
+    CONSENT_UNAVAILABLE = strawberry.enum_value(
+        "CONSENT_UNAVAILABLE",
+        description=(
+            "Analytics or marketing can't be switched on right now, because the cookie "
+            "policy or privacy notice it refers to isn't in force; nothing was switched on. "
+            "Saying no always works."
+        ),
+    )
     HELPER_CANNOT_TAKE_PAYMENTS = strawberry.enum_value(
         "HELPER_CANNOT_TAKE_PAYMENTS",
         description=(

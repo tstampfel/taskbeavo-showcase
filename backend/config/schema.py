@@ -27,6 +27,7 @@ from config.graphql_tracing import GraphQLTracing
 from core.errors import ErrorCode
 from helpers.schema import Mutation as HelpersMutation
 from helpers.schema import Query as HelpersQuery
+from legal.schema import Mutation as LegalMutation
 from legal.schema import Query as LegalQuery
 from notifications.schema import Mutation as NotificationsMutation
 from notifications.schema import Query as NotificationsQuery
@@ -102,6 +103,7 @@ class Mutation(
     BookingsMutation,
     CareContactsMutation,
     HelpersMutation,
+    LegalMutation,
     NotificationsMutation,
     OffersMutation,
     TasksMutation,

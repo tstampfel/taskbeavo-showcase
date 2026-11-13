@@ -1,0 +1,27 @@
+# Analytics and marketing consent (BEAV-83): the web cookie banner, and the privacy toggles
+# in settings on web and mobile. Every setConsent writes a CONSENT row on the server.
+
+fragment ConsentStateFields on ConsentState {
+  id
+  purpose
+  granted
+  version
+  givenAt
+}
+
+query Consents {
+  consents {
+    ...ConsentStateFields
+  }
+}
+
+mutation SetConsent(
+  $purpose: ConsentPurpose!
+  $granted: Boolean!
+  $language: Locale!
+  $visitorId: String
+) {
+  setConsent(purpose: $purpose, granted: $granted, language: $language, visitorId: $visitorId) {
+    ...ConsentStateFields
+  }
+}

@@ -12,6 +12,7 @@ import type {
 } from '@taskbeavo/graphql';
 import { formatDate, type Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
+import { CookieSettingsButton } from '../consent/cookie-settings-button';
 import { Badge } from '../ui';
 import { GeoliteAttribution, splitAtGeoliteMarker } from './geolite-attribution';
 import styles from './legal.module.css';
@@ -285,6 +286,9 @@ export function LegalFooter({ locale }: { locale: Locale }) {
             <a href={rankingPath(locale)} data-testid="footer-ranking">
               {tRanking('title')}
             </a>
+          </li>
+          <li>
+            <CookieSettingsButton />
           </li>
         </ul>
       </nav>

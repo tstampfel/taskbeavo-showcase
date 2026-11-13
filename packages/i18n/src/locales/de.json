@@ -182,7 +182,8 @@
     "WITHDRAWAL_NOT_AVAILABLE": "Ein Widerruf des Vertrags ist für diese Buchung nicht möglich.",
     "CANCELLATION_CHANGED": "Die Erstattung hat sich geändert, seit Sie diese Seite geöffnet haben, weil eine Frist abgelaufen ist. Prüfen Sie den neuen Betrag. Es wurde nichts storniert.",
     "INVALID_WITHDRAWAL_DETAILS": "Angaben zum Widerruf fehlen oder sind ungültig. Prüfen Sie Ihren Namen und Ihre E-Mail-Adresse.",
-    "INVALID_ETA": "Wählen Sie eine Ankunftszeit zwischen 1 Minute und 4 Stunden ab jetzt."
+    "INVALID_ETA": "Wählen Sie eine Ankunftszeit zwischen 1 Minute und 4 Stunden ab jetzt.",
+    "CONSENT_UNAVAILABLE": "Analyse und Neuigkeiten können gerade nicht eingeschaltet werden. Bitte versuchen Sie es später erneut."
   },
   "uploads": {
     "choosePhoto": "Foto auswählen",
@@ -664,6 +665,31 @@
     "legal": "Rechtliches und Lizenzen",
     "documents": "Rechtliche Dokumente",
     "licences": "Lizenzen"
+  },
+  "consent": {
+    "title": "Cookies bei TaskBeavo",
+    "body": "Wir verwenden notwendige Cookies, um Sie anzumelden und Ihr Konto zu schützen. Mit Ihrer Zustimmung verwenden wir außerdem Analyse-Cookies, um die Website zu verbessern.",
+    "accept": "Akzeptieren",
+    "reject": "Ablehnen",
+    "settings": "Einstellungen",
+    "settingsTitle": "Cookie-Einstellungen",
+    "essentialTitle": "Notwendige Cookies",
+    "essentialBody": "Für die Anmeldung und Sicherheit nötig. Immer aktiv.",
+    "analyticsTitle": "Analyse-Cookies",
+    "analyticsBody": "Anonyme Statistiken darüber, welche Seiten besucht werden, damit wir die Website verbessern können. Aus, bis Sie zustimmen.",
+    "save": "Auswahl speichern",
+    "policyLink": "Cookie-Richtlinie",
+    "saveFailed": "Ihre Auswahl konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+  },
+  "privacySettings": {
+    "title": "Datenschutz und Daten",
+    "analytics": "Analyse",
+    "analyticsWeb": "Anonyme Statistiken über Ihre Besuche in diesem Browser. Aus, bis Sie zustimmen.",
+    "analyticsApp": "Hilft uns, die App zu verbessern. Aus, bis Sie zustimmen.",
+    "marketingEmail": "Neuigkeiten und Angebote per E-Mail",
+    "marketingPush": "Neuigkeiten und Angebote per Push-Mitteilung",
+    "marketingBody": "Nachrichten zu Buchungen und Zahlungen erhalten Sie immer.",
+    "footnote": "Jede Auswahl wird mit Datum und der Version des Textes gespeichert, dem Sie zugestimmt haben."
   },
   "businessDetails": {
     "title": "Unternehmensdaten",

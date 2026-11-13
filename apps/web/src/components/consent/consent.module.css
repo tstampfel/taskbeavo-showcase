@@ -1,0 +1,97 @@
+.banner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-sm);
+  margin: var(--tb-space-md) var(--tb-space-lg) 0;
+  padding: var(--tb-space-lg);
+  border: 1px solid var(--tb-color-line);
+  border-radius: var(--tb-radius-lg);
+  background: var(--tb-color-white);
+  box-shadow: var(--tb-shadow-card);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--tb-font-h2-size);
+  line-height: var(--tb-font-h2-line);
+  font-weight: 800;
+}
+
+.body {
+  margin: 0;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-sm);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tb-space-md);
+  min-height: var(--tb-tap-target);
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-xs);
+}
+
+.optionText span {
+  color: var(--tb-color-ink-muted);
+}
+
+.switch {
+  flex: none;
+  width: var(--tb-tap-target);
+  height: 24px;
+  margin: 0;
+  accent-color: var(--tb-color-green);
+}
+
+.switch:focus-visible,
+.link:focus-visible,
+.footerButton:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-color-green);
+  outline-offset: 2px;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: var(--tb-tap-target);
+  color: var(--tb-color-green);
+  font-weight: 700;
+}
+
+.error {
+  margin: 0;
+  color: var(--tb-color-error);
+}
+
+/* Reject and Accept get the same size and weight; they wrap rather than truncate. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-sm);
+}
+
+.actions > * {
+  flex: 1 1 8rem;
+}
+
+.footerButton {
+  min-height: var(--tb-tap-target);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

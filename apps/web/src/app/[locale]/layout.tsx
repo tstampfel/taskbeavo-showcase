@@ -6,6 +6,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { ApolloProvider } from '../../apollo/apollo-provider';
 import { AccountMenu } from '../../components/account-menu';
+import { ConsentBanner } from '../../components/consent/consent-banner';
 import { LanguageSwitcher } from '../../components/language-switcher';
 import { LegalFooter } from '../../components/legal/legal-document-view';
 import { TermsBanner } from '../../components/terms-update/terms-banner';
@@ -39,8 +40,16 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
   setRequestLocale(locale);
 
   // Only the namespaces client components use ship to the browser.
-  const { apiStatus, errorBoundary, languageSwitcher, sessions, settings, signIn, termsUpdate } =
-    await getMessages();
+  const {
+    apiStatus,
+    consent,
+    errorBoundary,
+    languageSwitcher,
+    sessions,
+    settings,
+    signIn,
+    termsUpdate,
+  } = await getMessages();
   return (
     <html lang={locale}>
       <body
@@ -51,6 +60,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
         <NextIntlClientProvider
           messages={{
             apiStatus,
+            consent,
             errorBoundary,
             languageSwitcher,
             sessions,
@@ -74,6 +84,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
               <LanguageSwitcher />
             </header>
             <TermsBanner />
+            <ConsentBanner />
             {children}
             <LegalFooter locale={locale} />
           </ApolloProvider>
