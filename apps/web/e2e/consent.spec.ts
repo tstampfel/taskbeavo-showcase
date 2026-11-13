@@ -48,8 +48,15 @@ async function watchPostHog(page: Page): Promise<Request[]> {
   return seen;
 }
 
-/** Waits until no new PostHog request has arrived for a second. */
-async function settled(seen: Request[]): Promise<void> {
+/** PostHog's event requests ($pageview, $opt_in, …) among `seen`. */
+const events = (seen: Request[]) =>
+  seen.filter((request) => new URL(request.url()).pathname === '/e/');
+
+/**
+ * Waits until no new PostHog request has arrived for `quietMs`. After a no, the window is longer
+ * than PostHog's 3 s batch flush, so an event queued before the no would show up (BEAV-221).
+ */
+async function settled(seen: Request[], quietMs = 1_000): Promise<void> {
   let count = -1;
   await expect
     .poll(
@@ -58,10 +65,34 @@ async function settled(seen: Request[]): Promise<void> {
         count = seen.length;
         return quiet;
       },
-      { intervals: [1_000] },
+      { intervals: [quietMs], timeout: quietMs * 5 },
     )
     .toBe(true);
 }
+
+/** A client-side navigation: PostHog captures a $pageview on every history change. */
+async function navigateInPage(page: Page, path: string): Promise<void> {
+  await page.evaluate((url) => window.history.pushState(null, '', url), path);
+}
+
+/** PostHog's anonymous ids, as its cookie holds them. */
+async function postHogIds(page: Page): Promise<string[]> {
+  const cookie = (await page.context().cookies()).find(({ name }) => /^ph_.*_posthog$/.test(name));
+  if (!cookie) return [];
+  const stored = JSON.parse(decodeURIComponent(cookie.value)) as Record<string, unknown>;
+  return [stored.distinct_id, stored.$device_id].filter(
+    (id): id is string => typeof id === 'string',
+  );
+}
+
+// posthog-js drops every event from a browser with navigator.webdriver set, as Playwright's is.
+// Look like a visitor's browser, so the specs see the events a real visit would send.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false });
+    Object.defineProperty(Navigator.prototype, 'userAgentData', { get: () => undefined });
+  });
+});
 
 /** The names of PostHog's cookies and localStorage keys in this browser. */
 async function postHogStorage(page: Page): Promise<string[]> {
@@ -136,11 +167,17 @@ test('Accept starts PostHog; withdrawing stops it and deletes what it stored', a
   const first = stub.calls.filter((call) => call.name === 'SetConsent')[0]?.variables;
   expect(first).toMatchObject({ purpose: 'ANALYTICS', granted: true, language: 'DE' });
   expect(await storedChoice(page)).toMatchObject({ analytics: true, version: 'cookies-1' });
-  // Only after the logged yes: PostHog is contacted and keeps its anonymous id.
-  await expect.poll(() => posthog.length).toBeGreaterThan(0);
+  // Only after the logged yes: PostHog receives events and keeps its anonymous id.
+  await expect.poll(() => events(posthog).length).toBeGreaterThan(0);
   await expect.poll(() => postHogStorage(page)).not.toEqual([]);
   // Let what the yes started finish, so every request counted below began after the no.
   await settled(posthog);
+
+  // A page view just before the no is sent at once, while the yes stands, not queued for a
+  // later batch that would leave after the no (BEAV-221). PostHog batches every 3 s.
+  const sentBefore = events(posthog).length;
+  await navigateInPage(page, '/de/fees');
+  await expect.poll(() => events(posthog).length, { timeout: 1_000 }).toBe(sentBefore + 1);
 
   // The footer reopens the switch, showing the stored yes; switching it off is logged too.
   await page.getByTestId('footer-cookie-settings').click();
@@ -159,8 +196,10 @@ test('Accept starts PostHog; withdrawing stops it and deletes what it stored', a
   });
   expect(await storedChoice(page)).toMatchObject({ analytics: false });
   await expect.poll(() => postHogStorage(page)).toEqual([]);
-  // Nothing reaches PostHog after the no (BEAV-221: reset() used to reload feature flags).
-  await settled(posthog);
+  // Nothing reaches PostHog after the no, not even a page view on the same page (BEAV-221:
+  // reset() reloaded feature flags, and batched events left up to 3 s later).
+  await navigateInPage(page, '/de');
+  await settled(posthog, 4_000);
   expect(posthog.slice(before).map((request) => request.url())).toEqual([]);
 
   // Later visits send nothing and store nothing.
@@ -170,6 +209,31 @@ test('Accept starts PostHog; withdrawing stops it and deletes what it stored', a
   await settled(posthog);
   expect(posthog.slice(before).map((request) => request.url())).toEqual([]);
   expect(await postHogStorage(page)).toEqual([]);
+});
+
+test('agreeing again on the same page starts a new anonymous id', async ({ page, stubGraphql }) => {
+  const posthog = await watchPostHog(page);
+  await stubGraphql({ ...signedOut, SetConsent: setConsent });
+  await page.goto('/en');
+  const choose = async (yes: boolean) => {
+    await page.getByTestId('footer-cookie-settings').click();
+    await page.getByTestId('consent-analytics').setChecked(yes);
+    await page.getByTestId('consent-save').click();
+    await expect(page.getByTestId('consent-banner')).toHaveCount(0);
+  };
+
+  await page.getByTestId('consent-accept').click();
+  await expect.poll(() => postHogIds(page)).not.toEqual([]);
+  const old = await postHogIds(page);
+  await choose(false);
+  await expect.poll(() => postHogStorage(page)).toEqual([]);
+  await choose(true);
+
+  // The visit before the withdrawal can't be linked to this one: neither id comes back.
+  await expect.poll(() => postHogIds(page)).toHaveLength(2);
+  const ids = await postHogIds(page);
+  expect(ids.filter((id) => old.includes(id))).toEqual([]);
+  await expect.poll(() => events(posthog).length).toBeGreaterThan(1);
 });
 
 test('a page load after a no deletes what PostHog stored on an earlier visit', async ({
