@@ -35,7 +35,7 @@ Native setup (deep links, permission prompts, cache persistence, Maestro tests) 
 
 - Import colours, spacing, radii and typography from `@taskbeavo/ui-tokens`: green `#1F5C46`, orange `#F2A33A`, off-white `#F5F4EF`, ink `#17211C`, Manrope. No raw hex values or magic numbers.
 - Check AA contrast for any new colour pairing. Body text should be ink on off-white.
-- Never show another user's phone, IBAN or private OIB. The exact address and access details appear only for the helper of an active accepted booking (rule e).
+- Never show another user's phone, IBAN or private OIB. The exact address, access details and the on-site contact's phone (with a Call link) appear only for the helper of an active accepted booking (rule e).
 
 ### 4. i18n
 
