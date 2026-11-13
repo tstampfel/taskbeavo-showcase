@@ -50,7 +50,7 @@ Checked against the hard rules in `CLAUDE.md` and the built app (BEAV-208). Wher
   - Price increase: a separate charge with its own fee (€25.00 extra + €3.00 fee = €28.00).
   - Helper cancels or doesn't show: €33.60 back, plus a €5 TaskBeavo credit if under 24 h. A no-show the poster reports waits 24 h for the helper to answer.
 - **Cancellation (rule g):** a no-fault reason (weather, hospital, emergency, both agree) asks the other side to agree: the poster's request stands after 48 h with no reply, a disagreement goes to support. The other side sees "personal emergency", never the health detail. The withdrawal button appears only on bookings with a registered business, within its 14 days.
-- **Privacy (rule e):** no phone number or IBAN is shown to other users, and there are no call buttons at launch: the poster calls the on-site contact from their own phone. The exact address and access details are shown only to the chosen helper while the booking is active, and hidden again once it closes. A registered business shows its business name and OIB on its profile and each offer; its business address goes only to the poster of a task it offered on, on that offer and at checkout, and its public profile shows only the town. A private helper's OIB is never shown. OIBs in the mockups are synthetic (`00000000…`).
+- **Privacy (rule e):** users' phone numbers and IBAN are never shown to other users. The exact address, access details and the on-site contact's phone are shown only to the chosen helper while the booking is active, and hidden again once it closes (the phone rule is `backend/care_contacts/policy.py`). The helper's booking view shows the contact with a **Call +385 …** link, as the app does (`5c`, `7b`, `13i`, `18a`, `18g`); the call goes from the helper's own phone, and TaskBeavo itself places no calls. The poster can also call the contact from their own phone. A registered business shows its business name and OIB on its profile and each offer; its business address goes only to the poster of a task it offered on, on that offer and at checkout, and its public profile shows only the town. A private helper's OIB is never shown. OIBs in the mockups are synthetic (`00000000…`).
 
 ## Not yet covered
 
@@ -58,6 +58,5 @@ Checked against the hard rules in `CLAUDE.md` and the built app (BEAV-208). Wher
 - **Large text:** screens haven't been checked at large text sizes for older users.
 - **Contrast:** secondary grey text hasn't been checked against WCAG AA.
 - **Masked calling:** the plan treats it as a later feature, so there are no mockups for it yet.
-- **Plan text:** `docs/PLAN.md` still describes the "Similar tasks pay €30–40" range, the "Recommended" sort and completion-rate stats from before rule k; the mockups don't follow those parts.
 
 When a screen is built in `apps/mobile` or `apps/web`, the app becomes the source of truth. Update or delete the mockup rather than letting the two drift apart.
