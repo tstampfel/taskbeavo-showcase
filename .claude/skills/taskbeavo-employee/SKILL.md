@@ -77,7 +77,7 @@ Use `--outcome failed` if you couldn't meet the acceptance criteria, and say wha
 
    ```markdown
    ## <KEY>: <summary>
-   Jira: <url>
+   Jira: <KEY>
 
    ## What changed
    <3–6 bullets, by area: backend, API, web, mobile>
@@ -99,5 +99,7 @@ Use `--outcome failed` if you couldn't meet the acceptance criteria, and say wha
    ```
 
    End the body with the attribution lines your session requires.
+
+   Never write the Jira site URL in any public text: PR title or description, PR or issue comments, commit messages, code or docs. The Jira key is enough. The comment you post in Jira itself (step 5) may keep the GitHub PR URL.
 5. Update Jira through the `orca-jira` skill's completion flow: `orca jira status list <KEY> --json`, transition to the review status only if exactly one plausible transition exists, then post **one** comment with the PR link, a 2–4 sentence summary and the status outcome.
 6. Send `worker_done --outcome succeeded` with the PR URL in the summary. Then idle.
