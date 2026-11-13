@@ -1,7 +1,7 @@
 'use client';
 
-import { ETA_CHOICES, type ArrivalView } from '@taskbeavo/graphql';
-import { formatDateTime, formatMoney, type Locale } from '@taskbeavo/i18n';
+import { ETA_CHOICES, arrivalStatusMessage, type ArrivalView } from '@taskbeavo/graphql';
+import { formatDateTime, formatMoney, formatTime, type Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button, Card } from '../ui';
@@ -36,12 +36,16 @@ export function ArrivalPanel({ view, locale, busy, actions }: ArrivalPanelProps)
   const t = useTranslations('arrival');
   const time = (at: string | null) => (at ? formatDateTime(at, locale, 'short') : '');
   const helper = view.kind === 'helper';
+  // With an ETA the line says when the helper expects to arrive, without one when they set
+  // off (BEAV-202); both are clock times on the day of the job.
+  const status = arrivalStatusMessage(view);
+  const statusTime = status.at ? formatTime(status.at, locale) : '';
   return (
     <>
       <p className={styles.body} role="status" data-testid="arrival-status">
         {helper
-          ? t(`statusHelper.${view.status}`, { time: time(view.etaAt) })
-          : t(`statusPoster.${view.status}`, { time: time(view.etaAt) })}
+          ? t(`statusHelper.${status.key}`, { time: statusTime })
+          : t(`statusPoster.${status.key}`, { time: statusTime })}
       </p>
       {view.noShowRejected && <p className={styles.body}>{t('rejected')}</p>}
       {view.earlyStartConfirmed && <p className={styles.body}>{t('earlyStartConfirmed')}</p>}
