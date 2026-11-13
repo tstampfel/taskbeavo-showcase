@@ -53,7 +53,8 @@ describe('analytics before consent', () => {
     expect(load).not.toHaveBeenCalled();
   });
 
-  it('opts out and forgets the anonymous id when consent is withdrawn', async () => {
+  it('opts out on withdrawal without reset(), which would contact PostHog again', async () => {
+    // reset() reloads feature flags: a request with a fresh anonymous id after the no (BEAV-221).
     const { client, load } = fakePostHog();
     const analytics = createAnalytics({ key: 'phc_test', load, clearStorage: vi.fn() });
 
@@ -61,7 +62,22 @@ describe('analytics before consent', () => {
     await analytics.apply(false);
 
     expect(client.opt_out_capturing).toHaveBeenCalledTimes(1);
+    expect(client.reset).not.toHaveBeenCalled();
+  });
+
+  it('starts a new anonymous id when the visitor agrees again on the same page', async () => {
+    const { client, load } = fakePostHog();
+    const analytics = createAnalytics({ key: 'phc_test', load, clearStorage: vi.fn() });
+
+    await analytics.apply(true);
+    await analytics.apply(false);
+    await analytics.apply(true);
+
     expect(client.reset).toHaveBeenCalledTimes(1);
+    const resetAt = vi.mocked(client.reset).mock.invocationCallOrder[0] ?? 0;
+    const optedInAt = vi.mocked(client.opt_in_capturing).mock.invocationCallOrder.at(-1) ?? 0;
+    // reset() clears PostHog's consent state, so it must come before opting in, not after.
+    expect(resetAt).toBeLessThan(optedInAt);
   });
 
   it('sends no personal data: no autocapture, no recordings, no query strings', () => {

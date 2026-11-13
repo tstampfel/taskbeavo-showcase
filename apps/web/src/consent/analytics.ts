@@ -2,7 +2,10 @@
  * PostHog analytics, only after consent (BEAV-83; plan, GDPR section "Correction, objection
  * and consent"). Until the visitor agrees, posthog-js isn't even downloaded: the module is
  * imported on the first `apply(true)`. Saying no later opts the loaded client out and
- * forgets its anonymous id.
+ * deletes what it stored; agreeing again on the same page starts a new anonymous id.
+ *
+ * After a no, PostHog must not be contacted at all (BEAV-221). posthog.reset() is therefore
+ * never called on a no: it reloads feature flags, a request carrying a fresh anonymous id.
  *
  * Nothing personal goes to PostHog: no identify call, so events stay anonymous; no
  * autocapture (it reads element text, which can hold names and addresses); no session
@@ -128,13 +131,13 @@ export function createAnalytics({
   clearStorage: () => void;
 }): Analytics {
   let client: Promise<PostHogClient> | null = null;
+  let withdrawn = false;
   return {
     async apply(granted) {
       if (!granted) {
         if (client) {
-          const loaded = await client;
-          loaded.opt_out_capturing();
-          loaded.reset();
+          (await client).opt_out_capturing();
+          withdrawn = true;
         }
         // Also when never loaded on this page: an earlier page may have stored an id.
         clearStorage();
@@ -142,7 +145,12 @@ export function createAnalytics({
       }
       if (!key) return;
       if (client) {
-        (await client).opt_in_capturing();
+        const loaded = await client;
+        // The id from before the withdrawal stays in memory; don't link the two. reset() clears
+        // PostHog's consent state, so it comes before opting in.
+        if (withdrawn) loaded.reset();
+        withdrawn = false;
+        loaded.opt_in_capturing();
         return;
       }
       client = load().then((posthog) => {

@@ -48,6 +48,21 @@ async function watchPostHog(page: Page): Promise<Request[]> {
   return seen;
 }
 
+/** Waits until no new PostHog request has arrived for a second. */
+async function settled(seen: Request[]): Promise<void> {
+  let count = -1;
+  await expect
+    .poll(
+      () => {
+        const quiet = seen.length === count;
+        count = seen.length;
+        return quiet;
+      },
+      { intervals: [1_000] },
+    )
+    .toBe(true);
+}
+
 /** The names of PostHog's cookies and localStorage keys in this browser. */
 async function postHogStorage(page: Page): Promise<string[]> {
   const cookies = (await page.context().cookies())
@@ -124,12 +139,15 @@ test('Accept starts PostHog; withdrawing stops it and deletes what it stored', a
   // Only after the logged yes: PostHog is contacted and keeps its anonymous id.
   await expect.poll(() => posthog.length).toBeGreaterThan(0);
   await expect.poll(() => postHogStorage(page)).not.toEqual([]);
+  // Let what the yes started finish, so every request counted below began after the no.
+  await settled(posthog);
 
   // The footer reopens the switch, showing the stored yes; switching it off is logged too.
   await page.getByTestId('footer-cookie-settings').click();
   const analytics = page.getByTestId('consent-analytics');
   await expect(analytics).toBeChecked();
   await analytics.uncheck();
+  const before = posthog.length;
   await page.getByTestId('consent-save').click();
 
   await expect(page.getByTestId('consent-banner')).toHaveCount(0);
@@ -141,13 +159,16 @@ test('Accept starts PostHog; withdrawing stops it and deletes what it stored', a
   });
   expect(await storedChoice(page)).toMatchObject({ analytics: false });
   await expect.poll(() => postHogStorage(page)).toEqual([]);
+  // Nothing reaches PostHog after the no (BEAV-221: reset() used to reload feature flags).
+  await settled(posthog);
+  expect(posthog.slice(before).map((request) => request.url())).toEqual([]);
 
   // Later visits send nothing and store nothing.
-  const before = posthog.length;
   await page.reload();
   await expect(page.getByTestId('home')).toBeVisible();
   await page.goto('/de/fees');
-  expect(posthog.length).toBe(before);
+  await settled(posthog);
+  expect(posthog.slice(before).map((request) => request.url())).toEqual([]);
   expect(await postHogStorage(page)).toEqual([]);
 });
 
