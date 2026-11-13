@@ -261,6 +261,20 @@ def test_production_takes_a_live_stripe_key() -> None:
     assert result.returncode == 0, result.stderr
 
 
+def test_an_empty_app_env_falls_back_to_production_not_local() -> None:
+    # BEAV-217: an empty APP_ENV (e.g. a blank env group value) must fail closed. It used to
+    # fall through to APP_ENV "local", which relaxes the deploy-only requirements.
+    live = RENDER_ENV | {"APP_ENV": "", "STRIPE_SECRET_KEY": "rk_live_0123456789"}
+    result = run_python(PRINT_SETTINGS, live)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["APP_ENV"] == "production"
+
+    # So production's rules apply too: the staging env group's test key is refused.
+    result = run_python("import django; django.setup()", RENDER_ENV | {"APP_ENV": ""})
+    assert result.returncode != 0
+    assert "STRIPE_SECRET_KEY is a test key" in result.stderr
+
+
 def test_production_refuses_demo_payments() -> None:
     env = RENDER_ENV | {
         "APP_ENV": "production",
