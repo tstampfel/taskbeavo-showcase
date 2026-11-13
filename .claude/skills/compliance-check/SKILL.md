@@ -78,7 +78,7 @@ Check rounding (Decimal, integer cents) and the matching receipts and stornos.
 - New personal-data fields have a purpose and a deletion behaviour (delete, anonymise or archive).
 - Deletion completes within one month and covers app data, R2 files, Expo tokens, Resend, PostHog and open WebSockets. See `gdpr-data-request`.
 - Accounting and fiscal records are kept 11 years, and DAC7 data for its retention period, in the restricted archive.
-- Phone, IBAN and a private individual's OIB are never shown to other users. Exact address and access details reach only the helper of an active accepted booking; a business OIB may appear on its public profile. OIB and IBAN are encrypted at rest (rule e).
+- Users' phone numbers, IBAN and a private individual's OIB are never shown to other users. Exact address, access details and the on-site contact's phone reach only the helper of an active accepted booking (and the contact's phone its owning poster); a business OIB may appear on its public profile. OIB and IBAN are encrypted at rest (rule e).
 
 ### 8. No PII in telemetry
 
@@ -118,8 +118,8 @@ Check rounding (Decimal, integer cents) and the matching receipts and stornos.
 
 ### 13. Marketplace, not a work organiser (rule k)
 
-- No task price is set, suggested or defaulted by TaskBeavo; the helper's offer sets the price.
-- No automatic assignment. Offer and task ordering doesn't reward acceptance rate, availability or response time, and matches the "How offers are ranked" page.
+- No task price is set, suggested or defaulted by TaskBeavo, and no price range or "similar tasks pay" figure is shown; the poster sets the budget and the helper's offer sets the price.
+- No automatic assignment. Offers are ordered only newest first or by lowest price, with open offers first, as the `/ranking` page ("How offers are ordered") says; ordering never rewards ratings, acceptance rate, completion rate, availability or response time, and posters see no stats that steer work to particular helpers.
 - No penalty, down-ranking or deactivation for declining, ignoring a notification or going offline.
 - No instructions on how the work is done, no tracking during a task, no exclusivity terms.
 - Automated decisions about a helper (fraud flags, suspension) go to a human with a reasoned explanation.

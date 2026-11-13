@@ -74,8 +74,8 @@ d) **GraphQL.**
 - Subscriptions check permissions when the client connects and on every event.
 - Query depth and complexity limits apply, mutations are rate-limited, and introspection is off in production.
 
-e) **Privacy.** Never expose phone numbers, IBAN or a private individual's OIB to other users. OIB and IBAN are encrypted at rest.
-- **Exact address and access details** (doorbell, floor, gate code, key) are visible only to the helper of an accepted booking, and only while it is active. Everyone else, and the helper once the booking closes, sees the approximate area.
+e) **Privacy.** Never expose phone numbers (except the on-site contact's phone, below), IBAN or a private individual's OIB to other users. OIB and IBAN are encrypted at rest.
+- **Exact address, access details** (doorbell, floor, gate code, key) **and the on-site contact's phone** are visible only to the helper of an accepted booking, and only while it is active (the poster who owns the contact also sees its phone). Everyone else, and the helper once the booking closes, sees the approximate area.
 - **A registered business** (obrt or company) shows its business name and OIB on its public profile and on each offer, as a trader must. Its geographic business address goes only to the signed-in poster of a task it offered on, on that offer and at checkout; the public profile shows only the town, because many obrts are registered at the owner's home. Nothing changes for private helpers.
 
 f) **Fiscalization.** Every service fee charged creates a fiscal receipt: the ZKI is signed with the FINA certificate, and the JIR comes from CIS. Refunds create a storno receipt.
