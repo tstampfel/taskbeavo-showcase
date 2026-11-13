@@ -6,6 +6,8 @@
   Kept here for what isn't built yet: helper names, avatars, Verified ID, distance, languages
   and the rating (BEAV-144 decides which profile stats may show), Chat on cards, and 4d the
   accept sheet. Delete each frame once built.
+  4a shows the all-in total as the big price and the helper's price under it, as built: the
+  price a consumer pays comes first (the total-price decision in offers-screen.tsx, BEAV-214).
   Hard rule k: offers are ordered only by Newest or Lowest price. No "Recommended" or
   "Top rated" sort, and no response time, completion rate or jobs-done figures, which would
   rank helpers and steer work.
@@ -17,13 +19,13 @@
   <div class="row between"><div class="chips"><span class="chip on" style="height:40px">Newest</span><span class="chip" style="height:40px">Lowest price</span></div><span class="row c link" style="text-decoration:none">Compare</span></div>
   <div class="row" style="margin-top:-4px"><span class="row c link" style="text-decoration:none">{{i:info:16:#1F5C46}} How offers are ranked</span></div>
   <div class="card" style="gap:10px">
-   <div class="row" style="align-items:flex-start;gap:12px"><div class="av">MP</div><div class="col grow" style="gap:4px"><div class="row" style="gap:6px"><span class="p" style="font-weight:800">Marko P.</span><span class="badge b-green">{{i:shield:12:#1F5C46}} Verified ID</span></div><span class="badge b-grey" style="align-self:flex-start">Private individual</span><span class="row c mut">{{stars:5:12}} 4.8 (41) · 2 km</span><span class="c mut">Speaks HR · DE · Can come Sat 9:00</span></div><div class="col" style="gap:0;align-items:flex-end"><span class="price h1">€30</span><span class="c mut">€33.60 in total</span></div></div>
+   <div class="row" style="align-items:flex-start;gap:12px"><div class="av">MP</div><div class="col grow" style="gap:4px"><div class="row" style="gap:6px"><span class="p" style="font-weight:800">Marko P.</span><span class="badge b-green">{{i:shield:12:#1F5C46}} Verified ID</span></div><span class="badge b-grey" style="align-self:flex-start">Private individual</span><span class="row c mut">{{stars:5:12}} 4.8 (41) · 2 km</span><span class="c mut">Speaks HR · DE · Can come Sat 9:00</span></div><div class="col" style="gap:0;align-items:flex-end"><span class="price h1">€33.60</span><span class="c mut">in total, incl. fee</span><span class="c mut">Helper's price €30.00</span></div></div>
    <div class="s mut">"Dobar dan! I have my own mower and trimmer, can also take the cuttings away. Javim se Mami prije dolaska."</div>
    <div class="row between c mut"><span>Sent 20 min ago</span><span>Open until Sat 14 Nov</span></div>
    <div class="row" style="gap:8px"><div class="btn sec sm grow">{{i:msg:18:#1F5C46}} Chat</div><div class="btn pri sm grow">Accept</div></div>
   </div>
   <div class="card" style="gap:10px">
-   <div class="row" style="align-items:flex-start;gap:12px"><div class="av o">SP</div><div class="col grow" style="gap:4px"><div class="row" style="gap:6px"><span class="p" style="font-weight:800">Stjepan</span><span class="badge b-green">{{i:shield:12:#1F5C46}} Verified ID</span></div><span class="badge b-grey" style="align-self:flex-start">Registered business · obrt</span><span class="row c mut">{{stars:5:12}} 4.9 (112) · 5 km</span><span class="c mut">Speaks HR · EN · Can come Fri 16:00</span></div><div class="col" style="gap:0;align-items:flex-end"><span class="price h1">€38</span><span class="c mut">€42.56 in total</span></div></div>
+   <div class="row" style="align-items:flex-start;gap:12px"><div class="av o">SP</div><div class="col grow" style="gap:4px"><div class="row" style="gap:6px"><span class="p" style="font-weight:800">Stjepan</span><span class="badge b-green">{{i:shield:12:#1F5C46}} Verified ID</span></div><span class="badge b-grey" style="align-self:flex-start">Registered business · obrt</span><span class="row c mut">{{stars:5:12}} 4.9 (112) · 5 km</span><span class="c mut">Speaks HR · EN · Can come Fri 16:00</span></div><div class="col" style="gap:0;align-items:flex-end"><span class="price h1">€42.56</span><span class="c mut">in total, incl. fee</span><span class="c mut">Helper's price €38.00</span></div></div>
    <div class="col c mut" style="gap:2px;padding:8px 10px;background:#F5F4EF;border-radius:10px"><span>Obrt Stjepan Popravci · OIB 00000000010</span><span>Registered business address: Ulica primjer 1, Dubrovnik</span><span>Contact: in-app chat</span></div>
    <div class="row between c mut"><span>Sent 2 h ago</span><span>Open until Sat 14 Nov</span></div>
    <div class="row" style="gap:8px"><div class="btn sec sm grow">{{i:msg:18:#1F5C46}} Chat</div><div class="btn pri sm grow">Accept</div></div>
