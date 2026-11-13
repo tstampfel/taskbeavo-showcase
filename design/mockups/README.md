@@ -46,7 +46,7 @@ Checked against the hard rules in `CLAUDE.md` and the built app (BEAV-208). Wher
   - Minimum fee: a €15.00 task pays €2.50 (€17.50), a €20.00 task €2.50.
   - Late cancellation (under 24 h): €7.50 to the helper (25%, min €5, max €20), €0.90 kept (12% of €7.50), €25.20 back.
   - No access: €7.50 call-out (25%, min €5, max €15), €0.90 kept, €25.20 back. The poster can also reschedule for free or dispute.
-  - Partial release or dispute split: TaskBeavo keeps 12% of what the helper gets, even on a minimum-fee booking (€20.00 to the helper: €2.40 kept, €11.20 back).
+  - Partial release or dispute split: TaskBeavo keeps 12% of what the helper gets (€30.00 task, €20.00 to the helper: €2.40 kept, €11.20 back), even on a minimum-fee booking (€15.00 task paid €17.50, €10.00 to the helper: €1.20 kept, €6.30 back).
   - Price increase: a separate charge with its own fee (€25.00 extra + €3.00 fee = €28.00).
   - Helper cancels or doesn't show: €33.60 back, plus a €5 TaskBeavo credit if under 24 h. A no-show the poster reports waits 24 h for the helper to answer.
 - **Cancellation (rule g):** a no-fault reason (weather, hospital, emergency, both agree) asks the other side to agree: the poster's request stands after 48 h with no reply, a disagreement goes to support. The other side sees "personal emergency", never the health detail. The withdrawal button appears only on bookings with a registered business, within its 14 days.
