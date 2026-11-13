@@ -14,7 +14,15 @@ import { formatDate, formatMoney, isLocale, defaultLocale, type Locale } from '@
 import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { TraderIdentity, traderSummary } from '../components/trader-identity';
 import { Badge, Button, Card, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
@@ -212,11 +220,18 @@ interface CardProps {
   onAccept(offerId: string): void;
 }
 
+/** From this text scale on, the price goes under the helper's details instead of beside them. */
+const STACKED_CARD_FONT_SCALE = 1.3;
+
 function OfferCard({ offer, at, money, date, onAccept }: CardProps) {
   const { t } = useTranslation();
+  const stacked = useWindowDimensions().fontScale >= STACKED_CARD_FONT_SCALE;
   return (
     <Card testID={`offer-card-${offer.id}`}>
-      <View style={styles.cardTop}>
+      <View
+        style={stacked ? styles.cardTopStacked : styles.cardTop}
+        testID={`offer-top-${offer.id}`}
+      >
         <View style={styles.grow}>
           <Badge
             label={t(offer.helperIsTrader ? 'offers.trader.business' : 'offers.trader.private')}
@@ -224,7 +239,7 @@ function OfferCard({ offer, at, money, date, onAccept }: CardProps) {
           <TraderIdentity offer={offer} privateNotice />
           <Text style={[textStyle('small'), styles.muted]}>{t('offers.newHelper')}</Text>
         </View>
-        <View style={styles.priceBox}>
+        <View style={stacked ? styles.priceBoxStacked : styles.priceBox}>
           <Text style={[textStyle('h1'), styles.price]}>{money(offer.totalCents)}</Text>
           <Text style={[textStyle('small'), styles.muted]}>{t('offers.totalNote')}</Text>
           <Text style={[textStyle('small'), styles.muted]}>
@@ -374,6 +389,8 @@ const styles = StyleSheet.create({
   chipOnText: { color: colors.white },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   priceBox: { alignItems: 'flex-end', flexShrink: 1, gap: spacing.xs },
+  cardTopStacked: { gap: spacing.md },
+  priceBoxStacked: { gap: spacing.xs },
   link: { minHeight: minTapTarget, justifyContent: 'center' },
   linkText: { color: colors.green, textDecorationLine: 'underline' },
   // The mockup's .5 opacity fails AA on body text, so closed cards keep ink text on a tinted card.

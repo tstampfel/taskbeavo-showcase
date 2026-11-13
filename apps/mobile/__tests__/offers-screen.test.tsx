@@ -3,6 +3,7 @@ import { ApolloProvider } from '@apollo/client/react';
 import { typePolicies } from '@taskbeavo/graphql';
 import { catalogues, formatMoney, locales } from '@taskbeavo/i18n';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import { Observable } from 'rxjs';
 import { i18n } from '../src/i18n';
 import { OffersScreen } from '../src/screens/offers-screen';
@@ -164,6 +165,23 @@ describe('OffersScreen', () => {
     expect(within(stjepan).getByText('Registered business')).toBeTruthy();
     // No note: no empty quote.
     expect(within(stjepan).queryByText(/“/)).toBeNull();
+  });
+
+  it.each([
+    [1, 'row'],
+    [3.1, 'column'],
+  ])('at text scale %s puts the price %s-wise next to the helper', async (fontScale, direction) => {
+    // At the largest sizes a price beside the helper's details squeezed them to nothing.
+    const dimensions = jest
+      .spyOn(Dimensions, 'get')
+      .mockReturnValue({ width: 402, height: 874, scale: 3, fontScale });
+    try {
+      await renderScreen();
+      const top = screen.getByTestId('offer-top-marko');
+      expect(StyleSheet.flatten(top.props.style).flexDirection ?? 'column').toBe(direction);
+    } finally {
+      dimensions.mockRestore();
+    }
   });
 
   it('names a trader helper’s business, OIB and registered address on its card', async () => {
