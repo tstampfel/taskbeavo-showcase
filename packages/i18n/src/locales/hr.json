@@ -747,12 +747,14 @@
     "statusHelper": {
       "none": "Javite naručitelju kad krenete.",
       "onMyWay": "Na putu ste · dolazak {time}",
+      "onMyWayNoEta": "Na putu ste od {time}",
       "late": "Kasnite · dolazak {time}",
       "arrived": "Stigli ste."
     },
     "statusPoster": {
       "none": "Pomagač još nije javio da je na putu.",
       "onMyWay": "Pomagač je na putu · dolazak {time}",
+      "onMyWayNoEta": "Pomagač je na putu od {time}",
       "late": "Pomagač kasni · novo vrijeme dolaska {time}",
       "arrived": "Pomagač je stigao."
     },

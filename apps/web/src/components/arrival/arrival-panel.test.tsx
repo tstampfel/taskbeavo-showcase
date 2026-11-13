@@ -1,5 +1,12 @@
 import { arrivalView } from '@taskbeavo/graphql';
-import { TASK_TIME_ZONE, catalogues, formatMoney, locales, type Locale } from '@taskbeavo/i18n';
+import {
+  TASK_TIME_ZONE,
+  catalogues,
+  formatMoney,
+  formatTime,
+  locales,
+  type Locale,
+} from '@taskbeavo/i18n';
 import { NextIntlClientProvider } from 'next-intl';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -81,6 +88,33 @@ describe('ArrivalPanel', () => {
     expect(out).toContain('data-testid="arrival-arrived"');
     expect(out).toContain(html(t.cantCome));
     expect(out).toContain(html(t.statusHelper.none));
+  });
+
+  // BEAV-202: On my way without an ETA used to read "arriving" with no time.
+  const setOff = '2026-11-08T09:42:00Z';
+  const eta = '2026-11-08T10:05:00Z';
+  const status = (out: string) => /data-testid="arrival-status">([^<]*)</.exec(out)?.[1] ?? '';
+
+  it.each(locales)('shows the poster the ETA when the helper gave one, in %s', (locale) => {
+    const out = render(locale, booking('h', { onMyWayAt: setOff, etaAt: eta }), 'p');
+    const expected = catalogues[locale].arrival.statusPoster.onMyWay.replace(
+      '{time}',
+      formatTime(eta, locale),
+    );
+    expect(status(out)).toBe(html(expected));
+  });
+
+  it.each(locales)('shows when the helper set off when there is no ETA, in %s', (locale) => {
+    for (const viewer of ['p', 'h']) {
+      const out = render(locale, booking('h', { onMyWayAt: setOff }), viewer);
+      const side = viewer === 'h' ? 'statusHelper' : 'statusPoster';
+      const expected = catalogues[locale].arrival[side].onMyWayNoEta.replace(
+        '{time}',
+        formatTime(setOff, locale),
+      );
+      expect(status(out)).toBe(html(expected));
+      expect(status(out)).toContain(formatTime(setOff, locale));
+    }
   });
 
   it('asks the poster whether the helper came, without the No warning until asked', () => {

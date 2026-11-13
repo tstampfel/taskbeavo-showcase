@@ -1,7 +1,7 @@
 import { ApolloClient, ApolloLink, InMemoryCache } from '@apollo/client';
 import { ApolloProvider } from '@apollo/client/react';
 import { typePolicies } from '@taskbeavo/graphql';
-import { catalogues, formatMoney } from '@taskbeavo/i18n';
+import { catalogues, formatMoney, formatTime } from '@taskbeavo/i18n';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Observable } from 'rxjs';
@@ -206,6 +206,42 @@ it('lets the helper answer "I was there" within the 24 hours', async () => {
 
   expect(variables.ContestNoShow).toEqual({ bookingId: 'booking-1' });
   await screen.findByText(en.contestedHelper);
+});
+
+// BEAV-202: On my way without an ETA used to read "arriving" with no time.
+const SET_OFF = '2026-11-08T08:42:00Z';
+const ETA = '2026-11-08T09:05:00Z';
+
+it('shows the poster the ETA when the helper gave one', async () => {
+  await renderArrival({
+    BookingArrival: () => ({ booking: booking('helper-9', { onMyWayAt: SET_OFF, etaAt: ETA }) }),
+  });
+
+  const line = await screen.findByTestId('arrival-status');
+  expect(line).toHaveTextContent(en.statusPoster.onMyWay.replace('{time}', formatTime(ETA, 'en')));
+});
+
+it('shows the poster when the helper set off when there is no ETA', async () => {
+  await renderArrival({
+    BookingArrival: () => ({ booking: booking('helper-9', { onMyWayAt: SET_OFF }) }),
+  });
+
+  const line = await screen.findByTestId('arrival-status');
+  expect(line).toHaveTextContent(
+    en.statusPoster.onMyWayNoEta.replace('{time}', formatTime(SET_OFF, 'en')),
+  );
+});
+
+it('shows the helper, in German, when they set off when there is no ETA', async () => {
+  await i18n.changeLanguage('de');
+  await renderArrival({
+    BookingArrival: () => ({ booking: booking('user-1', { onMyWayAt: SET_OFF }) }),
+  });
+
+  const line = await screen.findByTestId('arrival-status');
+  expect(line).toHaveTextContent(
+    catalogues.de.arrival.statusHelper.onMyWayNoEta.replace('{time}', formatTime(SET_OFF, 'de')),
+  );
 });
 
 it('lets the poster keep the booking or cancel for free after a late report', async () => {

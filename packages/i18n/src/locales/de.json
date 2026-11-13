@@ -747,12 +747,14 @@
     "statusHelper": {
       "none": "Sagen Sie dem Auftraggeber Bescheid, wenn Sie losfahren.",
       "onMyWay": "Sie sind unterwegs · Ankunft {time}",
+      "onMyWayNoEta": "Sie sind seit {time} unterwegs",
       "late": "Sie verspäten sich · Ankunft {time}",
       "arrived": "Sie sind angekommen."
     },
     "statusPoster": {
       "none": "Ihr Helfer hat noch nicht gemeldet, dass er unterwegs ist.",
       "onMyWay": "Ihr Helfer ist unterwegs · Ankunft {time}",
+      "onMyWayNoEta": "Ihr Helfer ist seit {time} unterwegs",
       "late": "Ihr Helfer verspätet sich · neue Ankunftszeit {time}",
       "arrived": "Ihr Helfer ist angekommen."
     },

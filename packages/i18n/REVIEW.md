@@ -820,3 +820,10 @@ DRAFT, written by me, never machine-translated: en is the source, hr, de and fr 
 - `consent.policyLink` names the COOKIES document like `legal.documents.COOKIES`; keep the two the same.
 - `privacySettings.*`: Settings → Privacy and data on web and mobile. `marketingEmail`/`marketingPush` are the opt-in for news and offers; `marketingBody` says booking and payment messages always arrive (they are part of the service). hr "push obavijestima" keeps the English "push", as Croatian apps commonly do; the translator may prefer another word.
 - `errors.CONSENT_UNAVAILABLE`: shown when no cookie policy or privacy notice is in force, so agreeing can't be recorded.
+
+## On my way without an ETA (BEAV-202)
+
+DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check. When the helper taps On my way without an arrival time, the status line shows when they set off instead of "arriving" with no time.
+
+- `arrival.statusHelper.onMyWayNoEta`, `arrival.statusPoster.onMyWayNoEta`
+- Backend push body for `booking.helper_on_my_way`: `Your helper set off. Open TaskBeavo to follow their arrival.` (it no longer promises an arrival time the helper may not have given)
