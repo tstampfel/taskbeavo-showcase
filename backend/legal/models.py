@@ -221,8 +221,11 @@ class TermsAcceptance(models.Model):
 
 
 class ConsentQuerySet(models.QuerySet["Consent"]):
-    def update(self, **kwargs: Any) -> NoReturn:
-        raise ImmutableRowError("Consents are append-only; record a new choice instead.")
+    def update(self, **kwargs: Any) -> int:
+        # Detaching from a deleted account is the one change allowed.
+        if kwargs != {"user": None}:
+            raise ImmutableRowError("Consents are append-only; record a new choice instead.")
+        return super().update(**kwargs)
 
 
 class Consent(models.Model):
@@ -237,9 +240,12 @@ class Consent(models.Model):
 
     A signed-in choice names its `user`; the web cookie banner before sign-in names the
     browser's random `visitor_id` instead (no IP address, no other identifier). Rows are
-    append-only, refused by the model and the queryset. Deleting the account deletes its
-    rows (CASCADE): without the account nothing is processed on their basis any more.
-    TODO(BEAV-153): include `legal.consents.export_consents` in "Download my data".
+    append-only, refused by the model and the queryset, because they are the proof of
+    consent. Deleting the account keeps them as that proof, detached like
+    `TermsAcceptance`: `user` becomes NULL (SET_NULL) and `user_reference`, the account's
+    numeric id, is the pseudonymous link the archive uses; no name or email is kept.
+    TODO(BEAV-153): include `legal.consents.export_consents` in "Download my data", move
+    detached rows to the restricted archive and purge them at the end of retention.
     """
 
     class Purpose(models.TextChoices):
@@ -249,11 +255,13 @@ class Consent(models.Model):
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="consents",
     )
+    # The account's id, kept after the account is deleted; null for a visitor's choice.
+    user_reference = models.BigIntegerField(null=True, blank=True)
     visitor_id = models.UUIDField(null=True, blank=True)
     purpose = models.CharField(max_length=20, choices=Purpose.choices)
     granted = models.BooleanField()
@@ -270,7 +278,8 @@ class Consent(models.Model):
     class Meta:
         constraints: ClassVar = [
             models.CheckConstraint(
-                condition=models.Q(user__isnull=False) | models.Q(visitor_id__isnull=False),
+                condition=models.Q(user_reference__isnull=False)
+                | models.Q(visitor_id__isnull=False),
                 name="consent_has_user_or_visitor",
             ),
         ]
@@ -285,4 +294,6 @@ class Consent(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> None:
         if not self._state.adding:
             raise ImmutableRowError("Consents are append-only; record a new choice instead.")
+        if self.user_id is not None:
+            self.user_reference = self.user_id
         super().save(*args, **kwargs)

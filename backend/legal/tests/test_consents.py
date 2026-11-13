@@ -145,8 +145,9 @@ def test_consent_rows_are_append_only() -> None:
 
 
 @pytest.mark.usefixtures("policies")
-def test_consents_go_with_the_account_and_are_in_the_export() -> None:
+def test_consents_are_in_the_export_and_kept_detached_after_account_deletion() -> None:
     user = make_user()
+    user_id = user.pk
     consents.record_consent(
         purpose=Consent.Purpose.MARKETING_PUSH,
         granted=True,
@@ -161,7 +162,10 @@ def test_consents_go_with_the_account_and_are_in_the_export() -> None:
     assert [(c["purpose"], c["granted"], c["version"]) for c in exported] == [
         ("MARKETING_PUSH", True, "privacy-1")
     ]
-    assert not Consent.objects.exists()
+    kept = Consent.objects.get()
+    assert kept.user is None
+    assert kept.user_reference == user_id
+    assert (kept.purpose, kept.granted, kept.version) == ("MARKETING_PUSH", True, "privacy-1")
 
 
 @pytest.mark.usefixtures("policies")
