@@ -133,10 +133,14 @@ export const withUnsignedSimulator: ConfigPlugin = (config) =>
 /**
  * `pnpm --filter @taskbeavo/mobile ios` on a Mac without a signing certificate builds the
  * development app unsigned (scripts/run-ios.mjs), without the entitlements that need signing.
- * A store or internal build must never lose them.
+ * A store, internal or EAS build must never lose them.
  */
 function unsignedSimulator(env: AppEnv): boolean {
   if (process.env[UNSIGNED_SIMULATOR_ENV] !== '1') return false;
+  // Only a local `expo run:ios` may drop them; EAS builds of every profile keep them.
+  if (process.env.EAS_BUILD) {
+    throw new Error(`${UNSIGNED_SIMULATOR_ENV} is only for local builds, not EAS Build`);
+  }
   if (env !== 'development') {
     throw new Error(`${UNSIGNED_SIMULATOR_ENV} is only for development builds, not ${env}`);
   }

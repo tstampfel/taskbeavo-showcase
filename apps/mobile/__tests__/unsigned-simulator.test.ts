@@ -47,12 +47,25 @@ describe('unsigned simulator builds', () => {
   });
 
   it('leaves out Sign in with Apple and universal links in an unsigned development build', () => {
-    const config = configWith({ [UNSIGNED_SIMULATOR_ENV]: '1', APP_ENV: 'development' });
+    const config = configWith({
+      [UNSIGNED_SIMULATOR_ENV]: '1',
+      APP_ENV: 'development',
+      EAS_BUILD: undefined,
+    });
     expect(config.ios?.usesAppleSignIn).toBe(false);
     expect(config.ios?.associatedDomains).toEqual([]);
     expect(config.plugins).not.toContain('expo-apple-authentication');
     expect(typeof config.mods?.ios?.entitlements).toBe('function');
   });
+
+  it.each(['development', 'preview', 'production'])(
+    'refuses the variable on an EAS %s build',
+    (appEnv) => {
+      expect(() =>
+        configWith({ [UNSIGNED_SIMULATOR_ENV]: '1', APP_ENV: appEnv, EAS_BUILD: 'true' }),
+      ).toThrow(UNSIGNED_SIMULATOR_ENV);
+    },
+  );
 
   it.each(['preview', 'production'])('refuses an unsigned %s build', (appEnv) => {
     expect(() => configWith({ [UNSIGNED_SIMULATOR_ENV]: '1', APP_ENV: appEnv })).toThrow(
