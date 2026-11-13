@@ -116,7 +116,7 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
     void withdraw({ variables: { id: bookingId, name, email } }).catch(() => undefined);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text accessibilityRole="header" style={[textStyle('h1'), styles.title]}>
           {t('cancel.title')}
