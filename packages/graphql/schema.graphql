@@ -528,6 +528,31 @@ type CheckoutSession {
   paymentPending: Boolean!
 }
 
+"""An optional use of personal data that needs the user's consent."""
+enum ConsentPurpose {
+  ANALYTICS
+  MARKETING_EMAIL
+  MARKETING_PUSH
+}
+
+"""
+The current choice about one purpose: the latest CONSENT row, or off while the user never chose.
+"""
+type ConsentState {
+  """
+  Whose choice and the purpose: "user:<account id>:<purpose>" signed in, "visitor:<visitorId>:<purpose>" for the signed-out cookie banner, so the two never share a cache entry.
+  """
+  id: ID!
+  purpose: ConsentPurpose!
+  granted: Boolean!
+
+  """
+  The cookie policy (analytics) or privacy notice (marketing) version the choice referred to; null before any choice or for a refusal while none was in force.
+  """
+  version: String
+  givenAt: DateTime
+}
+
 input CreateCareContactInput {
   name: String!
 
@@ -976,6 +1001,11 @@ enum ErrorCode {
   CONSENT_WORDING_CHANGED
 
   """
+  Analytics or marketing can't be switched on right now, because the cookie policy or privacy notice it refers to isn't in force; nothing was switched on. Saying no always works.
+  """
+  CONSENT_UNAVAILABLE
+
+  """
   The helper's payout account can't receive payments right now, so nothing was charged; the offer stays open. Try again later or choose another offer.
   """
   HELPER_CANNOT_TAKE_PAYMENTS
@@ -1405,6 +1435,11 @@ type Mutation {
   Open the signed-in helper's Stripe Express account on first use and return a link to Stripe's onboarding (identity check and IBAN). Also the way to give Stripe the information it asks for later. Errors: UNAUTHENTICATED, HELPER_PROFILE_INCOMPLETE (a Croatian address and the OIB come first), PAYOUT_ACCOUNT_REJECTED.
   """
   startPayoutOnboarding: PayoutOnboardingLink!
+
+  """
+  Record a choice about analytics or news and offers by email or push, as a new CONSENT row with the cookie policy or privacy notice version in force in `language`. Signed out, only the web cookie banner's ANALYTICS choice is accepted, with the browser's random `visitorId` (a UUID). Errors: UNAUTHENTICATED, CONSENT_UNAVAILABLE (agreeing while no policy is in force).
+  """
+  setConsent(purpose: ConsentPurpose!, granted: Boolean!, language: Locale!, visitorId: String = null): ConsentState!
 
   """
   Switch a category on or off for one channel. Errors: UNAUTHENTICATED, NOTIFICATION_PREFERENCE_LOCKED (booking and payment).
@@ -1926,6 +1961,11 @@ type Query {
   A helper's public profile by user ID; null unless the profile is complete and Stripe onboarding was submitted (offers may still be paused while Stripe asks for more). Needs no sign-in.
   """
   helperProfile(userId: ID!): PublicHelperProfile
+
+  """
+  The signed-in user's analytics and marketing choices, one per purpose, all off until they agree. Errors: UNAUTHENTICATED.
+  """
+  consents: [ConsentState!]!
 
   """
   The version of a legal document in force now, in `language`; null while none is. Public: sign-up shows and accepts it before the account exists.

@@ -182,7 +182,8 @@
     "WITHDRAWAL_NOT_AVAILABLE": "Raskid ugovora nije dostupan za ovu rezervaciju.",
     "CANCELLATION_CHANGED": "Povrat se promijenio otkad ste otvorili ovaj zaslon jer je prošao rok. Provjerite novi iznos. Ništa nije otkazano.",
     "INVALID_WITHDRAWAL_DETAILS": "Podaci za raskid nedostaju ili nisu ispravni. Provjerite ime i adresu e-pošte.",
-    "INVALID_ETA": "Odaberite vrijeme dolaska između 1 minute i 4 sata od sada."
+    "INVALID_ETA": "Odaberite vrijeme dolaska između 1 minute i 4 sata od sada.",
+    "CONSENT_UNAVAILABLE": "Analitiku i novosti trenutačno nije moguće uključiti. Pokušajte ponovno kasnije."
   },
   "uploads": {
     "choosePhoto": "Odaberi fotografiju",
@@ -664,6 +665,31 @@
     "legal": "Pravne informacije i licence",
     "documents": "Pravni dokumenti",
     "licences": "Licence"
+  },
+  "consent": {
+    "title": "Kolačići na TaskBeavu",
+    "body": "Koristimo nužne kolačiće kako bismo Vas prijavili i zaštitili. Uz Vaše dopuštenje koristimo i analitičke kolačiće kako bismo poboljšali stranicu.",
+    "accept": "Prihvati",
+    "reject": "Odbij",
+    "settings": "Postavke",
+    "settingsTitle": "Postavke kolačića",
+    "essentialTitle": "Nužni kolačići",
+    "essentialBody": "Potrebni za prijavu i sigurnost. Uvijek uključeni.",
+    "analyticsTitle": "Analitički kolačići",
+    "analyticsBody": "Anonimna statistika o posjećenim stranicama kako bismo poboljšali stranicu. Isključeno dok ne pristanete.",
+    "save": "Spremi odabir",
+    "policyLink": "Pravila o kolačićima",
+    "saveFailed": "Vaš odabir nije spremljen. Pokušajte ponovno."
+  },
+  "privacySettings": {
+    "title": "Privatnost i podaci",
+    "analytics": "Analitika",
+    "analyticsWeb": "Anonimna statistika o Vašim posjetima u ovom pregledniku. Isključeno dok ne pristanete.",
+    "analyticsApp": "Pomaže nam poboljšati aplikaciju. Isključeno dok ne pristanete.",
+    "marketingEmail": "Novosti i ponude e-poštom",
+    "marketingPush": "Novosti i ponude push obavijestima",
+    "marketingBody": "Poruke o rezervacijama i plaćanjima uvijek stižu.",
+    "footnote": "Svaki odabir spremamo s datumom i verzijom teksta na koji ste pristali."
   },
   "businessDetails": {
     "title": "Podaci o obrtu ili tvrtki",

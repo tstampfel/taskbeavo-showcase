@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.db.models import QuerySet
 from django.http import HttpRequest
 
-from legal.models import LegalDocument, LegalDocumentWithdrawal, TermsAcceptance
+from legal.models import Consent, LegalDocument, LegalDocumentWithdrawal, TermsAcceptance
 
 
 class _ReadOnly(admin.ModelAdmin):
@@ -39,3 +39,10 @@ class TermsAcceptanceAdmin(_ReadOnly):
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[TermsAcceptance]:
         return super().get_queryset(request).defer("document__body")
+
+
+@admin.register(Consent)
+class ConsentAdmin(_ReadOnly):
+    list_display = ("id", "purpose", "granted", "version", "language", "platform", "given_at")
+    list_filter = ("purpose", "granted", "platform")
+    raw_id_fields = ("user", "document")

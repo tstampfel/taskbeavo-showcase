@@ -218,3 +218,90 @@ class TermsAcceptance(models.Model):
 
     def delete(self, *args: Any, **kwargs: Any) -> NoReturn:
         raise ImmutableRowError("Terms acceptances are append-only.")
+
+
+class ConsentQuerySet(models.QuerySet["Consent"]):
+    def update(self, **kwargs: Any) -> int:
+        # Detaching from a deleted account is the one change allowed.
+        if kwargs != {"user": None}:
+            raise ImmutableRowError("Consents are append-only; record a new choice instead.")
+        return super().update(**kwargs)
+
+    def delete(self) -> NoReturn:  # pyright: ignore[reportIncompatibleMethodOverride]
+        # The retention purge (BEAV-153) removes detached rows with _raw_delete, like
+        # TermsAcceptanceQuerySet.purge_detached.
+        raise ImmutableRowError("Consents are proof of consent and can't be deleted.")
+
+
+class Consent(models.Model):
+    """One choice about an optional purpose: analytics, or news and offers by email or push
+    (plan, GDPR section "Correction, objection and consent"; BEAV-83).
+
+    Every change is a new row, so the latest row per purpose is the current choice and the
+    history proves what was agreed and when. `document` is the text the choice referred to:
+    the cookie policy for analytics, the privacy notice for marketing, in the version in
+    force and the language it was given in (`version` repeats it so the proof reads without
+    a join). It is empty only for a refusal while no such document was in force.
+
+    A signed-in choice names its `user`; the web cookie banner before sign-in names the
+    browser's random `visitor_id` instead (no IP address, no other identifier). Rows are
+    append-only and can't be deleted (refused by the model and the queryset), because they
+    are the proof of consent. Deleting the account keeps them as that proof, detached like
+    `TermsAcceptance`: `user` becomes NULL (SET_NULL) and `user_reference`, the account's
+    numeric id, is the pseudonymous link the archive uses; no name or email is kept.
+    TODO(BEAV-153): include `legal.consents.export_consents` in "Download my data", move
+    detached rows to the restricted archive and purge them at the end of retention.
+    """
+
+    class Purpose(models.TextChoices):
+        ANALYTICS = "ANALYTICS"
+        MARKETING_EMAIL = "MARKETING_EMAIL"
+        MARKETING_PUSH = "MARKETING_PUSH"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="consents",
+    )
+    # The account's id, kept after the account is deleted; null for a visitor's choice.
+    user_reference = models.BigIntegerField(null=True, blank=True)
+    visitor_id = models.UUIDField(null=True, blank=True)
+    purpose = models.CharField(max_length=20, choices=Purpose.choices)
+    granted = models.BooleanField()
+    document = models.ForeignKey(
+        LegalDocument, on_delete=models.PROTECT, null=True, blank=True, related_name="+"
+    )
+    version = models.CharField(max_length=32, blank=True)
+    language = models.CharField(max_length=2, choices=[(code, code) for code in SUPPORTED_LOCALES])
+    platform = models.CharField(max_length=10, choices=Session.Platform.choices)
+    given_at = models.DateTimeField(default=timezone.now)
+
+    objects: ClassVar[models.Manager["Consent"]] = ConsentQuerySet.as_manager()  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    class Meta:
+        constraints: ClassVar = [
+            models.CheckConstraint(
+                condition=models.Q(user_reference__isnull=False)
+                | models.Q(visitor_id__isnull=False),
+                name="consent_has_user_or_visitor",
+            ),
+        ]
+        indexes: ClassVar = [
+            models.Index(fields=["user", "purpose", "given_at"]),
+            models.Index(fields=["visitor_id", "purpose", "given_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Consent {self.pk}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if not self._state.adding:
+            raise ImmutableRowError("Consents are append-only; record a new choice instead.")
+        if self.user_id is not None:
+            self.user_reference = self.user_id
+        super().save(*args, **kwargs)
+
+    def delete(self, *args: Any, **kwargs: Any) -> NoReturn:
+        raise ImmutableRowError("Consents are proof of consent and can't be deleted.")

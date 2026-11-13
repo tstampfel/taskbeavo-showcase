@@ -30,7 +30,14 @@ describe('Settings → Legal and licences', () => {
   it('opens Legal and licences from Settings', async () => {
     await i18n.changeLanguage('en');
     const onLegal = jest.fn();
-    await render(<SettingsScreen onBack={jest.fn()} onBusiness={jest.fn()} onLegal={onLegal} />);
+    await render(
+      <SettingsScreen
+        onBack={jest.fn()}
+        onBusiness={jest.fn()}
+        onPrivacy={jest.fn()}
+        onLegal={onLegal}
+      />,
+    );
 
     expect(screen.getByRole('button', { name: 'Legal and licences' })).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('settings-legal'));

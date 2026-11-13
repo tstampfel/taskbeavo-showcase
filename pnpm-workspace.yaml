@@ -5,6 +5,13 @@ packages:
 # 58.0.11 would resolve @expo/schema-utils 58.0.3 (2026-10-31). Remove after 2026-11-14.
 overrides:
   'expo-build-properties>@expo/schema-utils': 58.0.2
+  # posthog-js 1.441.2 (2026-10-28) takes its @posthog packages by caret range, which would
+  # resolve releases from 2026-11-10/12. Pinned to ones within its ranges and 14+ days old:
+  # browser-common 0.10.2 (2026-10-29), core 1.61.2 (2026-10-28), types 1.418.0 (2026-10-28).
+  # Remove with the next posthog-js upgrade, or once BEAV-176 turns on minimumReleaseAge.
+  '@posthog/browser-common': 0.10.2
+  '@posthog/core': 1.61.2
+  '@posthog/types': 1.418.0
 minimumReleaseAgeExclude:
   - '@typescript-eslint/eslint-plugin@8.72.1'
   - '@typescript-eslint/parser@8.72.1'
@@ -17,9 +24,11 @@ minimumReleaseAgeExclude:
   - '@typescript-eslint/utils@8.72.1'
   - '@typescript-eslint/visitor-keys@8.72.1'
   - typescript-eslint@8.72.1
+# posthog-js (BEAV-83) pulls in core-js, whose postinstall only prints a banner.
 # next-intl's optional message extractor pulls in @parcel/watcher and @swc/core, jest-expo pulls in unrs-resolver, and the Sentry SDKs pull in @sentry/cli (source map upload); all ship prebuilt binaries as optional platform packages, so their install scripts aren't needed.
 allowBuilds:
   '@sentry/cli': false
   '@parcel/watcher': false
   '@swc/core': false
   unrs-resolver: false
+  core-js: false

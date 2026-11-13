@@ -72,6 +72,8 @@ function answers(
       },
     }),
     ApiVersion: () => ({ data: { apiVersion: 'test' } }),
+    // Settings → Privacy and data (BEAV-83) sits under Business details.
+    Consents: () => ({ data: { consents: [] } }),
     PosterBusiness: () => ({ data: { viewer: user(state.business) } }),
     SetPosterBusiness: ({ input }) => {
       const { kind, name } = input as { kind: string; name: string };

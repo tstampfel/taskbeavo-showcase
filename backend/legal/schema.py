@@ -1,16 +1,22 @@
 """GraphQL API of legal documents: which version is in force (legal/services.py)."""
 
 import datetime as dt
+import uuid
 from enum import Enum
+from typing import Any
 
 import strawberry
 from asgiref.sync import sync_to_async
 from django.conf import settings
+from strawberry.types import Info
 
 from accounts.geo import geoip_available
+from accounts.models import Session, User
 from accounts.schema import Locale
+from core.errors import ApiError, ErrorCode
+from legal import consents
 from legal.checkout_consent import CheckoutConsentText, checkout_consent_texts, without_markers
-from legal.models import LegalDocument
+from legal.models import Consent, LegalDocument
 from legal.services import current_document, readable_documents
 
 
@@ -112,8 +118,65 @@ class LegalDocumentType:
         )
 
 
+@strawberry.enum(description="An optional use of personal data that needs the user's consent.")
+class ConsentPurpose(Enum):
+    ANALYTICS = Consent.Purpose.ANALYTICS.value
+    MARKETING_EMAIL = Consent.Purpose.MARKETING_EMAIL.value
+    MARKETING_PUSH = Consent.Purpose.MARKETING_PUSH.value
+
+
+@strawberry.type(
+    name="ConsentState",
+    description=(
+        "The current choice about one purpose: the latest CONSENT row, or off while the "
+        "user never chose."
+    ),
+)
+class ConsentStateType:
+    id: strawberry.ID = strawberry.field(
+        description=(
+            'Whose choice and the purpose: "user:<account id>:<purpose>" signed in, '
+            '"visitor:<visitorId>:<purpose>" for the signed-out cookie banner, so the two '
+            "never share a cache entry."
+        )
+    )
+    purpose: ConsentPurpose
+    granted: bool
+    version: str | None = strawberry.field(
+        description=(
+            "The cookie policy (analytics) or privacy notice (marketing) version the choice "
+            "referred to; null before any choice or for a refusal while none was in force."
+        )
+    )
+    given_at: dt.datetime | None
+
+    @classmethod
+    def of(cls, subject: str, purpose: str, row: Consent | None) -> "ConsentStateType":
+        """`subject` is "user:<id>" or "visitor:<uuid>"."""
+        return cls(
+            id=strawberry.ID(f"{subject}:{purpose}"),
+            purpose=ConsentPurpose(purpose),
+            granted=row.granted if row else False,
+            version=(row.version or None) if row else None,
+            given_at=row.given_at if row else None,
+        )
+
+
 @strawberry.type
 class Query:
+    @strawberry.field(
+        description=(
+            "The signed-in user's analytics and marketing choices, one per purpose, all off "
+            "until they agree. Errors: UNAUTHENTICATED."
+        )
+    )
+    async def consents(self, info: Info) -> list[ConsentStateType]:
+        user = _signed_in_user(info)
+        found = await sync_to_async(consents.current_consents)(user)
+        return [
+            ConsentStateType.of(f"user:{user.pk}", purpose, row) for purpose, row in found.items()
+        ]
+
     @strawberry.field(
         description=(
             "The version of a legal document in force now, in `language`; null while none "
@@ -166,3 +229,53 @@ class Query:
     )
     def uses_geolite2(self) -> bool:
         return geoip_available()
+
+
+@strawberry.type
+class Mutation:
+    @strawberry.mutation(
+        description=(
+            "Record a choice about analytics or news and offers by email or push, as a new "
+            "CONSENT row with the cookie policy or privacy notice version in force in "
+            "`language`. Signed out, only the web cookie banner's ANALYTICS choice is "
+            "accepted, with the browser's random `visitorId` (a UUID). Errors: "
+            "UNAUTHENTICATED, CONSENT_UNAVAILABLE (agreeing while no policy is in force)."
+        )
+    )
+    async def set_consent(
+        self,
+        info: Info,
+        purpose: ConsentPurpose,
+        granted: bool,
+        language: Locale,
+        visitor_id: str | None = None,
+    ) -> ConsentStateType:
+        user = info.context.user if isinstance(info.context.user, User) else None
+        session = getattr(info.context, "session", None)
+        platform = session.platform if isinstance(session, Session) else Session.Platform.WEB
+        visitor = _visitor(visitor_id)
+        row = await sync_to_async(consents.record_consent)(
+            purpose=purpose.value,
+            granted=granted,
+            language=language.value,
+            platform=platform,
+            user=user,
+            visitor_id=visitor,
+        )
+        subject = f"user:{user.pk}" if user else f"visitor:{visitor}"
+        return ConsentStateType.of(subject, purpose.value, row)
+
+
+def _signed_in_user(info: Info[Any, Any]) -> User:
+    user = info.context.user
+    if not isinstance(user, User):
+        raise ApiError(ErrorCode.UNAUTHENTICATED, "Sign in first.")
+    return user
+
+
+def _visitor(value: str | None) -> uuid.UUID | None:
+    """The browser's random id; anything that isn't a UUID counts as none."""
+    try:
+        return uuid.UUID(value) if value else None
+    except ValueError:
+        return None
