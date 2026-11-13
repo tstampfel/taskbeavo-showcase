@@ -721,12 +721,14 @@
     "statusHelper": {
       "none": "Prévenez le client quand vous partez.",
       "onMyWay": "Vous êtes en route · arrivée {time}",
+      "onMyWayNoEta": "Vous êtes en route depuis {time}",
       "late": "Vous êtes en retard · arrivée {time}",
       "arrived": "Vous êtes arrivé."
     },
     "statusPoster": {
       "none": "Votre aidant n’a pas encore indiqué qu’il est en route.",
       "onMyWay": "Votre aidant est en route · arrivée {time}",
+      "onMyWayNoEta": "Votre aidant est en route depuis {time}",
       "late": "Votre aidant est en retard · nouvelle heure {time}",
       "arrived": "Votre aidant est arrivé."
     },

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { ETA_CHOICES, arrivalRole, arrivalView, minutesUntil } from './arrival';
+import {
+  ETA_CHOICES,
+  arrivalRole,
+  arrivalStatusMessage,
+  arrivalView,
+  minutesUntil,
+  type ArrivalView,
+} from './arrival';
 
 function booking(extra: Record<string, unknown> = {}) {
   return {
@@ -99,6 +106,41 @@ describe('arrivalView', () => {
     });
     const rejected = booking({ ...reported, noShowRejected: true });
     expect(arrivalView(rejected, 'poster')).toMatchObject({ noShow: null, noShowRejected: true });
+  });
+});
+
+describe('arrivalStatusMessage', () => {
+  const known = (view: ArrivalView) => {
+    if (view.kind === 'unknownViewer') throw new Error('expected a side');
+    return view;
+  };
+  const setOff = '2026-11-08T09:00:00Z';
+  const eta = '2026-11-08T09:20:00Z';
+
+  it('shows the ETA when the helper gave one', () => {
+    const view = arrivalView(booking({ onMyWayAt: setOff, etaAt: eta }), 'poster');
+    expect(arrivalStatusMessage(known(view))).toEqual({ key: 'onMyWay', at: eta });
+  });
+
+  it('shows when the helper set off when there is no ETA (BEAV-202)', () => {
+    for (const role of ['poster', 'helper'] as const) {
+      const view = arrivalView(booking({ onMyWayAt: setOff }), role);
+      expect(arrivalStatusMessage(known(view))).toEqual({ key: 'onMyWayNoEta', at: setOff });
+    }
+  });
+
+  it('keeps the late ETA and needs no time before or after the trip', () => {
+    const late = arrivalView(
+      booking({ onMyWayAt: setOff, lateReportedAt: setOff, etaAt: eta }),
+      'poster',
+    );
+    expect(arrivalStatusMessage(known(late))).toEqual({ key: 'late', at: eta });
+    expect(arrivalStatusMessage(known(arrivalView(booking(), 'helper')))).toEqual({
+      key: 'none',
+      at: null,
+    });
+    const arrived = arrivalView(booking({ onMyWayAt: setOff, arrivedAt: eta }), 'helper');
+    expect(arrivalStatusMessage(known(arrived))).toEqual({ key: 'arrived', at: null });
   });
 });
 

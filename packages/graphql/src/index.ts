@@ -3,10 +3,12 @@ export { typePolicies } from './typePolicies';
 export {
   ETA_CHOICES,
   arrivalRole,
+  arrivalStatusMessage,
   arrivalView,
   minutesUntil,
   type ArrivalRole,
   type ArrivalStatus,
+  type ArrivalStatusKey,
   type ArrivalView,
   type HelperArrival,
   type NoShowState,

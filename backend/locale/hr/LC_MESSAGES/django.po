@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taskbeavo-backend\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-09 10:16+0100\n"
+"POT-Creation-Date: 2026-11-13 15:50+0100\n"
 "Language: hr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -91,57 +91,57 @@ msgstr "Povrat još nije potvrđen"
 msgid "Refused by Stripe"
 msgstr "Stripe je odbio"
 
-#: bookings/admin.py:203
+#: bookings/admin.py:212
 msgid "Note added."
 msgstr "Bilješka je dodana."
 
-#: bookings/admin.py:219
+#: bookings/admin.py:228
 msgid "No withdrawal waits for a share on this booking."
 msgstr "Na ovoj rezervaciji nijedan raskid ne čeka udio."
 
-#: bookings/admin.py:223
+#: bookings/admin.py:232
 msgid "Share saved. The settlement is being sent to Stripe."
 msgstr "Udio je spremljen. Namira se šalje Stripeu."
 
-#: bookings/admin.py:240
+#: bookings/admin.py:249
 msgid "No no-fault request waits for a decision here."
 msgstr "Ovdje nijedan zahtjev bez krivnje ne čeka odluku."
 
-#: bookings/admin.py:243 bookings/admin.py:271
+#: bookings/admin.py:252 bookings/admin.py:280
 msgid "Decision saved."
 msgstr "Odluka spremljena."
 
-#: bookings/admin.py:258
+#: bookings/admin.py:267
 msgid "No no-show waits for a decision here."
 msgstr "Ovdje nijedan nedolazak ne čeka odluku."
 
-#: bookings/admin.py:267
+#: bookings/admin.py:276
 msgid "Settling failed again. The money stays held; ask engineering."
 msgstr ""
 "Namirenje opet nije uspjelo. Novac ostaje zadržan; javite se inženjerima."
 
-#: bookings/admin.py:301
+#: bookings/admin.py:310
 #, python-format
 msgid "Booking %(id)s"
 msgstr "Rezervacija %(id)s"
 
-#: bookings/admin.py:373
+#: bookings/admin.py:382
 msgid "Faults"
 msgstr "Otkazi njegovom krivnjom"
 
-#: bookings/admin.py:377
+#: bookings/admin.py:386
 msgid "Bookings"
 msgstr "Rezervacije"
 
-#: bookings/admin.py:381
+#: bookings/admin.py:390
 msgid "Reliability (%)"
 msgstr "Pouzdanost (%)"
 
-#: bookings/admin.py:385
+#: bookings/admin.py:394
 msgid "Mark reviewed"
 msgstr "Označi kao pregledano"
 
-#: bookings/admin.py:390
+#: bookings/admin.py:399
 msgid "Marked reviewed."
 msgstr "Označeno kao pregledano."
 
@@ -604,7 +604,9 @@ msgstr "Vaša ponuda je povučena"
 msgid ""
 "This task now takes offers from registered businesses only, so your offer "
 "was withdrawn. Open TaskBeavo to find more tasks."
-msgstr "Ovaj zadatak sada prima ponude samo od registriranih obrta i tvrtki, pa je Vaša ponuda povučena. Otvorite TaskBeavo i pronađite nove zadatke."
+msgstr ""
+"Ovaj zadatak sada prima ponude samo od registriranih obrta i tvrtki, pa je "
+"Vaša ponuda povučena. Otvorite TaskBeavo i pronađite nove zadatke."
 
 #: notifications/kinds.py:96
 msgid "Your offer was accepted"
@@ -882,8 +884,8 @@ msgid "Your helper is on the way"
 msgstr "Pomagač je na putu"
 
 #: notifications/kinds.py:395
-msgid "Your helper set off. Open TaskBeavo to see when they expect to arrive."
-msgstr "Pomagač je krenuo. Otvorite TaskBeavo da vidite kad očekuje dolazak."
+msgid "Your helper set off. Open TaskBeavo to follow their arrival."
+msgstr "Pomagač je krenuo. Otvorite TaskBeavo da pratite njegov dolazak."
 
 #: notifications/kinds.py:402
 msgid "Your helper is running late"

@@ -14,12 +14,20 @@ import {
   ViewerDocument,
   apiErrorCode,
   arrivalRole,
+  arrivalStatusMessage,
   arrivalView,
   graphqlLocale,
   type HelperArrival,
   type PosterArrival,
 } from '@taskbeavo/graphql';
-import { defaultLocale, formatDateTime, formatMoney, isLocale, type Locale } from '@taskbeavo/i18n';
+import {
+  defaultLocale,
+  formatDateTime,
+  formatMoney,
+  formatTime,
+  isLocale,
+  type Locale,
+} from '@taskbeavo/i18n';
 import { colors, spacing } from '@taskbeavo/ui-tokens';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -111,6 +119,10 @@ export function ArrivalScreen({ bookingId, onBack }: ArrivalScreenProps) {
   const refresh = () => void booking.refetch().catch(() => undefined);
   const time = (at: string | null) => (at ? formatDateTime(at, locale, 'short') : '');
   const vars = { bookingId };
+  // With an ETA the line says when the helper expects to arrive, without one when they set
+  // off (BEAV-202); both are clock times on the day of the job.
+  const status = arrivalStatusMessage(view);
+  const statusTime = status.at ? formatTime(status.at, locale) : '';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -121,8 +133,8 @@ export function ArrivalScreen({ bookingId, onBack }: ArrivalScreenProps) {
 
         <Text style={[textStyle('body'), styles.ink]} testID="arrival-status">
           {view.kind === 'helper'
-            ? t(`arrival.statusHelper.${view.status}`, { time: time(view.etaAt) })
-            : t(`arrival.statusPoster.${view.status}`, { time: time(view.etaAt) })}
+            ? t(`arrival.statusHelper.${status.key}`, { time: statusTime })
+            : t(`arrival.statusPoster.${status.key}`, { time: statusTime })}
         </Text>
 
         {view.noShowRejected && (
