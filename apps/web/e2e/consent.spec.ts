@@ -3,9 +3,9 @@ import { expect, test, type Answers, type Variables } from './graphql-stub';
 
 /**
  * The cookie banner and Settings → Privacy and data (BEAV-83) against a stubbed API. Every
- * answer is sent as setConsent before it is stored, and nothing reaches PostHog before a yes
- * (src/consent/consent.test.ts proves posthog-js isn't initialised until then). The dev
- * server serves no PostHog key, so this spec can't see a yes reach PostHog either.
+ * answer is sent as setConsent before it is stored. The e2e server has a dummy PostHog project
+ * whose host this spec routes (playwright.config.ts), so it sees that nothing reaches PostHog
+ * and nothing of PostHog's is stored before a yes or after a no, and that a yes does reach it.
  */
 
 // English strings from packages/i18n (Playwright can't import the JSON catalogues).
@@ -35,13 +35,28 @@ const setConsent = (variables: Variables) => ({
   },
 });
 
-/** Every request to a PostHog host the page makes (not the app's own posthog-js chunk). */
-function watchPostHog(page: Page): Request[] {
+// NEXT_PUBLIC_POSTHOG_HOST of the e2e server (playwright.config.ts); nothing listens there.
+const POSTHOG_HOST = 'http://localhost:3197';
+
+/** Answers every request to the dummy PostHog host, and records it. */
+async function watchPostHog(page: Page): Promise<Request[]> {
   const seen: Request[] = [];
-  page.on('request', (request) => {
-    if (/(^|\.)posthog\.com$/i.test(new URL(request.url()).hostname)) seen.push(request);
+  await page.route(`${POSTHOG_HOST}/**`, async (route) => {
+    seen.push(route.request());
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
   });
   return seen;
+}
+
+/** The names of PostHog's cookies and localStorage keys in this browser. */
+async function postHogStorage(page: Page): Promise<string[]> {
+  const cookies = (await page.context().cookies())
+    .map(({ name }) => name)
+    .filter((name) => /^_{0,2}ph_/.test(name));
+  const keys = await page.evaluate(() =>
+    Object.keys(window.localStorage).filter((key) => /^_{0,2}ph_/.test(key)),
+  );
+  return [...cookies, ...keys];
 }
 
 async function storedChoice(page: Page) {
@@ -53,7 +68,7 @@ test('a first visit shows the banner, with no analytics before an answer', async
   page,
   stubGraphql,
 }) => {
-  const posthog = watchPostHog(page);
+  const posthog = await watchPostHog(page);
   const stub = await stubGraphql(signedOut);
   await page.goto('/en');
 
@@ -62,11 +77,14 @@ test('a first visit shows the banner, with no analytics before an answer', async
   await expect(page.getByTestId('home')).toBeVisible();
   expect(stub.calls.map((call) => call.name)).not.toContain('SetConsent');
   expect(await storedChoice(page)).toBeNull();
+  // PostHog would load and send asynchronously; let the page settle before looking.
+  await page.waitForLoadState('networkidle');
   expect(posthog).toEqual([]);
+  expect(await postHogStorage(page)).toEqual([]);
 });
 
 test('Reject logs the refusal, then the banner stays away', async ({ page, stubGraphql }) => {
-  const posthog = watchPostHog(page);
+  const posthog = await watchPostHog(page);
   const stub = await stubGraphql({ ...signedOut, SetConsent: setConsent });
   await page.goto('/en');
 
@@ -86,20 +104,26 @@ test('Reject logs the refusal, then the banner stays away', async ({ page, stubG
   await expect(page.getByTestId('home')).toBeVisible();
   await expect(page.getByTestId('consent-banner')).toHaveCount(0);
   expect(posthog).toEqual([]);
+  expect(await postHogStorage(page)).toEqual([]);
 });
 
-test('Accept is logged with the same visitor id the footer link later reuses', async ({
+test('Accept starts PostHog; withdrawing stops it and deletes what it stored', async ({
   page,
   stubGraphql,
 }) => {
+  const posthog = await watchPostHog(page);
   const stub = await stubGraphql({ ...signedOut, SetConsent: setConsent });
   await page.goto('/de');
+  expect(posthog).toEqual([]);
 
   await page.getByTestId('consent-accept').click();
   await expect(page.getByTestId('consent-banner')).toHaveCount(0);
   const first = stub.calls.filter((call) => call.name === 'SetConsent')[0]?.variables;
   expect(first).toMatchObject({ purpose: 'ANALYTICS', granted: true, language: 'DE' });
   expect(await storedChoice(page)).toMatchObject({ analytics: true, version: 'cookies-1' });
+  // Only after the logged yes: PostHog is contacted and keeps its anonymous id.
+  await expect.poll(() => posthog.length).toBeGreaterThan(0);
+  await expect.poll(() => postHogStorage(page)).not.toEqual([]);
 
   // The footer reopens the switch, showing the stored yes; switching it off is logged too.
   await page.getByTestId('footer-cookie-settings').click();
@@ -116,6 +140,50 @@ test('Accept is logged with the same visitor id the footer link later reuses', a
     visitorId: first?.visitorId,
   });
   expect(await storedChoice(page)).toMatchObject({ analytics: false });
+  await expect.poll(() => postHogStorage(page)).toEqual([]);
+
+  // Later visits send nothing and store nothing.
+  const before = posthog.length;
+  await page.reload();
+  await expect(page.getByTestId('home')).toBeVisible();
+  await page.goto('/de/fees');
+  expect(posthog.length).toBe(before);
+  expect(await postHogStorage(page)).toEqual([]);
+});
+
+test('a page load after a no deletes what PostHog stored on an earlier visit', async ({
+  page,
+  stubGraphql,
+}) => {
+  const posthog = await watchPostHog(page);
+  await stubGraphql(signedOut);
+  const visitorId = '6f1c9a8e-2d4b-4c1e-9a77-0b5e3c2d1f00';
+  // A browser that said no, but still holds PostHog's id from a visit before the withdrawal.
+  await page.context().addCookies([
+    {
+      name: 'tb_consent',
+      value: encodeURIComponent(JSON.stringify({ analytics: false, visitorId, version: null })),
+      url: 'http://localhost:3100',
+    },
+    {
+      name: 'ph_phc_e2e_posthog',
+      value: '%7B%22distinct_id%22%3A%22anon-1%22%7D',
+      url: 'http://localhost:3100',
+    },
+  ]);
+  await page.addInitScript(() => {
+    if (!sessionStorage.getItem('seeded')) {
+      sessionStorage.setItem('seeded', '1');
+      localStorage.setItem('ph_phc_e2e_posthog', '{"distinct_id":"anon-1"}');
+    }
+  });
+
+  await page.goto('/en');
+
+  await expect(page.getByTestId('home')).toBeVisible();
+  await expect(page.getByTestId('consent-banner')).toHaveCount(0);
+  await expect.poll(() => postHogStorage(page)).toEqual([]);
+  expect(posthog).toEqual([]);
 });
 
 test('Settings in the banner starts with analytics off', async ({ page, stubGraphql }) => {

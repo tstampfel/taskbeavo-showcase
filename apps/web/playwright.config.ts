@@ -63,7 +63,14 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 300_000,
       // PORT too, for the canonical URLs of pages prerendered during the build (src/i18n/metadata.ts).
-      env: { ...appEnv, PORT: String(port) },
+      env: {
+        ...appEnv,
+        PORT: String(port),
+        // A dummy PostHog project on a port nothing listens on; e2e/consent.spec.ts routes it
+        // to see that nothing reaches PostHog before a yes or after a no (BEAV-83).
+        NEXT_PUBLIC_POSTHOG_KEY: 'phc_e2e',
+        NEXT_PUBLIC_POSTHOG_HOST: `http://localhost:${apiStubPort - 2}`,
+      },
     },
     {
       // The same command developers run, so e2e/dev-server.spec.ts proves
