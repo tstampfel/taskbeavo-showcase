@@ -323,3 +323,24 @@ test('a newer version taking effect in the same visit opens the screen again', a
   await expect(page).toHaveURL(/\/en\/terms-update\?next=%2Fverify-phone$/);
   await expect(page.getByTestId('terms-update-version')).toContainText('2027-01');
 });
+
+test('leaving a page before the screen opens still opens it on the next page', async ({ page }) => {
+  const stub = await stubApi(page);
+  await page.goto('/en');
+  await expect(page).toHaveURL(/\/en\/terms-update/);
+  await page.getByTestId('terms-update-not-now').click();
+  await expect(page.getByTestId('terms-banner')).toBeVisible();
+
+  // A newer version reaches the next page's banner, but its way to the screen never lands.
+  stub.version = '2027-01';
+  const held = (url: URL) => url.pathname === '/en/terms-update' && url.searchParams.has('_rsc');
+  await page.route(held, () => undefined);
+  const opening = page.waitForRequest((request) => held(new URL(request.url())));
+  await page.getByTestId('legal-footer').getByRole('link', { name: 'Fees' }).click();
+  await opening;
+  await page.unroute(held);
+
+  await page.goto('/en/verify-phone');
+  await expect(page).toHaveURL(/\/en\/terms-update\?next=%2Fverify-phone$/);
+  await expect(page.getByTestId('terms-update-version')).toContainText('2027-01');
+});

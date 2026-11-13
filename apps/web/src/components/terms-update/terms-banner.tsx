@@ -6,7 +6,7 @@ import { toApiLocale, type Locale } from '@taskbeavo/i18n';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { Link, usePathname, useRouter } from '../../i18n/navigation';
-import { markTermsUpdateShown, termsUpdateShown } from './shown';
+import { markTermsUpdateOpening, termsUpdateOpening, termsUpdateShown } from './shown';
 import own from './terms-update.module.css';
 
 const PAGE = '/terms-update';
@@ -36,8 +36,10 @@ export function TermsBanner() {
   const version = data?.viewer?.termsToAccept?.version;
 
   useEffect(() => {
-    if (!mustAccept || onPage || !viewerId || termsUpdateShown(viewerId, version)) return;
-    markTermsUpdateShown(viewerId, version);
+    if (!mustAccept || onPage || !viewerId) return;
+    if (termsUpdateShown(viewerId, version) || termsUpdateOpening(viewerId, version)) return;
+    // Only in memory: the screen marks itself shown once it opens (see shown.ts).
+    markTermsUpdateOpening(viewerId, version);
     router.push({ pathname: PAGE, query: { next: pathname } });
   }, [mustAccept, onPage, viewerId, version, pathname, router]);
 
