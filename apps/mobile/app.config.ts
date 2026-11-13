@@ -1,4 +1,6 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
+import type { ConfigPlugin } from 'expo/config-plugins';
+import { withEntitlementsPlist } from 'expo/config-plugins';
 import de from '@taskbeavo/i18n/locales/de.json' with { type: 'json' };
 import en from '@taskbeavo/i18n/locales/en.json' with { type: 'json' };
 import fr from '@taskbeavo/i18n/locales/fr.json' with { type: 'json' };
@@ -92,13 +94,63 @@ function appEnv(): AppEnv {
   return value as AppEnv;
 }
 
+/**
+ * Set by scripts/run-ios.mjs when the Mac has no code signing identity. The development build
+ * then drops SIGNING_ENTITLEMENTS so it can run on a simulator unsigned.
+ */
+export const UNSIGNED_SIMULATOR_ENV = 'TASKBEAVO_IOS_UNSIGNED_SIMULATOR';
+
+/**
+ * Entitlements that make `expo run:ios` sign even a simulator build
+ * (@expo/cli run/ios/codeSigning/simulatorCodeSigning). Without a signing certificate it then
+ * stops with "No code signing certificates are available to use" and a message about
+ * physical iOS devices. Neither works in an unsigned build anyway: Sign in with Apple and
+ * universal links both need the app signed by the team.
+ */
+export const SIGNING_ENTITLEMENTS = [
+  'com.apple.developer.applesignin',
+  'com.apple.developer.associated-domains',
+] as const;
+
+export function withoutSigningEntitlements<T extends Record<string, unknown>>(
+  entitlements: T,
+): Partial<T> {
+  const rest: Record<string, unknown> = { ...entitlements };
+  for (const key of SIGNING_ENTITLEMENTS) delete rest[key];
+  return rest as Partial<T>;
+}
+
+/**
+ * Removes the keys from an entitlements file an earlier signed prebuild wrote: prebuild without
+ * --clean keeps the file's keys. The config itself leaves out everything that adds them.
+ */
+export const withUnsignedSimulator: ConfigPlugin = (config) =>
+  withEntitlementsPlist(config, (mod) => {
+    mod.modResults = withoutSigningEntitlements(mod.modResults);
+    return mod;
+  });
+
+/**
+ * `pnpm --filter @taskbeavo/mobile ios` on a Mac without a signing certificate builds the
+ * development app unsigned (scripts/run-ios.mjs), without the entitlements that need signing.
+ * A store or internal build must never lose them.
+ */
+function unsignedSimulator(env: AppEnv): boolean {
+  if (process.env[UNSIGNED_SIMULATOR_ENV] !== '1') return false;
+  if (env !== 'development') {
+    throw new Error(`${UNSIGNED_SIMULATOR_ENV} is only for development builds, not ${env}`);
+  }
+  return true;
+}
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const env = appEnv();
   const english = permissionTexts('en');
   const variant = variants[env];
+  const unsigned = unsignedSimulator(env);
   const appId = `com.taskbeavo.app${variant.idSuffix}`;
 
-  return {
+  const appConfig: ExpoConfig = {
     ...config,
     name: variant.name,
     slug: 'taskbeavo',
@@ -118,9 +170,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // Expo skip `scheme`, and taskbeavo:// links would stop opening the app.
       scheme: googleIosSchemes(),
       // Sign in with Apple (src/auth/providers/apple.ts), required next to Google on iOS.
-      usesAppleSignIn: true,
+      usesAppleSignIn: !unsigned,
       // Universal links: the web app serves the matching apple-app-site-association.
-      associatedDomains: associatedDomains(),
+      associatedDomains: unsigned ? [] : associatedDomains(),
     },
     locales: Object.fromEntries(
       (Object.keys(catalogues) as (keyof typeof catalogues)[]).map((locale) => [
@@ -154,7 +206,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       // Sign in with Apple: the entitlement for usesAppleSignIn.
-      'expo-apple-authentication',
+      ...(unsigned ? [] : ['expo-apple-authentication']),
       // Google sign-in opens the system browser (expo-auth-session).
       'expo-web-browser',
       // Card, Apple Pay and Google Pay in Stripe's payment sheet (src/payments). The merchant ID
@@ -174,4 +226,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     updates: { url: `https://u.expo.dev/${easProjectId}` },
     extra: { appEnv: env, eas: { projectId: easProjectId } },
   };
+  // Clears the entitlements an earlier signed prebuild left in ios/.
+  return unsigned ? withUnsignedSimulator(appConfig) : appConfig;
 };
