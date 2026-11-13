@@ -23,7 +23,7 @@ import {
   type Submitted,
 } from '@taskbeavo/graphql';
 import { defaultLocale, formatMoney, isLocale, type Locale } from '@taskbeavo/i18n';
-import { colors, spacing } from '@taskbeavo/ui-tokens';
+import { colors, radii, spacing } from '@taskbeavo/ui-tokens';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -31,16 +31,15 @@ import {
   ActivityIndicator,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Checkbox } from '../components/sign-in/checkbox';
 import { TraderIdentity } from '../components/trader-identity';
-import { Badge, Button, Card, Sheet } from '../components/ui';
+import { Badge, Button, Card, Screen, Sheet } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
+import { fonts } from '../fonts';
 import type { PaymentSheet } from '../payments/stripe-config';
 
 type Policy = NonNullable<CheckoutPolicyQuery['currentLegalDocument']>;
@@ -269,15 +268,16 @@ export function CheckoutScreen({
     );
   }
 
+  // Back goes to the offers before the booking exists, then to the booking itself.
+  const back = bookingId
+    ? { onBack: () => onViewBooking(bookingId), backLabel: t('checkout.backToBooking') }
+    : taskId
+      ? { onBack: () => onBackToOffers(taskId), backLabel: t('checkout.back') }
+      : {};
   return (
-    <SafeAreaView style={styles.safeArea} testID="checkout-screen">
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text accessibilityRole="header" style={[textStyle('h1'), styles.title]}>
-          {t('checkout.title')}
-        </Text>
-        {body}
-      </ScrollView>
-    </SafeAreaView>
+    <Screen title={t('checkout.title')} testID="checkout-screen" {...back}>
+      {body}
+    </Screen>
   );
 }
 
@@ -304,7 +304,10 @@ function Summary({
   credit,
   total,
   money,
+  children,
 }: {
+  /** What is being booked, above the lines (mockup 6a). */
+  children?: ReactNode;
   price: number;
   fee: number;
   /** The poster's TaskBeavo credit taken off the fee (BEAV-123): its own line. */
@@ -314,7 +317,8 @@ function Summary({
 }) {
   const { t } = useTranslation();
   return (
-    <Card testID="checkout-summary">
+    <Card testID="checkout-summary" style={styles.summary}>
+      {children}
       <Line label={t('checkout.summary.price')} value={money(price)} />
       <Line label={t('checkout.summary.fee')} value={money(fee)} />
       {credit > 0 ? (
@@ -412,21 +416,21 @@ function OfferCheckout({
   const consent = consentTexts(policy, offer.helperIsTrader);
   return (
     <>
-      <Card>
-        {task ? <Text style={[textStyle('label'), styles.ink]}>{task.title}</Text> : null}
-        <Badge
-          label={t(offer.helperIsTrader ? 'offers.trader.business' : 'offers.trader.private')}
-          tone={offer.helperIsTrader ? 'green' : 'grey'}
-        />
-        <TraderIdentity offer={offer} />
-      </Card>
       <Summary
         price={offer.priceCents}
         fee={offer.serviceFeeCents}
         credit={offer.serviceFeeCreditCents}
         total={offer.totalCents}
         money={money}
-      />
+      >
+        {task ? <Text style={[textStyle('label'), styles.ink]}>{task.title}</Text> : null}
+        <Badge
+          label={t(offer.helperIsTrader ? 'offers.trader.business' : 'offers.trader.private')}
+          tone={offer.helperIsTrader ? 'green' : 'grey'}
+        />
+        <TraderIdentity offer={offer} />
+        <View style={styles.rule} />
+      </Summary>
       <Pressable
         accessibilityRole="link"
         onPress={() => openFees(locale)}
@@ -435,7 +439,7 @@ function OfferCheckout({
       >
         <Text style={[textStyle('small'), styles.linkText]}>{t('checkout.feesLink')}</Text>
       </Pressable>
-      <Text style={[textStyle('small'), styles.green]}>{t('checkout.secure')}</Text>
+      <Text style={[textStyle('label'), styles.green]}>{t('checkout.secure')}</Text>
       <HowItWorks />
       <Text style={[textStyle('small'), styles.muted]}>
         {t(offer.helperIsTrader ? 'checkout.helper.business' : 'checkout.helper.private')}
@@ -632,6 +636,7 @@ function BookingCheckout({
       return (
         <Outcome
           testID="checkout-held"
+          done
           title={t('checkout.held.title', { amount: total })}
           body={t('checkout.held.notified')}
           note={`${t('checkout.held.release')}\n\n${t('checkout.held.email')}`}
@@ -681,9 +686,12 @@ function Outcome({
   body,
   note,
   waiting,
+  done,
   children,
   testID,
 }: {
+  /** The payment is held: the mockup's green tick (6c). */
+  done?: boolean;
   title: string;
   body: string;
   note?: string;
@@ -692,23 +700,43 @@ function Outcome({
   testID: string;
 }) {
   return (
-    <View style={styles.stack} testID={testID}>
-      <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
+    <View style={[styles.stack, styles.outcome]} testID={testID}>
+      {done ? (
+        <View style={styles.tick} importantForAccessibility="no" accessibilityElementsHidden>
+          <Text style={styles.tickMark} allowFontScaling={false}>
+            ✓
+          </Text>
+        </View>
+      ) : null}
+      <Text accessibilityRole="header" style={[textStyle('h1'), styles.ink, styles.centered]}>
         {title}
       </Text>
-      <Text style={[textStyle('body'), styles.ink]}>{body}</Text>
+      <Text style={[textStyle('body'), styles.ink, styles.centered]}>{body}</Text>
       {waiting ? <ActivityIndicator accessibilityLabel={waiting} color={colors.green} /> : null}
-      {note ? <Text style={[textStyle('small'), styles.muted]}>{note}</Text> : null}
-      {children}
+      {note ? (
+        <Text style={[textStyle('small'), styles.muted, styles.centered]}>{note}</Text>
+      ) : null}
+      <View style={styles.actions}>{children}</View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.offWhite },
-  content: { flexGrow: 1, gap: spacing.lg, padding: spacing.xl },
-  title: { color: colors.green },
   stack: { gap: spacing.md },
+  summary: { gap: spacing.sm },
+  // Outcomes (6c–6f) sit in the middle of the screen, like the mockups' centred frames.
+  outcome: { flexGrow: 1, justifyContent: 'center', alignItems: 'center' },
+  centered: { textAlign: 'center' },
+  actions: { alignSelf: 'stretch', gap: spacing.sm },
+  tick: {
+    width: 96,
+    height: 96,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.green,
+  },
+  tickMark: { fontFamily: fonts.bold, fontSize: 48, lineHeight: 56, color: colors.white },
   ink: { color: colors.ink },
   muted: { color: colors.inkMuted },
   green: { color: colors.green },

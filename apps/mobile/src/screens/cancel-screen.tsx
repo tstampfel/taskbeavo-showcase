@@ -25,12 +25,11 @@ import {
   type WithdrawalOffer,
 } from '@taskbeavo/graphql';
 import { defaultLocale, formatDate, formatMoney, isLocale, type Locale } from '@taskbeavo/i18n';
-import { colors, spacing } from '@taskbeavo/ui-tokens';
-import { useState } from 'react';
+import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Card, Input } from '../components/ui';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Button, Card, Input, Note, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 
 export interface CancelScreenProps {
@@ -66,9 +65,21 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
   const viewer = viewerQuery.data?.viewer;
   const current = booking.data?.booking;
 
+  const frame = (children: ReactNode, footer?: ReactNode) => (
+    <Screen
+      title={t('cancel.title')}
+      onBack={onBack}
+      backLabel={t('cancel.back')}
+      footer={footer}
+      testID="cancel-screen"
+    >
+      {children}
+    </Screen>
+  );
+
   if (!current || (!viewer && viewerQuery.loading)) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
+    return frame(
+      <>
         {booking.loading || viewerQuery.loading ? (
           <ActivityIndicator color={colors.green} />
         ) : (
@@ -83,7 +94,7 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
             />
           </>
         )}
-      </SafeAreaView>
+      </>,
     );
   }
 
@@ -99,8 +110,8 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
     void requestNoFault({ variables: { id: bookingId, reason: picked.key } }).catch(refresh);
   if (view.kind === 'unknownViewer') {
     // Never show one side's screen to someone whose side isn't known (R1-11).
-    return (
-      <SafeAreaView style={styles.safeArea}>
+    return frame(
+      <>
         <Text accessibilityRole="alert" style={[textStyle('body'), styles.error]}>
           {t('cancel.loadError')}
         </Text>
@@ -109,221 +120,230 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
           label={t('cancel.retry')}
           onPress={() => void viewerQuery.refetch().catch(() => undefined)}
         />
-      </SafeAreaView>
+      </>,
     );
   }
   const onWithdraw = (name: string, email: string) =>
     void withdraw({ variables: { id: bookingId, name, email } }).catch(() => undefined);
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text accessibilityRole="header" style={[textStyle('h1'), styles.title]}>
-          {t('cancel.title')}
+  // The screen's one final action. The helper's is pinned at the bottom (mockup 13g `.foot`):
+  // what it means for the poster is in the card at the top. The poster's stays in the body,
+  // right under the refund breakdown, so it can't be tapped with the amounts below the fold
+  // (unlike mockup 13c).
+  let footer: ReactNode;
+  if ((view.kind === 'cancel' || view.kind === 'helperCancel') && reason?.kind === 'noFault') {
+    footer = (
+      <Button
+        variant="danger"
+        label={t('cancel.noFaultRequest.send')}
+        busy={busy}
+        disabled={busy}
+        onPress={() => onNoFault(reason)}
+        testID="no-fault-send"
+      />
+    );
+  } else if (view.kind === 'helperCancel') {
+    footer = (
+      <Button
+        variant="danger"
+        label={t('cancel.helper.confirm')}
+        busy={helperCancelling.loading}
+        disabled={reason === null || busy}
+        onPress={() => {
+          if (reason?.kind !== 'ordinary') return;
+          const key = reason.key as HelperCancelReason;
+          void cancelAsHelper({ variables: { id: bookingId, reason: key } }).catch(refresh);
+        }}
+        testID="helper-cancel-confirm"
+      />
+    );
+  } else if (view.kind === 'cancel') {
+    footer = (
+      <Button
+        variant="danger"
+        label={t('cancel.confirm')}
+        busy={cancelling.loading}
+        disabled={reason === null || busy}
+        onPress={() => {
+          if (reason?.kind !== 'ordinary') return;
+          const key = reason.key as PosterCancelReason;
+          const expectedRefundCents = view.preview.refundCents;
+          void cancel({
+            variables: { id: bookingId, reason: key, expectedRefundCents },
+          }).catch((e: unknown) => {
+            // A deadline passed while the screen was open: show the new preview.
+            if (apiErrorCode(e) === 'CANCELLATION_CHANGED') {
+              void booking.refetch().catch(() => undefined);
+            }
+          });
+        }}
+        testID="cancel-confirm"
+      />
+    );
+  }
+
+  return frame(
+    <>
+      {decision && (
+        <Text style={[textStyle('body'), styles.ink]} testID="no-fault-decision">
+          {t(`cancel.decision.${decision}`)}
         </Text>
+      )}
 
-        {decision && (
-          <Text style={[textStyle('body'), styles.ink]} testID="no-fault-decision">
-            {t(`cancel.decision.${decision}`)}
+      {view.kind === 'done' && (
+        <Card style={styles.card}>
+          <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
+            {view.withdrawal
+              ? t('cancel.done.withdrawn')
+              : view.byHelper && role === 'poster'
+                ? t('cancel.done.byHelper')
+                : t('cancel.done.cancelled')}
           </Text>
-        )}
+          {view.awaitingSupport ? (
+            <Text style={[textStyle('body'), styles.ink]}>{t('cancel.done.awaitingSupport')}</Text>
+          ) : (
+            view.refundCents !== null && (
+              <Text style={[textStyle('body'), styles.ink]}>
+                {view.refunding
+                  ? t('cancel.done.refunding', { amount: money(view.refundCents) })
+                  : t('cancel.done.refunded', { amount: money(view.refundCents) })}
+              </Text>
+            )
+          )}
+          {view.withdrawal && (
+            <Text style={[textStyle('small'), styles.muted]}>{t('cancel.done.emailed')}</Text>
+          )}
+          {role === 'poster' && view.creditBackCents > 0 && (
+            <Text style={[textStyle('body'), styles.ink]} testID="cancel-credit-back">
+              {t('cancel.done.creditBack', { amount: money(view.creditBackCents) })}
+            </Text>
+          )}
+          {role === 'poster' && view.posterCreditCents > 0 && (
+            <Text style={[textStyle('body'), styles.ink]} testID="cancel-credit">
+              {t('cancel.done.credit', { amount: money(view.posterCreditCents) })}
+            </Text>
+          )}
+          {view.reopened && role === 'poster' && (
+            <Text style={[textStyle('body'), styles.ink]}>{t('cancel.done.reopened')}</Text>
+          )}
+          {view.canReopen && (
+            <>
+              <Text style={[textStyle('small'), styles.muted]}>{t('cancel.done.reopenBody')}</Text>
+              <Button
+                variant="secondary"
+                label={t('cancel.done.reopen')}
+                busy={reopening.loading}
+                disabled={busy}
+                onPress={() => void reopen({ variables: { bookingId } }).catch(refresh)}
+                testID="cancel-reopen"
+              />
+            </>
+          )}
+        </Card>
+      )}
 
-        {view.kind === 'done' && (
+      {view.kind === 'noFaultPending' && (
+        <Pending
+          pending={view}
+          role={role}
+          busy={busy}
+          onRespond={(agree) =>
+            void respondNoFault({ variables: { id: bookingId, agree } }).catch(refresh)
+          }
+        />
+      )}
+
+      {view.kind === 'helperCancel' && (
+        <>
           <Card style={styles.card}>
             <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
-              {view.withdrawal
-                ? t('cancel.done.withdrawn')
-                : view.byHelper && role === 'poster'
-                  ? t('cancel.done.byHelper')
-                  : t('cancel.done.cancelled')}
+              {t('cancel.helper.title')}
             </Text>
-            {view.awaitingSupport ? (
-              <Text style={[textStyle('body'), styles.ink]}>
-                {t('cancel.done.awaitingSupport')}
-              </Text>
-            ) : (
-              view.refundCents !== null && (
-                <Text style={[textStyle('body'), styles.ink]}>
-                  {view.refunding
-                    ? t('cancel.done.refunding', { amount: money(view.refundCents) })
-                    : t('cancel.done.refunded', { amount: money(view.refundCents) })}
-                </Text>
-              )
-            )}
-            {view.withdrawal && (
-              <Text style={[textStyle('small'), styles.muted]}>{t('cancel.done.emailed')}</Text>
-            )}
-            {role === 'poster' && view.creditBackCents > 0 && (
-              <Text style={[textStyle('body'), styles.ink]} testID="cancel-credit-back">
-                {t('cancel.done.creditBack', { amount: money(view.creditBackCents) })}
-              </Text>
-            )}
-            {role === 'poster' && view.posterCreditCents > 0 && (
-              <Text style={[textStyle('body'), styles.ink]} testID="cancel-credit">
-                {t('cancel.done.credit', { amount: money(view.posterCreditCents) })}
-              </Text>
-            )}
-            {view.reopened && role === 'poster' && (
-              <Text style={[textStyle('body'), styles.ink]}>{t('cancel.done.reopened')}</Text>
-            )}
-            {view.canReopen && (
-              <>
-                <Text style={[textStyle('small'), styles.muted]}>
-                  {t('cancel.done.reopenBody')}
-                </Text>
-                <Button
-                  variant="secondary"
-                  label={t('cancel.done.reopen')}
-                  busy={reopening.loading}
-                  disabled={busy}
-                  onPress={() => void reopen({ variables: { bookingId } }).catch(refresh)}
-                  testID="cancel-reopen"
-                />
-              </>
-            )}
+            <Text style={[textStyle('body'), styles.ink]} testID="helper-cancel-warning">
+              {view.posterCreditCents > 0
+                ? t('cancel.helper.warningCredit', {
+                    refund: money(view.refundCents),
+                    credit: money(view.posterCreditCents),
+                  })
+                : t('cancel.helper.warning', { refund: money(view.refundCents) })}
+            </Text>
+            <Text style={[textStyle('small'), styles.muted]}>{t('cancel.helper.neverPay')}</Text>
           </Card>
-        )}
-
-        {view.kind === 'noFaultPending' && (
-          <Pending
-            pending={view}
-            role={role}
-            busy={busy}
-            onRespond={(agree) =>
-              void respondNoFault({ variables: { id: bookingId, agree } }).catch(refresh)
-            }
+          <Reasons
+            legend={t('cancel.helper.reasonsLegend')}
+            ordinary={HELPER_CANCEL_REASONS}
+            ordinaryLabel={(key) => t(`cancel.helper.reasons.${key}`)}
+            noFault={view.noFault}
+            picked={reason}
+            onPick={setReason}
           />
-        )}
+          <Text style={[textStyle('small'), styles.muted]}>{t('cancel.helper.tip')}</Text>
+          {reason?.kind === 'noFault' && <NoFaultNotice role={role} />}
+        </>
+      )}
 
-        {view.kind === 'helperCancel' && (
-          <>
-            <Card style={styles.card}>
-              <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
-                {t('cancel.helper.title')}
-              </Text>
-              <Text style={[textStyle('body'), styles.ink]} testID="helper-cancel-warning">
-                {view.posterCreditCents > 0
-                  ? t('cancel.helper.warningCredit', {
-                      refund: money(view.refundCents),
-                      credit: money(view.posterCreditCents),
-                    })
-                  : t('cancel.helper.warning', { refund: money(view.refundCents) })}
-              </Text>
-              <Text style={[textStyle('small'), styles.muted]}>{t('cancel.helper.neverPay')}</Text>
-            </Card>
-            <Reasons
-              legend={t('cancel.helper.reasonsLegend')}
-              ordinary={HELPER_CANCEL_REASONS}
-              ordinaryLabel={(key) => t(`cancel.helper.reasons.${key}`)}
-              noFault={view.noFault}
-              picked={reason}
-              onPick={setReason}
-            />
-            <Text style={[textStyle('small'), styles.muted]}>{t('cancel.helper.tip')}</Text>
-            {reason?.kind === 'noFault' ? (
-              <NoFaultSend role={role} busy={busy} onSend={() => onNoFault(reason)} />
-            ) : (
-              <Button
-                variant="danger"
-                label={t('cancel.helper.confirm')}
-                busy={helperCancelling.loading}
-                disabled={reason === null || busy}
-                onPress={() => {
-                  if (reason?.kind !== 'ordinary') return;
-                  const key = reason.key as HelperCancelReason;
-                  void cancelAsHelper({ variables: { id: bookingId, reason: key } }).catch(refresh);
-                }}
-                testID="helper-cancel-confirm"
-              />
-            )}
-          </>
-        )}
-
-        {view.kind === 'cancel' && (
-          <>
-            <Reasons
-              legend={t('cancel.reasonsLegend')}
-              ordinary={POSTER_CANCEL_REASONS}
-              ordinaryLabel={(key) => t(`cancel.reasons.${key}`)}
-              noFault={view.noFault}
-              picked={reason}
-              onPick={setReason}
-            />
-            {view.noFault && (
-              <Text style={[textStyle('small'), styles.muted]}>{t('cancel.noFault')}</Text>
-            )}
-            {reason?.kind === 'noFault' ? (
-              <NoFaultSend role={role} busy={busy} onSend={() => onNoFault(reason)} />
-            ) : (
-              <>
-                <Preview preview={view.preview} money={money} />
-                <Button
-                  variant="danger"
-                  label={t('cancel.confirm')}
-                  busy={cancelling.loading}
-                  disabled={reason === null || busy}
-                  onPress={() => {
-                    if (reason?.kind !== 'ordinary') return;
-                    const key = reason.key as PosterCancelReason;
-                    const expectedRefundCents = view.preview.refundCents;
-                    void cancel({
-                      variables: { id: bookingId, reason: key, expectedRefundCents },
-                    }).catch((e: unknown) => {
-                      // A deadline passed while the screen was open: show the new preview.
-                      if (apiErrorCode(e) === 'CANCELLATION_CHANGED') {
-                        void booking.refetch().catch(() => undefined);
-                      }
-                    });
-                  }}
-                  testID="cancel-confirm"
-                />
-              </>
-            )}
-          </>
-        )}
-
-        {(view.kind === 'refused' || view.kind === 'withdrawOnly') && (
-          <Text style={[textStyle('body'), styles.ink]}>
-            {role === 'helper'
-              ? t('cancel.helper.refused')
-              : view.refusedWith === 'WORK_STARTED'
-                ? t('cancel.refused.WORK_STARTED')
-                : t('cancel.refused.BOOKING_ACTION_NOT_ALLOWED')}
-          </Text>
-        )}
-
-        {view.kind === 'unavailable' && (
-          <Text style={[textStyle('body'), styles.ink]}>{t('cancel.unavailable')}</Text>
-        )}
-
-        {(view.kind === 'cancel' || view.kind === 'withdrawOnly') && view.withdrawal && (
-          <Withdrawal
-            offer={view.withdrawal}
-            started={view.kind === 'withdrawOnly'}
-            bookingId={bookingId}
-            defaultName={viewer ? `${viewer.firstName} ${viewer.lastName}`.trim() : ''}
-            defaultEmail={viewer?.email ?? ''}
-            locale={locale}
-            busy={busy}
-            sending={withdrawing.loading}
-            onWithdraw={onWithdraw}
+      {view.kind === 'cancel' && (
+        <>
+          <Reasons
+            legend={t('cancel.reasonsLegend')}
+            ordinary={POSTER_CANCEL_REASONS}
+            ordinaryLabel={(key) => t(`cancel.reasons.${key}`)}
+            noFault={view.noFault}
+            noFaultHint={t('cancel.noFault')}
+            picked={reason}
+            onPick={setReason}
           />
-        )}
+          {reason?.kind === 'noFault' ? (
+            <NoFaultNotice role={role} />
+          ) : (
+            <Preview preview={view.preview} money={money} />
+          )}
+          {footer}
+        </>
+      )}
 
-        {errorCode && (
-          <Text accessibilityRole="alert" style={[textStyle('body'), styles.error]}>
-            {i18n.exists(`errors.${errorCode}`) ? t(`errors.${errorCode}`) : t('cancel.loadError')}
-          </Text>
-        )}
+      {(view.kind === 'refused' || view.kind === 'withdrawOnly') && (
+        <Text style={[textStyle('body'), styles.ink]}>
+          {role === 'helper'
+            ? t('cancel.helper.refused')
+            : view.refusedWith === 'WORK_STARTED'
+              ? t('cancel.refused.WORK_STARTED')
+              : t('cancel.refused.BOOKING_ACTION_NOT_ALLOWED')}
+        </Text>
+      )}
 
-        <Button
-          variant="ghost"
-          label={t('cancel.policyLink')}
-          onPress={() => onOpenPolicy(locale)}
+      {view.kind === 'unavailable' && (
+        <Text style={[textStyle('body'), styles.ink]}>{t('cancel.unavailable')}</Text>
+      )}
+
+      {(view.kind === 'cancel' || view.kind === 'withdrawOnly') && view.withdrawal && (
+        <Withdrawal
+          offer={view.withdrawal}
+          started={view.kind === 'withdrawOnly'}
+          bookingId={bookingId}
+          defaultName={viewer ? `${viewer.firstName} ${viewer.lastName}`.trim() : ''}
+          defaultEmail={viewer?.email ?? ''}
+          locale={locale}
+          busy={busy}
+          sending={withdrawing.loading}
+          onWithdraw={onWithdraw}
         />
-        <Button variant="ghost" label={t('cancel.back')} onPress={onBack} />
-      </ScrollView>
-    </SafeAreaView>
+      )}
+
+      {errorCode && (
+        <Text accessibilityRole="alert" style={[textStyle('body'), styles.error]}>
+          {i18n.exists(`errors.${errorCode}`) ? t(`errors.${errorCode}`) : t('cancel.loadError')}
+        </Text>
+      )}
+
+      <Button
+        variant="ghost"
+        size="sm"
+        label={t('cancel.policyLink')}
+        onPress={() => onOpenPolicy(locale)}
+      />
+    </>,
+    view.kind === 'cancel' ? undefined : footer,
   );
 }
 
@@ -333,6 +353,7 @@ function Reasons<K extends string>({
   ordinary,
   ordinaryLabel,
   noFault,
+  noFaultHint,
   picked,
   onPick,
 }: {
@@ -340,11 +361,13 @@ function Reasons<K extends string>({
   ordinary: readonly K[];
   ordinaryLabel(key: K): string;
   noFault: boolean;
+  /** Said just above the no-fault reasons. */
+  noFaultHint?: string;
   picked: PickedReason | null;
   onPick(reason: PickedReason): void;
 }) {
   const { t } = useTranslation();
-  const radio = (reason: PickedReason, label: string) => {
+  const radio = (reason: PickedReason, label: string, index: number) => {
     const checked = picked?.kind === reason.kind && picked.key === reason.key;
     return (
       <Pressable
@@ -352,10 +375,13 @@ function Reasons<K extends string>({
         accessibilityRole="radio"
         accessibilityState={{ checked }}
         onPress={() => onPick(reason)}
-        style={[styles.reason, checked && styles.reasonChecked]}
+        style={[styles.reason, index > 0 && styles.reasonRule]}
         testID={`cancel-reason-${reason.key}`}
       >
-        <View style={[styles.dot, checked && styles.dotChecked]} />
+        <View
+          style={[styles.dot, checked && styles.dotChecked]}
+          testID={`cancel-reason-dot-${reason.key}`}
+        />
         <Text style={[textStyle('body'), styles.ink, styles.flex]}>{label}</Text>
       </Pressable>
     );
@@ -365,42 +391,34 @@ function Reasons<K extends string>({
       <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
         {legend}
       </Text>
-      <View accessibilityRole="radiogroup" style={styles.reasons}>
-        {ordinary.map((key) =>
-          radio({ kind: 'ordinary', key } as PickedReason, ordinaryLabel(key)),
+      <Card accessibilityRole="radiogroup" style={styles.reasons}>
+        {ordinary.map((key, index) =>
+          radio({ kind: 'ordinary', key } as PickedReason, ordinaryLabel(key), index),
         )}
-      </View>
+      </Card>
       {noFault && (
         <>
-          <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
+          {noFaultHint ? (
+            <Text style={[textStyle('small'), styles.muted]}>{noFaultHint}</Text>
+          ) : null}
+          <Text accessibilityRole="header" style={[textStyle('label'), styles.ink]}>
             {t('cancel.noFaultLegend')}
           </Text>
-          <View accessibilityRole="radiogroup" style={styles.reasons}>
-            {NO_FAULT_REASONS.map((key) =>
-              radio({ kind: 'noFault', key }, t(`cancel.noFaultReasons.${key}`)),
+          <Card accessibilityRole="radiogroup" style={styles.reasons}>
+            {NO_FAULT_REASONS.map((key, index) =>
+              radio({ kind: 'noFault', key }, t(`cancel.noFaultReasons.${key}`), index),
             )}
-          </View>
+          </Card>
         </>
       )}
     </>
   );
 }
 
-function NoFaultSend({ role, busy, onSend }: { role: CancelRole; busy: boolean; onSend(): void }) {
+/** What a no-fault request means; the footer sends it. */
+function NoFaultNotice({ role }: { role: CancelRole }) {
   const { t } = useTranslation();
-  return (
-    <>
-      <Text style={[textStyle('body'), styles.ink]}>{t(`cancel.noFaultRequest.${role}`)}</Text>
-      <Button
-        variant="danger"
-        label={t('cancel.noFaultRequest.send')}
-        busy={busy}
-        disabled={busy}
-        onPress={onSend}
-        testID="no-fault-send"
-      />
-    </>
-  );
+  return <Note>{t(`cancel.noFaultRequest.${role}`)}</Note>;
 }
 
 /** A no-fault request waiting for the other side or for support (13e, 13f). */
@@ -473,11 +491,11 @@ function Pending({
 function Preview({ preview, money }: { preview: CancelPreview; money: (cents: number) => string }) {
   const { t } = useTranslation();
   return (
-    <Card style={styles.card}>
-      <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
+    <Card selected style={styles.card} testID="cancel-preview">
+      <Text accessibilityRole="header" style={[textStyle('label'), styles.ink]}>
         {preview.full ? t('cancel.preview.full') : t('cancel.preview.title')}
       </Text>
-      <Text style={[textStyle('body'), styles.ink]}>{t(`cancel.cases.${preview.case}`)}</Text>
+      <Text style={[textStyle('small'), styles.muted]}>{t(`cancel.cases.${preview.case}`)}</Text>
       <Row label={t('cancel.preview.youGetBack')} value={money(preview.refundCents)} strong />
       {preview.helperCompensationCents > 0 && (
         <>
@@ -488,6 +506,7 @@ function Preview({ preview, money }: { preview: CancelPreview; money: (cents: nu
           <Row label={t('cancel.preview.keptFee')} value={money(preview.keptFeeCents)} />
         </>
       )}
+      <View style={styles.rule} />
       <Row label={t('cancel.preview.youPaid')} value={money(preview.chargeCents)} muted />
       {preview.creditBackCents > 0 && (
         <Text style={[textStyle('body'), styles.ink]} testID="cancel-preview-credit-back">
@@ -510,11 +529,11 @@ function Row({
   strong?: boolean;
   muted?: boolean;
 }) {
-  const tone = [textStyle('body'), muted ? styles.muted : styles.ink, strong && styles.strong];
+  const tone = [textStyle(strong ? 'label' : 'small'), muted ? styles.muted : styles.ink];
   return (
     <View style={styles.row} accessible accessibilityLabel={`${label}: ${value}`}>
       <Text style={[...tone, styles.flex]}>{label}</Text>
-      <Text style={tone}>{value}</Text>
+      <Text style={[...tone, strong && styles.amount]}>{value}</Text>
     </View>
   );
 }
@@ -624,29 +643,36 @@ function lastDay(endsAt: string, locale: Locale): string {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.offWhite },
-  content: { gap: spacing.lg, padding: spacing.xl },
-  title: { color: colors.green },
   ink: { color: colors.ink },
   muted: { color: colors.inkMuted },
   error: { color: colors.error },
   strong: { fontWeight: '700' },
+  // The amount the poster gets back: green, like the mockups' `.ok`, in the AA-safe brand green.
+  amount: { color: colors.green },
   flex: { flex: 1 },
   card: { gap: spacing.sm },
-  reasons: { gap: spacing.sm },
+  rule: { height: borderWidth.thin, backgroundColor: colors.line },
+  // The mockups' list card: one card, the options split by hairlines.
+  reasons: { gap: 0, paddingVertical: spacing.xs },
   reason: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.line,
+    gap: spacing.md,
+    minHeight: minTapTarget + spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  reasonRule: { borderTopWidth: borderWidth.thin, borderTopColor: colors.line },
+  // The mockups' `.radio`: an outlined circle, filled by a thick green ring when picked.
+  dot: {
+    width: 24,
+    height: 24,
+    // A wrapping label at large text must not squeeze the circle.
+    flexShrink: 0,
+    borderRadius: radii.pill,
+    borderWidth: 2,
+    borderColor: colors.inkMuted,
     backgroundColor: colors.white,
   },
-  reasonChecked: { borderColor: colors.green },
-  dot: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: colors.inkMuted },
-  dotChecked: { borderColor: colors.green, backgroundColor: colors.green },
+  dotChecked: { borderWidth: 7, borderColor: colors.green },
   row: { flexDirection: 'row', gap: spacing.md },
 });

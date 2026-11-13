@@ -50,6 +50,7 @@
     "compare": "Compare",
     "backToList": "Back to list",
     "compareTitle": "{count, plural, one {Compare # offer} other {Compare # offers}}",
+    "compareOrder": "Columns follow the list's order.",
     "trader": {
       "private": "Private individual",
       "business": "Registered business",
@@ -87,6 +88,7 @@
       "business": "Business"
     },
     "metaTitle": "Offers",
+    "back": "Back",
     "cellLabel": "{row} for the offer of {price}: {value}"
   },
   "errors": {
@@ -310,6 +312,7 @@
     "title": "Checkout",
     "metaTitle": "Checkout",
     "back": "Back to offers",
+    "backToBooking": "Back to booking",
     "loadError": "We couldn't load the checkout. Check your connection and try again.",
     "retry": "Try again",
     "notConfigured": "Card payments aren't set up in this version of the app. Nothing has been charged.",
@@ -789,6 +792,7 @@
   },
   "bookingDetail": {
     "metaTitle": "Booking",
+    "back": "Back",
     "loadError": "We couldn't load this booking. Check your connection and try again.",
     "retry": "Try again",
     "stepsLabel": "Booking progress",

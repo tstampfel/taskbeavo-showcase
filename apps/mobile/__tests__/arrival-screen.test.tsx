@@ -143,6 +143,23 @@ it('lets the helper say they are on their way with an arrival time', async () =>
   expect(screen.queryByTestId('arrival-on-my-way')).toBeNull();
 });
 
+it('keeps "I\'ve arrived" while the helper is reporting a late arrival', async () => {
+  const variables = await renderArrival({
+    BookingArrival: () => ({
+      booking: booking('user-1', { canTap: true, onMyWayAt: '2026-11-08T08:40:00Z' }),
+    }),
+    MarkArrived: () => ({
+      markArrived: booking('user-1', { canTap: true, arrivedAt: '2026-11-08T09:05:00Z' }),
+    }),
+  });
+
+  await fireEvent.press(await screen.findByTestId('arrival-running-late'));
+  expect(screen.getByTestId('arrival-send-late')).toBeTruthy();
+  await fireEvent.press(screen.getByTestId('arrival-arrived'));
+
+  expect(variables.MarkArrived).toEqual({ bookingId: 'booking-1' });
+});
+
 it("shows the helper's error code in the user's language", async () => {
   await renderArrival({
     BookingArrival: () => ({ booking: booking('user-1', { canTap: true }) }),

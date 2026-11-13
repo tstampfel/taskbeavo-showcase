@@ -3,6 +3,7 @@ import { ApolloProvider } from '@apollo/client/react';
 import { typePolicies } from '@taskbeavo/graphql';
 import { catalogues, formatMoney } from '@taskbeavo/i18n';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Observable } from 'rxjs';
 import { i18n } from '../src/i18n';
@@ -132,6 +133,20 @@ beforeEach(async () => {
   await i18n.changeLanguage('en');
 });
 
+it('puts the poster’s confirm under the refund breakdown, not pinned above it', async () => {
+  // A pinned button could be tapped while the amounts were still below the fold.
+  await renderCancel({ BookingCancellation: () => ({ booking: booking() }) });
+
+  await screen.findByText(en.cases.LATE);
+  await fireEvent.press(screen.getByTestId('cancel-reason-DIFFERENT_DATE'));
+
+  expect(screen.queryByTestId('cancel-screen-footer')).toBeNull();
+  const order = screen
+    .getAllByTestId(/^cancel-(preview|confirm)$/)
+    .map((node) => node.props.testID as string);
+  expect(order).toEqual(['cancel-preview', 'cancel-confirm']);
+});
+
 it('shows the server preview and cancels with the chosen reason', async () => {
   const { variables } = await renderCancel({
     BookingCancellation: () => ({ booking: booking() }),
@@ -162,6 +177,14 @@ it('shows the server preview and cancels with the chosen reason', async () => {
   expect(
     screen.getByText(en.done.refunding.replace('{amount}', formatMoney(2_520, 'en'))),
   ).toBeTruthy();
+});
+
+it('keeps the radio circles full size when a reason wraps at large text', async () => {
+  await renderCancel({ BookingCancellation: () => ({ booking: booking() }) });
+  await screen.findByText(en.cases.LATE);
+  // A long label must not squeeze the 24pt circle (seen at the largest accessibility size).
+  const dot = screen.getByTestId('cancel-reason-dot-NO_LONGER_NEEDED');
+  expect(StyleSheet.flatten(dot.props.style)).toMatchObject({ width: 24, flexShrink: 0 });
 });
 
 it('keeps the withdrawal button after the start while the cancel is refused', async () => {

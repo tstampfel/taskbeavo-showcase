@@ -6,11 +6,12 @@ import {
   inputColors,
   minTapTarget,
 } from '@taskbeavo/ui-tokens';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Dimensions, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Badge, Button, Card, Input, Sheet } from '../src/components/ui';
+import { Badge, Button, Card, Input, Note, Screen, Sheet } from '../src/components/ui';
+import { topSafeAreaEdge } from '../src/testing/safe-area';
 import { fonts } from '../src/fonts';
 
 const metrics = {
@@ -155,5 +156,92 @@ describe('Sheet', () => {
       </Sheet>,
     );
     expect(screen.queryByText('Inhalt')).toBeNull();
+  });
+});
+
+// BEAV-214: the mockups' top bar, scrolling body and pinned footer.
+describe('Screen', () => {
+  it('shows the title as the heading, below the status bar', async () => {
+    await renderUi(
+      <Screen title="Odustani od rezervacije">
+        <Text>body</Text>
+      </Screen>,
+    );
+    const title = screen.getByRole('header', { name: 'Odustani od rezervacije' });
+    expect(topSafeAreaEdge(title)).toBe('additive');
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('has a labelled 44pt back button when it can go back', async () => {
+    const onBack = jest.fn();
+    await renderUi(
+      <Screen title="Checkout" onBack={onBack} backLabel="Zurück zu den Angeboten">
+        <Text>body</Text>
+      </Screen>,
+    );
+    const back = screen.getByRole('button', { name: 'Zurück zu den Angeboten' });
+    const style = flat(back);
+    expect(style.width).toBeGreaterThanOrEqual(minTapTarget);
+    expect(style.height).toBeGreaterThanOrEqual(minTapTarget);
+    await fireEvent.press(back);
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('announces only the labelled back button, not the chevron glyph', async () => {
+    await renderUi(
+      <Screen title="Checkout" onBack={jest.fn()} backLabel="Back">
+        <Text>body</Text>
+      </Screen>,
+    );
+    // VoiceOver stopped on a bare "‹" next to the button (review R1-4): the chevron is drawn,
+    // not a text glyph, so there is nothing to announce but the button's label.
+    expect(screen.queryByText('‹', { includeHiddenElements: true })).toBeNull();
+    const back = screen.getByRole('button', { name: 'Back' });
+    expect(within(back).queryAllByText(/./, { includeHiddenElements: true })).toHaveLength(0);
+  });
+
+  it('pins the footer outside the scrolling body', async () => {
+    // The jest preset reports a font scale of 2; the default text size is 1.
+    jest
+      .spyOn(Dimensions, 'get')
+      .mockReturnValue({ width: 402, height: 874, scale: 3, fontScale: 1 });
+    await renderUi(
+      <Screen title="Annuler" testID="s" footer={<Button label="Annuler la réservation" />}>
+        <Text>body</Text>
+      </Screen>,
+    );
+    const footer = screen.getByTestId('s-footer');
+    expect(screen.getByRole('button', { name: 'Annuler la réservation' })).toBeTruthy();
+    for (let node = footer.parent; node; node = node.parent) {
+      expect(node.type).not.toBe('RCTScrollView');
+    }
+    jest.restoreAllMocks();
+  });
+
+  it('lets the footer scroll with the body at the largest text sizes', async () => {
+    const dimensions = jest
+      .spyOn(Dimensions, 'get')
+      .mockReturnValue({ width: 402, height: 874, scale: 3, fontScale: 3.1 });
+    try {
+      await renderUi(
+        <Screen title="Annuler" testID="s" footer={<Button label="Annuler la réservation" />}>
+          <Text>body</Text>
+        </Screen>,
+      );
+      let inScroll = false;
+      for (let node = screen.getByTestId('s-footer').parent; node; node = node.parent) {
+        if (node.type === 'RCTScrollView') inScroll = true;
+      }
+      expect(inScroll).toBe(true);
+    } finally {
+      dimensions.mockRestore();
+    }
+  });
+});
+
+describe('Note', () => {
+  it('draws its tone from the badge tints', async () => {
+    await renderUi(<Note tone="warn">Pazi</Note>);
+    expect(flat(screen.getByText('Pazi')).color).toBe(badgeTones.orange.foreground);
   });
 });

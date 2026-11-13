@@ -3,6 +3,7 @@ import { ApolloProvider } from '@apollo/client/react';
 import { BookingDetailDocument, ViewerDocument, typePolicies } from '@taskbeavo/graphql';
 import { catalogues, formatMoney } from '@taskbeavo/i18n';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Dimensions, Linking, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Observable, type Subscriber } from 'rxjs';
 import { i18n } from '../src/i18n';
@@ -137,6 +138,18 @@ it('shows the active helper the exact place, access details and contact', async 
   expect(screen.queryByTestId('booking-helper')).toBeNull();
 });
 
+it('gives the active helper a Call link to the on-site contact (mockups 5c, 7b, 18a, 18g)', async () => {
+  const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+  try {
+    await renderDetail(booking('user-1'));
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Call +385912345678' }));
+    expect(openURL).toHaveBeenCalledWith('tel:+385912345678');
+  } finally {
+    openURL.mockRestore();
+  }
+});
+
 it('hides the address again when a live event closes the booking', async () => {
   const { push } = await renderDetail(booking('user-1', { status: 'PAYMENT_REQUESTED' }));
   expect(screen.getByTestId('booking-address')).toBeOnTheScreen();
@@ -147,6 +160,7 @@ it('hides the address again when a live event closes the booking', async () => {
   expect(screen.queryByTestId('booking-address')).toBeNull();
   expect(screen.queryByTestId('booking-access')).toBeNull();
   expect(screen.queryByText(/Mama Kata/)).toBeNull();
+  expect(screen.queryByText(/Call \+385/)).toBeNull();
   expect(screen.getByTestId('booking-area')).toHaveTextContent('Area: Dubrovnik');
   expect(screen.getByText(en.place.ended)).toBeOnTheScreen();
   expect(screen.getByTestId('booking-status')).toHaveTextContent(en.status.RELEASED);
@@ -187,6 +201,27 @@ it('follows the stepper of mockup 05', async () => {
   expect(screen.getByTestId('booking-step-held-done')).toBeOnTheScreen();
   expect(screen.getByTestId('booking-step-requested-current')).toBeOnTheScreen();
   expect(screen.getByTestId('booking-step-released-todo')).toBeOnTheScreen();
+});
+
+it.each([
+  [1, 'row'],
+  [3.1, 'column'],
+])('at text scale %s lays the steps out as a %s', async (fontScale, direction) => {
+  // Four columns are too narrow for whole words at the largest sizes: the steps become a list.
+  const dimensions = jest
+    .spyOn(Dimensions, 'get')
+    .mockReturnValue({ width: 402, height: 874, scale: 3, fontScale });
+  try {
+    await renderDetail(booking('helper-9', { status: 'PAYMENT_REQUESTED' }));
+    const style = StyleSheet.flatten(screen.getByTestId('booking-steps').props.style);
+    expect(style.flexDirection ?? 'column').toBe(direction);
+    // Beside a wrapping label the dot keeps its size.
+    expect(
+      StyleSheet.flatten(screen.getByTestId('booking-step-dot-held').props.style),
+    ).toMatchObject({ width: 20, flexShrink: 0 });
+  } finally {
+    dimensions.mockRestore();
+  }
 });
 
 it('sends the poster to release once payment is requested', async () => {
