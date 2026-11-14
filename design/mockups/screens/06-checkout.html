@@ -1,6 +1,16 @@
 <!-- Built in apps/mobile (src/screens/checkout-screen.tsx) and apps/web (components/checkout), BEAV-111.
      Two separate, unticked boxes; their wording comes from the CANCELLATION legal document in force,
-     not from these sample sentences. The fee's fiscal receipt is issued at release, not at checkout. -->
+     not from these sample sentences. The fee's fiscal receipt is issued at release, not at checkout.
+     Web aligned with 6a, 6b and 6g in BEAV-210: one booking summary card (avatar, task, helper-type
+     badge, a trader's name, OIB and address, then the amounts), "Payment protected · held via
+     Stripe" under it, and a bar pinned to the bottom of the screen. The avatar is a generic person
+     until helper names and photos are in the API (BEAV-144).
+     Fixed in BEAV-210 to match decisions already in code: the order button reads "Book and pay"
+     (ZZP čl. 74(3); in hr, de and fr the statutory phrase with no amount), and the fee notice and
+     the amount due sit directly above it in the pinned bar (user decision after the fee-consent
+     opinions). The card is chosen on the next step (6g, or Stripe's card form), so the web
+     checkout has no saved-card row, and it keeps 6b's "How your payment works" card where 6a
+     sums up the cancellation policy; the policy itself opens from the links under the boxes. -->
 <div class="screen" id="6a Checkout · consent unticked">{{sb}}
  <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Checkout</span><span style="width:44px"></span></div>
  <div class="body" style="gap:10px;padding-top:0">
@@ -9,7 +19,6 @@
    <div class="line"><span>Agreed price</span><span>€30.00</span></div>
    <div class="line"><span>Service fee</span><span>€3.60</span></div>
    <div class="hr"></div><div class="line tot"><span>Total</span><span>€33.60</span></div>
-   <span class="c mut">Task price €30.00 (paid to the helper) + TaskBeavo service fee €3.60 (12%, min. €2.50) = total €33.60</span>
   </div>
   <div class="card" style="padding:12px;flex-direction:row;align-items:center">{{i:card:22:#1F5C46}}<span class="s grow" style="font-weight:700">Visa •••• 4242</span><span class="link s">Change</span></div>
   <div class="row c green">{{i:lock:16:#1F5C46}} Payment protected · held via Stripe</div>
@@ -25,7 +34,7 @@
   <div class="row" style="align-items:flex-start;gap:10px"><span class="check"></span><span class="c" style="line-height:17px">I accept the cancellation and refund policy.</span></div>
   <div class="row" style="align-items:flex-start;gap:10px"><span class="check"></span><span class="c" style="line-height:17px">I ask that my booking be arranged now and the task done on the date I chose, which may be within my 14-day withdrawal period. If I withdraw after work has started, I pay only for the part already done.</span></div>
  </div>
- <div class="foot" style="padding-top:4px"><div class="btn dis">Pay €33.60</div></div>
+ <div class="foot" style="padding-top:4px"><span class="c mut">Task price €30.00 (paid to the helper) + TaskBeavo service fee €3.60 (12%, min. €2.50) = total €33.60</span><span class="s" style="font-weight:800">Total to pay: €33.60</span><div class="btn dis">Book and pay €33.60</div></div>
 </div>
 
 <div class="screen" id="6b Checkout · consent ticked">{{sb}}
@@ -48,7 +57,7 @@
   <div class="row" style="align-items:flex-start;gap:10px"><span class="check on">{{i:check:16:#fff:3}}</span><span class="c" style="line-height:17px">I ask that my booking be arranged now and the task done on the date I chose, which may be within my 14-day withdrawal period. If I withdraw after work has started, I pay only for the part already done.</span></div>
   <span class="row c" style="gap:12px"><span class="link">Withdrawal information</span><span class="link">Full cancellation policy</span></span>
  </div>
- <div class="foot" style="padding-top:4px"><div class="btn pri">{{i:lock:18:#fff}} Pay €33.60</div></div>
+ <div class="foot" style="padding-top:4px"><span class="c mut">Task price €30.00 (paid to the helper) + TaskBeavo service fee €3.60 (12%, min. €2.50) = total €33.60</span><span class="s" style="font-weight:800">Total to pay: €33.60</span><div class="btn pri">{{i:lock:18:#fff}} Book and pay €33.60</div></div>
 </div>
 
 <div class="screen" id="6c Payment held · success">{{sb}}
@@ -105,7 +114,6 @@
    <div class="line"><span>Agreed price</span><span>€30.00</span></div>
    <div class="line"><span>Service fee</span><span>€3.60</span></div>
    <div class="hr"></div><div class="line tot"><span>Total</span><span>€33.60</span></div>
-   <span class="c mut">Task price €30.00 (paid to the helper) + TaskBeavo service fee €3.60 (12%, min. €2.50) = total €33.60</span>
   </div>
   <div class="card" style="padding:14px;gap:10px;border:2px dashed #F2A33A">
    <span class="badge b-orange" style="align-self:flex-start">Demo payment, no real money</span>
@@ -118,5 +126,5 @@
   <div class="row" style="align-items:flex-start;gap:10px"><span class="check on"></span><span class="c" style="line-height:17px">I ask that my booking be arranged now and the task done on the date I chose.</span></div>
   <div class="c mut">Checkout stays open 28 more minutes.</div>
  </div>
- <div class="foot"><div class="btn pri">Book and pay €33.60</div></div>
+ <div class="foot"><div class="btn pri">Confirm card payment €33.60</div></div>
 </div>
