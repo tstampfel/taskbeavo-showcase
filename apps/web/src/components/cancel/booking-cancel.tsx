@@ -32,7 +32,7 @@ import { formatDate, formatMoney, type Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from '../../i18n/navigation';
-import { Button, Card, Input } from '../ui';
+import { Button, Card, Input, PinnedFoot } from '../ui';
 import styles from './cancel.module.css';
 
 /**
@@ -344,7 +344,7 @@ export function PosterCancel({
           noFaultNote={t('noFault')}
         />
         {withdrawal}
-        <CancelFoot>
+        <PinnedFoot testId="cancel-foot" className={styles.foot}>
           <Button
             fullWidth
             disabled={reason === null}
@@ -353,7 +353,7 @@ export function PosterCancel({
           >
             {t('seeRefund')}
           </Button>
-        </CancelFoot>
+        </PinnedFoot>
       </div>
     );
   }
@@ -375,7 +375,7 @@ export function PosterCancel({
           <p className={`${styles.small} ${styles.muted}`}>{t('preview.toCard')}</p>
         </>
       )}
-      <CancelFoot>
+      <PinnedFoot testId="cancel-foot" className={styles.foot}>
         {reason.kind === 'noFault' ? (
           <NoFaultSend role="poster" busy={busy} explain={false} onSend={() => onNoFault(reason)} />
         ) : (
@@ -403,16 +403,7 @@ export function PosterCancel({
         >
           {t('stepBack')}
         </Button>
-      </CancelFoot>
-    </div>
-  );
-}
-
-/** The step's button bar (the mockups' `.foot`). */
-function CancelFoot({ children }: { children: ReactNode }) {
-  return (
-    <div className={styles.foot} data-pinned="false" data-testid="cancel-foot">
-      {children}
+      </PinnedFoot>
     </div>
   );
 }

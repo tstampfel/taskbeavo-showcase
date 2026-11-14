@@ -78,7 +78,7 @@
 .rows {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: var(--tb-space-xs) var(--tb-space-md);
+  gap: var(--tb-space-xs) 0;
   margin: 0;
 }
 
@@ -89,6 +89,7 @@
 }
 
 .rows dd {
+  padding-left: var(--tb-space-md);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -176,13 +177,7 @@
   text-align: center;
 }
 
-/* The step's button bar (the mockups' `.foot`), at the end of the step. */
-.foot {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-sm);
-  margin: 0 calc(-1 * var(--tb-space-lg)) calc(-1 * var(--tb-space-lg));
-  padding: var(--tb-space-md) var(--tb-space-lg) var(--tb-space-lg);
-  border-top: var(--tb-border-thin) solid var(--tb-color-line);
-  background: var(--tb-color-off-white);
+/* The step's button bar (PinnedFoot): the policy and back links follow it, so no bottom bleed. */
+.step > .foot {
+  margin-bottom: 0;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import styles from './checkout.module.css';
+import styles from './pinned-foot.module.css';
 
 /**
  * The most of the screen the order bar may take while pinned. Above it (large text, German or
@@ -16,11 +16,21 @@ export function fitsPinned(barHeight: number, viewportHeight: number): boolean {
 }
 
 /**
- * The checkout's order bar (mockup 6a): pinned to the bottom of the screen only while it fits,
- * measured with the user's real text size and language. While pinned, the page's
- * `scroll-padding-bottom` is the bar's height, so a focused box scrolls clear of it.
+ * A step's button bar (checkout's order bar, mockup 6a; the cancel buttons, mockup 13): pinned
+ * to the bottom of the screen only while it fits, measured with the user's real text size and
+ * language. While pinned, the page's `scroll-padding-bottom` is the bar's height, so a focused
+ * box scrolls clear of it. It bleeds into the large side padding of the page's `main`.
  */
-export function PinnedFoot({ children }: { children: ReactNode }) {
+export function PinnedFoot({
+  children,
+  testId,
+  className,
+}: {
+  children: ReactNode;
+  testId: string;
+  /** Extra layout for this page, e.g. no bottom bleed when something follows the bar. */
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [pinned, setPinned] = useState(false);
 
@@ -46,7 +56,12 @@ export function PinnedFoot({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div ref={ref} className={styles.foot} data-pinned={pinned} data-testid="checkout-foot">
+    <div
+      ref={ref}
+      className={className ? `${styles.foot} ${className}` : styles.foot}
+      data-pinned={pinned}
+      data-testid={testId}
+    >
       {children}
     </div>
   );

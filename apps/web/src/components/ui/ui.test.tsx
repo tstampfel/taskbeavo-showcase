@@ -92,6 +92,7 @@ describe('component styles', () => {
       'button.module.css',
       'card.module.css',
       'input.module.css',
+      'pinned-foot.module.css',
       'sheet.module.css',
     ]);
   });

@@ -135,9 +135,9 @@ The **Request payment** and **Release payment** buttons arrive with BEAV-116 to 
 
 ### 7. Cancel
 
-Open "Cancel or withdraw" on a held booking and pick a reason: the page shows what happens to the money before you confirm. The seeded **late-cancel** booking (Klaus) starts under 24 hours away, so the helper keeps 25% of the price (€5 minimum) and TaskBeavo 12% of that. The **funds-held** booking (Claire) is 3 days away: a full refund, and since its helper is a registered business, the 14-day withdrawal right as well. The **cancelled** booking was cancelled by the seed and refunded through the stand-in's charge.refunded event.
+Open "Cancel or withdraw" on a held booking. Cancelling takes two steps: pick a reason, then "See refund" shows what happens to the money, with the final button and Back. A no-fault reason (weather, hospital, an emergency) asks the helper to agree on that second step instead, and a registered business's withdrawal button stays on the reason step. The seeded **late-cancel** booking (Klaus) starts under 24 hours away, so the helper keeps 25% of the price (€5 minimum) and TaskBeavo 12% of that. The **funds-held** booking (Claire) is 3 days away: a full refund, and since its helper is a registered business, the 14-day withdrawal right as well. The **cancelled** booking was cancelled by the seed and refunded through the stand-in's charge.refunded event.
 
-<img src="web/11-late-cancel-preview.png" width="260" alt="Late cancel: the helper keeps €5"> <img src="web/12-free-cancel-preview.png" width="260" alt="Free cancel: a full refund">
+<img src="web/11a-cancel-reason.png" width="260" alt="Cancel, step 1: why are you cancelling?"> <img src="web/11-late-cancel-preview.png" width="260" alt="Step 2, late cancel: the helper keeps €5"> <img src="web/12-free-cancel-preview.png" width="260" alt="Step 2, free cancel: a full refund">
 
 The same late cancel on the iOS app, signed in as Klaus: the reasons, then what happens to the money before he confirms.
 

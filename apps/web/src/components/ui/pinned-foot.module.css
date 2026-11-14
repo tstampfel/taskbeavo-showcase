@@ -1,0 +1,25 @@
+/*
+ * A step's button bar (the mockups' `.foot`): checkout's order bar and the cancel buttons. It is
+ * pinned to the bottom of the screen only when both hold: PinnedFoot measured that it takes at
+ * most 35% of the screen (data-pinned), and the screen is at least 40em tall. Media-query em
+ * follows the browser's text size, so large text or a short, landscape screen leaves the bar at
+ * the end of the page, where it never covers the consent boxes, the reasons or the amounts
+ * (BEAV-210 review R1-1). While pinned, PinnedFoot sets the page's scroll-padding-bottom to the
+ * bar's height, so a focused box scrolls clear of it.
+ */
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-sm);
+  margin: 0 calc(-1 * var(--tb-space-lg)) calc(-1 * var(--tb-space-lg));
+  padding: var(--tb-space-md) var(--tb-space-lg) var(--tb-space-lg);
+  border-top: var(--tb-border-thin) solid var(--tb-color-line);
+  background: var(--tb-color-off-white);
+}
+
+@media (min-height: 40em) {
+  .foot[data-pinned='true'] {
+    position: sticky;
+    bottom: 0;
+  }
+}

@@ -223,6 +223,9 @@ const tradeBooking = () =>
     withdrawalEndsAt: '2026-11-19T23:00:00Z',
   });
 
+/** Whether the bar actually sticks to the screen (PinnedFoot's data-pinned and the 40em rule). */
+const sticks = (foot: Locator) => foot.evaluate((el) => getComputedStyle(el).position === 'sticky');
+
 async function expectClear(page: Page, foot: Locator, target: Locator, label: string) {
   await target.scrollIntoViewIfNeeded();
   expect(overlaps((await target.boundingBox())!, (await foot.boundingBox())!), label).toBe(false);
@@ -247,7 +250,8 @@ for (const height of [812, 667]) {
       await page.goto(`/${locale}/bookings/booking-1/cancel`);
       const foot = page.getByTestId('cancel-foot');
       await expect(page.getByTestId('cancel-step-reason')).toBeVisible();
-      await expect(foot).toHaveAttribute('data-pinned', 'false');
+      // With this text size the screen is under 40em tall: the bar stays at the end of the step.
+      expect(await sticks(foot), locale).toBe(false);
       for (const key of ['NO_LONGER_NEEDED', 'OTHER', 'HOSPITALISATION', 'MUTUAL_AGREEMENT']) {
         const reason = page.getByTestId(`cancel-reason-${key}`);
         await reason.focus();
@@ -259,7 +263,7 @@ for (const height of [812, 667]) {
       await page.getByTestId('cancel-reason-OTHER').check();
       await page.getByTestId('cancel-see-refund').click();
       await expect(page.getByTestId('cancel-step-refund')).toBeVisible();
-      await expect(foot).toHaveAttribute('data-pinned', 'false');
+      expect(await sticks(foot), locale).toBe(false);
       await expectClear(page, foot, page.getByTestId('cancel-refund-rows'), `${locale} amounts`);
       expect(await noHorizontalScroll(page), locale).toBe(true);
     }
@@ -276,6 +280,7 @@ test('at the default text size the button bar is pinned and clear of the focused
   await page.goto('/en/bookings/booking-1/cancel');
   const foot = page.getByTestId('cancel-foot');
   await expect(foot).toHaveAttribute('data-pinned', 'true');
+  expect(await sticks(foot)).toBe(true);
   await expect(page.getByTestId('cancel-see-refund')).toBeInViewport();
   for (const key of ['NO_LONGER_NEEDED', 'MUTUAL_AGREEMENT']) {
     const reason = page.getByTestId(`cancel-reason-${key}`);
