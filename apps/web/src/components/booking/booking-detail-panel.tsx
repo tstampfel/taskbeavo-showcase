@@ -5,8 +5,10 @@ import { formatDateTime, formatMoney, type Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
 import { Link } from '../../i18n/navigation';
 import { TraderIdentity } from '../offers/trader-identity';
-import { Badge, Card } from '../ui';
+import { Badge, Card, ClockIcon, InfoIcon, Note, PhoneIcon } from '../ui';
 import styles from './booking.module.css';
+
+type Contact = NonNullable<Extract<BookingPlace, { kind: 'exact' }>['contact']>;
 
 export interface BookingDetailPanelProps {
   bookingId: string;
@@ -47,15 +49,16 @@ export function BookingDetailPanel({
   const poster = view.role === 'poster';
   const shownLinks = LINKS.filter(({ link }) => view.links[link]);
 
+  const requested = view.status === 'PAYMENT_REQUESTED';
+
   return (
     <>
-      <h2 className={styles.h2}>{title}</h2>
-      <Badge
-        tone={view.status === 'PAYMENT_REQUESTED' ? 'orange' : 'green'}
-        data-testid="booking-status"
-      >
-        {t(`status.${view.status}`)}
-      </Badge>
+      {/* "Payment requested" has its own card below (7b), so no badge repeats it. */}
+      {!requested && (
+        <Badge tone="green" data-testid="booking-status">
+          {t(`status.${view.status}`)}
+        </Badge>
+      )}
       {view.steps && (
         <ol className={styles.steps} aria-label={t('stepsLabel')} data-testid="booking-steps">
           {view.steps.map(({ step, state }) => (
@@ -71,12 +74,30 @@ export function BookingDetailPanel({
         </ol>
       )}
 
-      <Card className={styles.section}>
-        <p className={styles.body}>{t('startsAt', { time: time(slotStart) })}</p>
-        <p className={styles.body} data-testid="booking-amount">
-          {poster ? t('totalPoster', { total: money }) : t('amountHelper', { amount: money })}
+      {/* 7b: where the payment stands comes first. */}
+      {requested && (
+        <Card className={styles.hero} data-testid="booking-requested">
+          <span className={styles.heroIcon}>
+            <ClockIcon size={44} />
+          </span>
+          <h3 className={styles.h2} data-testid="booking-status">
+            {t('status.PAYMENT_REQUESTED')}
+          </h3>
+          <p className={`${styles.small} ${styles.muted}`}>
+            {poster ? t('requestedPoster') : t('requestedHelper', { amount: money })}
+          </p>
+        </Card>
+      )}
+
+      <Card className={styles.summary} data-testid="booking-summary">
+        <p className={styles.caps}>{t('startsAt', { time: time(slotStart) })}</p>
+        <h2 className={styles.summaryTitle}>{title}</h2>
+        <p className={styles.total} data-testid="booking-amount">
+          <span>{poster ? t('amountLabelPoster') : t('amountLabelHelper')}</span>
+          <span>{money}</span>
         </p>
-        {view.steps && view.status !== 'AWAITING_PAYMENT' && view.status !== 'CLOSED' && (
+        {/* Only while Stripe still holds it: not once it's released or paid out. */}
+        {(view.status === 'FUNDS_HELD' || requested) && (
           <p className={`${styles.small} ${styles.muted}`}>
             {poster ? t('heldPoster', { total: money }) : t('heldHelper', { amount: money })}
           </p>
@@ -95,6 +116,9 @@ export function BookingDetailPanel({
       )}
 
       <PlaceCard place={view.place} />
+      {view.place.kind === 'exact' && view.place.contact && (
+        <ContactCard contact={view.place.contact} />
+      )}
 
       {view.trader && (
         <Card className={styles.section} data-testid="booking-helper">
@@ -123,7 +147,9 @@ export function BookingDetailPanel({
         </nav>
       )}
 
-      <p className={`${styles.small} ${styles.muted}`}>{t('safety')}</p>
+      <Note icon={<InfoIcon size={18} />} data-testid="booking-safety">
+        {t('safety')}
+      </Note>
     </>
   );
 }
@@ -180,22 +206,13 @@ function PlaceCard({ place }: { place: BookingPlace }) {
             <p className={`${styles.small} ${styles.muted}`}>{t('whileBooked')}</p>
           )}
           {place.accessDetails ? (
-            <p className={styles.body} data-testid="booking-access">
-              {t('access', { details: place.accessDetails })}
-            </p>
-          ) : null}
-          {place.contact && (
-            <>
-              <p className={styles.body}>
-                {t('contact', { name: place.contact.name, area: place.contact.area })}
+            <Card variant="flat" className={styles.access}>
+              <p className={styles.caps}>{t('accessTitle')}</p>
+              <p className={styles.body} data-testid="booking-access">
+                {place.accessDetails}
               </p>
-              {place.contact.phone && (
-                <a className={styles.link} href={`tel:${place.contact.phone}`}>
-                  {t('phone', { phone: place.contact.phone })}
-                </a>
-              )}
-            </>
-          )}
+            </Card>
+          ) : null}
         </>
       ) : (
         <>
@@ -204,6 +221,41 @@ function PlaceCard({ place }: { place: BookingPlace }) {
           </p>
           {place.hint && <p className={`${styles.small} ${styles.muted}`}>{t(place.hint)}</p>}
         </>
+      )}
+    </Card>
+  );
+}
+
+/** First letters of the first two words, for the contact's decorative avatar. */
+export function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toLocaleUpperCase())
+    .join('');
+}
+
+/**
+ * The on-site contact (mockups 7b, 18a). Only rendered from the exact place, which the server
+ * sends only to the poster and to the helper of an active booking (hard rule e); the place
+ * card's "Shown to you only while booked" covers it too.
+ */
+function ContactCard({ contact }: { contact: Contact }) {
+  const t = useTranslations('bookingDetail.place');
+  return (
+    <Card className={styles.section} data-testid="booking-contact">
+      <div className={styles.contactRow}>
+        <span className={styles.contactAvatar} aria-hidden="true">
+          {initials(contact.name)}
+        </span>
+        <p className={styles.strong}>{t('contact', { name: contact.name, area: contact.area })}</p>
+      </div>
+      {contact.phone && (
+        <a className={styles.call} href={`tel:${contact.phone}`} data-testid="booking-call">
+          <PhoneIcon size={18} />
+          {t('phone', { phone: contact.phone })}
+        </a>
       )}
     </Card>
   );

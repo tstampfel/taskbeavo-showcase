@@ -122,3 +122,109 @@
   min-height: 44px;
   color: var(--tb-color-green);
 }
+
+/* BEAV-212: mockups 7b and 18a. */
+.caps {
+  margin: 0;
+  color: var(--tb-color-ink-muted);
+  font-size: var(--tb-font-caption-size);
+  line-height: var(--tb-font-caption-line);
+  font-weight: var(--tb-font-label-weight);
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.summary {
+  gap: var(--tb-space-xs);
+}
+
+.summaryTitle {
+  margin: 0;
+  font-size: var(--tb-font-body-size);
+  line-height: var(--tb-font-body-line);
+  font-weight: var(--tb-font-h2-weight);
+  overflow-wrap: anywhere;
+}
+
+/* The mockups' `.line.tot`: label left, amount right; wraps under large text. */
+.total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--tb-space-xs) var(--tb-space-md);
+  margin: var(--tb-space-sm) 0 0;
+  font-size: var(--tb-font-body-size);
+  line-height: var(--tb-font-body-line);
+  font-weight: var(--tb-font-h2-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero {
+  align-items: center;
+  gap: var(--tb-space-sm);
+  text-align: center;
+}
+
+.heroIcon {
+  display: inline-flex;
+  color: var(--tb-color-orange-text);
+}
+
+.access {
+  gap: var(--tb-space-xs);
+  padding: var(--tb-space-md);
+}
+
+.strong {
+  min-width: 0;
+  margin: 0;
+  font-size: var(--tb-font-small-size);
+  line-height: var(--tb-font-small-line);
+  font-weight: var(--tb-font-h2-weight);
+  overflow-wrap: anywhere;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-md);
+}
+
+.contactAvatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--tb-color-orange-tint);
+  color: var(--tb-color-orange-tint-text);
+  font-size: var(--tb-font-caption-size);
+  font-weight: var(--tb-font-h2-weight);
+}
+
+/* The mockups' `.btn.sec.sm` as a tel: link. */
+.call {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-space-sm);
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: var(--tb-space-sm) var(--tb-space-lg);
+  border: var(--tb-border-control) solid var(--tb-color-green);
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-white);
+  color: var(--tb-color-green);
+  font-size: var(--tb-font-small-size);
+  font-weight: var(--tb-font-h2-weight);
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.call:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-input-focus-border);
+  outline-offset: var(--tb-border-focus);
+}

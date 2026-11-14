@@ -152,6 +152,82 @@ describe('BookingDetailPanel', () => {
     expect(out).toContain('href="/bookings/b1/checkout"');
   });
 
+  // BEAV-212: aligned with mockups 7b and 18a.
+  const section = (out: string, testId: string) => {
+    const start = out.indexOf(`data-testid="${testId}"`);
+    expect(start, testId).toBeGreaterThan(-1);
+    return out.slice(start);
+  };
+
+  it.each(locales)('opens with one summary card: date, task and amount line, in %s', (locale) => {
+    const t = catalogues[locale].bookingDetail;
+    const poster = section(render(locale, booking(), 'poster'), 'booking-summary');
+    expect(poster).toContain('Grocery run for Mama');
+    expect(poster).toContain(html(t.amountLabelPoster));
+    expect(poster).toContain(formatMoney(3_360, locale));
+    const helper = section(render(locale, booking(), 'helper'), 'booking-summary');
+    expect(helper).toContain(html(t.amountLabelHelper));
+    expect(helper).toContain(formatMoney(3_000, locale));
+  });
+
+  it.each(locales)(
+    'shows "Payment requested" as its own card for both sides (7b), in %s',
+    (locale) => {
+      const t = catalogues[locale].bookingDetail;
+      const requested = booking({ status: 'PAYMENT_REQUESTED' });
+      const helper = section(render(locale, requested, 'helper'), 'booking-requested');
+      expect(helper).toContain(html(t.status.PAYMENT_REQUESTED));
+      expect(helper).toContain(
+        html(t.requestedHelper.replace('{amount}', formatMoney(3_000, locale))),
+      );
+      const poster = section(render(locale, requested, 'poster'), 'booking-requested');
+      expect(poster).toContain(html(t.requestedPoster));
+      expect(render(locale, booking(), 'helper')).not.toContain('booking-requested');
+    },
+  );
+
+  it('gives the on-site contact its own card with a Call button (7b, 18a), never without the exact place', () => {
+    const t = catalogues.en.bookingDetail.place;
+    const contact = section(render('en', booking(), 'helper'), 'booking-contact');
+    expect(contact).toContain(
+      html(t.contact.replace('{name}', 'Mama Kata').replace('{area}', 'Gruž')),
+    );
+    expect(contact).toMatch(/<a [^>]*href="tel:\+385912345678"[^>]*data-testid="booking-call"/);
+    // The poster owns the contact and sees its phone too.
+    expect(section(render('en', booking(), 'poster'), 'booking-contact')).toContain(
+      'href="tel:+385912345678"',
+    );
+    expect(render('en', booking({ status: 'CLOSED' }, false), 'helper')).not.toContain(
+      'booking-contact',
+    );
+  });
+
+  it('lists the access details under their own label, only with the exact place', () => {
+    const t = catalogues.de.bookingDetail.place;
+    const out = render('de', booking(), 'helper');
+    expect(section(out, 'booking-access')).toContain('Gate 4417');
+    expect(out).toContain(html(t.accessTitle));
+    expect(render('de', booking({}, false), 'helper')).not.toContain(html(t.accessTitle));
+  });
+
+  it.each(['RELEASED', 'PAID_OUT'] as const)(
+    'never says the money is still held once it is %s',
+    (status) => {
+      const t = catalogues.en.bookingDetail;
+      const out = render('en', booking({ status }), 'poster');
+      expect(out).not.toContain(html(t.heldPoster.replace('{total}', formatMoney(3_360, 'en'))));
+      expect(render('en', booking({ status: 'PAYMENT_REQUESTED' }), 'poster')).toContain(
+        html(t.heldPoster.replace('{total}', formatMoney(3_360, 'en'))),
+      );
+    },
+  );
+
+  it('puts the safety line in a note', () => {
+    expect(section(render('fr', booking(), 'poster'), 'booking-safety')).toContain(
+      html(catalogues.fr.bookingDetail.safety),
+    );
+  });
+
   it('tells the helper the address comes with the payment, without the card attempts', () => {
     const out = render(
       'hr',
