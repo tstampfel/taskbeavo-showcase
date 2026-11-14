@@ -294,7 +294,7 @@ export function BookingCancel({ bookingId, locale }: { bookingId: string; locale
  * server's preview and the final button. A no-fault reason asks the helper on step 2 instead.
  * The trader's withdrawal stays on the reason step; Back keeps the picked reason.
  */
-function PosterCancel({
+export function PosterCancel({
   view,
   reason,
   onPick,
@@ -341,8 +341,8 @@ function PosterCancel({
           noFault={view.noFault}
           picked={reason}
           onPick={onPick}
+          noFaultNote={t('noFault')}
         />
-        {view.noFault && <p className={`${styles.small} ${styles.muted}`}>{t('noFault')}</p>}
         {withdrawal}
         <CancelFoot>
           <Button
@@ -425,6 +425,7 @@ function Reasons<K extends string>({
   noFault,
   picked,
   onPick,
+  noFaultNote,
 }: {
   legend: string;
   ordinary: readonly K[];
@@ -432,6 +433,8 @@ function Reasons<K extends string>({
   noFault: boolean;
   picked: PickedReason | null;
   onPick(reason: PickedReason): void;
+  /** Said just before the no-fault reasons ("Pick it below"). */
+  noFaultNote?: string;
 }) {
   const t = useTranslations('cancel');
   const radio = (reason: PickedReason, label: string) => (
@@ -460,6 +463,7 @@ function Reasons<K extends string>({
           )}
         </Card>
       </fieldset>
+      {noFault && noFaultNote && <p className={`${styles.small} ${styles.muted}`}>{noFaultNote}</p>}
       {noFault && (
         <fieldset className={styles.reasons}>
           <legend className={styles.label}>{t('noFaultLegend')}</legend>
