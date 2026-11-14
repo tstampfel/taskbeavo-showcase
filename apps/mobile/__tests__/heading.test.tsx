@@ -119,7 +119,7 @@ describe('wordFitFontScale', () => {
 });
 
 describe('Heading', () => {
-  it('is a header whose text scale is capped where its longest word fits, above the floor', async () => {
+  it('is a header whose text scale is capped where its longest word fits, even below the floor', async () => {
     await render(
       <Heading style={{ fontSize: typography.h2.fontSize }}>Widerrufsbelehrung gelesen</Heading>,
     );
@@ -129,10 +129,8 @@ describe('Heading', () => {
       typography.h2.fontSize,
       402 - CARD_HEADING_INSET,
     );
-    // Never below body text at the user's size up to 2x, in points (BEAV-223 review R1-2), so
-    // body text beside it, which has that floor, never outgrows it.
-    const floor = textScaleFloor(Dimensions.get('window').fontScale, typography.h2.fontSize);
-    expect(heading.props.maxFontSizeMultiplier).toBe(Math.max(fit, floor));
+    // A heading never breaks a word (BEAV-219, review R3-1): the floor only goes to its scope.
+    expect(heading.props.maxFontSizeMultiplier).toBe(fit);
   });
 
   it('floors a heading at body text points: 2x for body size, less for bigger headings', () => {

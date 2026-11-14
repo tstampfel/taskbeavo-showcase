@@ -16,7 +16,7 @@ import { Heading } from './heading';
 import { textStyle } from './text-style';
 
 /** The width beside the sheet title: the panel's padding, the close button and the gap. */
-const SHEET_TITLE_INSET = 2 * spacing.lg + minTapTarget + spacing.sm;
+export const SHEET_TITLE_INSET = 2 * spacing.lg + minTapTarget + spacing.sm;
 
 export interface SheetProps {
   visible: boolean;

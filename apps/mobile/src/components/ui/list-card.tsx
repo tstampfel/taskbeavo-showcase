@@ -56,14 +56,16 @@ export function ListRow({
 }: ListRowProps) {
   // At the largest text sizes a long word such as "information" would break mid-word; the
   // title grows only as far as its longest word still fits beside the chevron or control, with
-  // no 2x floor (review R2-1). A long subtitle is running text and keeps the floor.
+  // no 2x floor (review R2-1). A long subtitle is running text and keeps the floor. A row with
+  // a chevron gives its title the room the chevron leaves, not a switch's (review R3-2).
+  const inset = trailing ? TITLE_INSET : CHEVRON_TITLE_INSET;
   const text = (
     <View style={styles.text}>
-      <Text style={styles.title} inset={TITLE_INSET} keepWords>
+      <Text style={styles.title} inset={inset} keepWords>
         {title}
       </Text>
       {subtitle ? (
-        <Text style={styles.subtitle} inset={TITLE_INSET}>
+        <Text style={styles.subtitle} inset={inset}>
           {subtitle}
         </Text>
       ) : null}
@@ -106,6 +108,8 @@ const CHEVRON_SIZE = 9;
 const TRAILING_WIDTH = 52;
 /** The width beside a row's title: page and card padding on both sides, the gap, the trailing control. */
 export const TITLE_INSET = 4 * spacing.lg + spacing.md + TRAILING_WIDTH;
+/** The width beside a row's title when the chevron (its box, `spacing.lg`) is on the right. */
+export const CHEVRON_TITLE_INSET = 4 * spacing.lg + spacing.md + spacing.lg;
 const CHEVRON_STROKE = 2;
 
 const styles = StyleSheet.create({

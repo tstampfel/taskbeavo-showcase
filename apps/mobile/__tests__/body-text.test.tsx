@@ -11,10 +11,14 @@ import {
   ListCard,
   ListRow,
   Screen,
+  Sheet,
   Text,
   TextScaleScope,
 } from '../src/components/ui';
-import { TITLE_INSET } from '../src/components/ui/list-card';
+import { AmountRowGroup } from '../src/components/ui/amount-row';
+import { CHEVRON_TITLE_INSET, TITLE_INSET } from '../src/components/ui/list-card';
+import { TOP_TITLE_INSET } from '../src/components/ui/screen';
+import { SHEET_TITLE_INSET } from '../src/components/ui/sheet';
 import { textScaleCap } from '../src/components/ui/text';
 import {
   CARD_HEADING_INSET,
@@ -121,25 +125,46 @@ describe('headings and body text', () => {
     ).toBeCloseTo(1.8);
   });
 
-  it('never lets body text read bigger than the heading above it (BEAV-215 review)', async () => {
-    // A long heading word stops the heading early; the short reason alone would grow to AX5.
-    const legend = 'Stornierungsbedingungen';
-    const reason = 'Ja';
-    await render(
-      <TextScaleScope>
-        <Heading style={{ fontSize: typography.h2.fontSize }}>{legend}</Heading>
-        <Text style={{ fontSize: typography.body.fontSize }}>{reason}</Text>
-      </TextScaleScope>,
-    );
-    const heading = screen.getByRole('header', { name: legend });
-    const body = screen.getByText(reason);
-    // Without the scope the reason grew to its own word-fit size, past the heading.
-    const unscoped = wordFitFontScale(reason, typography.body.fontSize, WIDTH - CARD_HEADING_INSET);
-    expect(typography.body.fontSize * Math.min(AX5, unscoped)).toBeGreaterThan(
-      renderedSize(heading),
-    );
-    expect(renderedSize(body)).toBeLessThanOrEqual(renderedSize(heading) + 1e-9);
-  });
+  // The rule since review R3-1 (manager decision): readable large text wins (rule i, WCAG
+  // 1.4.4). A heading is never smaller than the body below it, except where its longest word
+  // would otherwise break; there it stops at its word fit and the body keeps its 2x floor.
+  it.each([
+    // [heading, body, whether the heading's word fit reaches the body's size]
+    ['Rückerstattung', 'Ja', true],
+    ['Rückerstattung', 'Sie bekommen den ganzen Betrag auf Ihre Karte zurück.', true],
+    ['Stornierungsbedingungen', 'Ja', false],
+    ['Stornierungsbedingungen', 'Bitte lesen Sie die Bedingungen, bevor Sie bezahlen.', false],
+  ])(
+    'keeps the heading "%s" at least as large as "%s" whenever its word fit allows (BEAV-215, R3-1)',
+    async (legend, reason, fitAllows) => {
+      await render(
+        <TextScaleScope>
+          <Heading style={{ fontSize: typography.h2.fontSize }}>{legend}</Heading>
+          <Text style={{ fontSize: typography.body.fontSize }}>{reason}</Text>
+        </TextScaleScope>,
+      );
+      const heading = screen.getByRole('header', { name: legend });
+      const body = screen.getByText(reason);
+      const line = WIDTH - CARD_HEADING_INSET;
+      // The heading grows as far as its longest word fits, never further.
+      const fitSize =
+        typography.h2.fontSize *
+        Math.min(AX5, Math.max(1, wordFitFontScale(legend, typography.h2.fontSize, line)));
+      expect(renderedSize(heading)).toBeCloseTo(fitSize);
+      expect(longestRunEm(legend) * renderedSize(heading)).toBeLessThanOrEqual(line);
+      // Body text never reads past its 2x floor beside a heading that stopped early.
+      expect(renderedSize(body)).toBeLessThanOrEqual(
+        Math.max(fitSize, typography.body.fontSize * 2) + 1e-9,
+      );
+      expect(fitSize >= renderedSize(body) - 1e-9).toBe(fitAllows);
+      if (fitAllows) {
+        expect(renderedSize(heading)).toBeGreaterThanOrEqual(renderedSize(body) - 1e-9);
+      } else {
+        // The exception: the word stays whole, and the body is still readable at 2x.
+        expect(renderedSize(body)).toBeCloseTo(typography.body.fontSize * 2);
+      }
+    },
+  );
 
   it('keeps a small label heading’s proportion to the body text beside it', async () => {
     await render(
@@ -254,9 +279,10 @@ describe('review round 1 (BEAV-223)', () => {
     expect(screen.getByText(text).props.maxFontSizeMultiplier).toBeGreaterThanOrEqual(1.5);
   });
 
-  it('keeps a heading with a long word at least as large as the floored body text', async () => {
-    const legend = 'Stornierungsbedingungen';
-    const body = 'Ja';
+  it('keeps a heading whose words fit at body size at least as large as the floored body', async () => {
+    // A heading whose word can't fit at body size stays whole and smaller (review R3-1).
+    const legend = 'Rückerstattung bestätigt';
+    const body = 'Sie bekommen den ganzen Betrag zurück.';
     await render(
       <TextScaleScope>
         <Heading style={{ fontSize: typography.h2.fontSize }}>{legend}</Heading>
@@ -319,11 +345,11 @@ describe('review round 2 (BEAV-223)', () => {
         </ListCard>,
       );
       for (const title of titles) {
-        const fit = wordFitFontScale(title, titleSize, WIDTH - TITLE_INSET);
+        const fit = wordFitFontScale(title, titleSize, WIDTH - CHEVRON_TITLE_INSET);
         const cap = screen.getByText(title).props.maxFontSizeMultiplier as number;
         expect(cap).toBeLessThanOrEqual(Math.max(1, fit) + 1e-9);
         expect(longestRunEm(title) * titleSize * Math.min(fontScale, cap)).toBeLessThanOrEqual(
-          WIDTH - TITLE_INSET,
+          WIDTH - CHEVRON_TITLE_INSET,
         );
       }
     },
@@ -369,9 +395,7 @@ describe('review round 2 (BEAV-223)', () => {
       'Diese Angaben stehen auf Ihrem öffentlichen Profil und auf jedem Angebot, das Sie senden.';
     await render(
       <TextScaleScope>
-        <Heading style={{ fontSize: typography.caption.fontSize }} keepWords>
-          {label}
-        </Heading>
+        <Heading style={{ fontSize: typography.caption.fontSize }}>{label}</Heading>
         <Text style={{ fontSize: titleSize }}>{sentence}</Text>
       </TextScaleScope>,
     );
@@ -403,6 +427,132 @@ describe('review round 2 (BEAV-223)', () => {
       }
     }
     expect(breaks).toEqual([]);
+  });
+});
+
+describe('review round 3 (BEAV-223)', () => {
+  function atSize(width: number, fontScale: number) {
+    jest.spyOn(Dimensions, 'get').mockReturnValue({ width, height: 874, scale: 3, fontScale });
+  }
+  /** The width a heading's longest word takes at the size it renders. */
+  function wordWidth(
+    element: ReturnType<typeof screen.getByText>,
+    text: string,
+    fontScale: number,
+  ) {
+    const fontSize = StyleSheet.flatten(element.props.style).fontSize as number;
+    return longestRunEm(text) * fontSize * Math.min(fontScale, element.props.maxFontSizeMultiplier);
+  }
+
+  // R3-1: a heading never breaks a word, whatever the floor (BEAV-219).
+  it.each([375, 402])('keeps a sheet title whole on a %spt phone at AX5', async (width) => {
+    atSize(width, AX5);
+    const title = 'Unternehmensdaten entfernen?';
+    await render(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <Sheet visible onClose={jest.fn()} title={title} closeLabel="Schließen">
+          <Text style={{ fontSize: typography.body.fontSize }}>
+            Ihr Profil zeigt danach wieder keine Unternehmensdaten an.
+          </Text>
+        </Sheet>
+      </SafeAreaProvider>,
+    );
+    const heading = screen.getByRole('header', { name: title });
+    expect(wordWidth(heading, title, AX5)).toBeLessThanOrEqual(width - SHEET_TITLE_INSET);
+    // The running text under it still reaches 2x (R1-2).
+    const body = screen.getByText(/Ihr Profil/);
+    expect(body.props.maxFontSizeMultiplier).toBeGreaterThanOrEqual(2);
+  });
+
+  it.each([
+    [375, 'Unternehmensdaten'],
+    [402, 'Unternehmensdaten'],
+    [375, 'Šesteroznamenkasti kod'],
+  ])('keeps a top-bar title whole on a %spt phone at AX5: %s', async (width, title) => {
+    atSize(width, AX5);
+    await render(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <Screen title={title} onBack={jest.fn()} backLabel="Zurück">
+          <Text style={{ fontSize: typography.body.fontSize }}>Inhalt</Text>
+        </Screen>
+      </SafeAreaProvider>,
+    );
+    const heading = screen.getByRole('header', { name: title });
+    expect(wordWidth(heading, title, AX5)).toBeLessThanOrEqual(width - TOP_TITLE_INSET);
+  });
+
+  it('caps a page heading at its word fit, and the body beside it keeps its 2x floor', async () => {
+    atSize(375, AX5);
+    const legend = 'Stornierungsbedingungen';
+    const sentence = 'Bitte lesen Sie die Bedingungen, bevor Sie bezahlen.';
+    await render(
+      <TextScaleScope>
+        <Heading style={{ fontSize: typography.h2.fontSize }}>{legend}</Heading>
+        <Text style={{ fontSize: typography.body.fontSize }}>{sentence}</Text>
+      </TextScaleScope>,
+    );
+    const heading = screen.getByRole('header', { name: legend });
+    expect(heading.props.maxFontSizeMultiplier).toBe(
+      wordFitFontScale(legend, typography.h2.fontSize, 375 - CARD_HEADING_INSET),
+    );
+    expect(screen.getByText(sentence).props.maxFontSizeMultiplier).toBeGreaterThanOrEqual(2);
+  });
+
+  // R3-2: a chevron row gives its title the room the chevron leaves, not a switch's.
+  it('sizes a chevron row title to the chevron, and a switch row title to the switch', async () => {
+    atSize(402, AX5);
+    await render(
+      <ListCard>
+        <ListRow title="Datenschutzerklärung" onPress={jest.fn()} />
+        <ListRow title="Unternehmensdaten" trailing={<Text>[ ]</Text>} />
+      </ListCard>,
+    );
+    const size = typography.body.fontSize;
+    expect(CHEVRON_TITLE_INSET).toBeLessThan(TITLE_INSET);
+    expect(screen.getByText('Datenschutzerklärung').props.maxFontSizeMultiplier).toBe(
+      wordFitFontScale('Datenschutzerklärung', size, 402 - CHEVRON_TITLE_INSET),
+    );
+    expect(screen.getByText('Unternehmensdaten').props.maxFontSizeMultiplier).toBe(
+      wordFitFontScale('Unternehmensdaten', size, 402 - TITLE_INSET),
+    );
+  });
+
+  // R1-3 reopened: rows in one block stack together, so they don't zigzag.
+  it('stacks every money row in a group when one of them can’t stay on one line', async () => {
+    atSize(402, 2);
+    const rows: [string, string][] = [
+      ['Sie erhalten zurück', '11,90\u00a0€'],
+      ['Helfer behält', '5,00\u00a0€'],
+      ['Einbehaltene Servicegebühr aus der Stornierungsentschädigung', '0,60\u00a0€'],
+    ];
+    await render(
+      <AmountRowGroup>
+        {rows.map(([label, value]) => (
+          <AmountRow key={label} label={label} value={value} style={{ fontSize: 14 }} />
+        ))}
+      </AmountRowGroup>,
+    );
+    const directions = rows.map(
+      ([label, value]) =>
+        StyleSheet.flatten(screen.getByLabelText(`${label}: ${value}`).props.style).flexDirection,
+    );
+    expect(new Set(directions).size).toBe(1);
+    expect(directions[0]).not.toBe('row');
+  });
+
+  it('keeps every money row in a group on one line when they all fit', async () => {
+    atSize(402, 1);
+    await render(
+      <AmountRowGroup>
+        <AmountRow label="Preis" value={'15,00\u00a0€'} style={{ fontSize: 14 }} />
+        <AmountRow label="Gesamt" value={'17,50\u00a0€'} style={{ fontSize: 14 }} />
+      </AmountRowGroup>,
+    );
+    for (const label of ['Preis: 15,00\u00a0€', 'Gesamt: 17,50\u00a0€']) {
+      expect(StyleSheet.flatten(screen.getByLabelText(label).props.style).flexDirection).toBe(
+        'row',
+      );
+    }
   });
 });
 

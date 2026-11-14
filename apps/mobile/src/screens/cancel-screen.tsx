@@ -32,6 +32,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../components/ui/text';
 import {
   AmountRow,
+  AmountRowGroup,
   Button,
   CARD_HEADING_INSET,
   Card,
@@ -502,18 +503,21 @@ function Preview({ preview, money }: { preview: CancelPreview; money: (cents: nu
         {preview.full ? t('cancel.preview.full') : t('cancel.preview.title')}
       </Heading>
       <Text style={[textStyle('small'), styles.muted]}>{t(`cancel.cases.${preview.case}`)}</Text>
-      <Row label={t('cancel.preview.youGetBack')} value={money(preview.refundCents)} strong />
-      {preview.helperCompensationCents > 0 && (
-        <>
-          <Row
-            label={t('cancel.preview.helperKeeps')}
-            value={money(preview.helperCompensationCents)}
-          />
-          <Row label={t('cancel.preview.keptFee')} value={money(preview.keptFeeCents)} />
-        </>
-      )}
-      <View style={styles.rule} />
-      <Row label={t('cancel.preview.youPaid')} value={money(preview.chargeCents)} muted />
+      {/* One block: its rows are all on one line or all stacked (review R1-3). */}
+      <AmountRowGroup>
+        <Row label={t('cancel.preview.youGetBack')} value={money(preview.refundCents)} strong />
+        {preview.helperCompensationCents > 0 && (
+          <>
+            <Row
+              label={t('cancel.preview.helperKeeps')}
+              value={money(preview.helperCompensationCents)}
+            />
+            <Row label={t('cancel.preview.keptFee')} value={money(preview.keptFeeCents)} />
+          </>
+        )}
+        <View style={styles.rule} />
+        <Row label={t('cancel.preview.youPaid')} value={money(preview.chargeCents)} muted />
+      </AmountRowGroup>
       {preview.creditBackCents > 0 && (
         <Text style={[textStyle('body'), styles.ink]} testID="cancel-preview-credit-back">
           {t('cancel.preview.creditBack', { amount: money(preview.creditBackCents) })}

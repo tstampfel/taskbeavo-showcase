@@ -180,36 +180,35 @@ export interface HeadingProps extends Omit<
   inset?: number;
   /** A stricter text scale cap the layout needs anyway, such as a narrow top bar's. */
   maxScale?: number;
-  /**
-   * A label, such as a section label: it grows only as far as its words fit, without the floor.
-   * It doesn't hold the text in its scope small: that still gets its floor.
-   */
-  keepWords?: boolean;
+  /** The text to measure the words of, where it differs from the children: capitals drawn by `textTransform`. */
+  measure?: string;
   children: ReactNode;
 }
 
 /**
  * A heading (`accessibilityRole="header"`) whose long words wrap at word boundaries at every
  * text size: it grows with the user's text size until its longest word would no longer fit on
- * a line, and stops there. Body text in the same `TextScaleScope` grows no further than it
- * (BEAV-223).
+ * a line, and stops there. Body text in the same `TextScaleScope` grows no further than it,
+ * except that running text still reaches its floor (BEAV-223).
  */
 export function Heading({
   inset = CARD_HEADING_INSET,
   maxScale,
-  keepWords = false,
+  measure,
   style,
   children,
   ...props
 }: HeadingProps) {
   const { width, fontScale } = useWindowDimensions();
   const fontSize = StyleSheet.flatten(style)?.fontSize ?? DEFAULT_FONT_SIZE;
-  // As far as its words fit, but never below the floor, so body text beside it, which has the
-  // same floor, never outgrows it. `maxScale` is a layout's hard cap and wins over the floor.
-  const fit = wordFitFontScale(textOf(children), fontSize, width - inset);
+  // As far as its words fit and no further, so it never breaks a word (BEAV-219, review R3-1).
+  const fit = wordFitFontScale(measure ?? textOf(children), fontSize, width - inset);
+  const scale = Math.max(1, Math.min(fit, maxScale ?? Infinity));
+  // The scope gets the heading's floor, so the running text under it still reaches 2x even
+  // when a long word holds the heading itself smaller; `maxScale`, a layout's hard cap, still
+  // caps the scope.
   const floor = textScaleFloor(fontScale, fontSize);
-  const scale = Math.max(1, Math.min(keepWords ? fit : Math.max(fit, floor), maxScale ?? Infinity));
-  useRegisterHeading(keepWords ? Math.max(scale, floor) : scale, fontSize);
+  useRegisterHeading(Math.max(1, Math.min(Math.max(fit, floor), maxScale ?? Infinity)), fontSize);
   return (
     <Text accessibilityRole="header" maxFontSizeMultiplier={scale} style={style} {...props}>
       {children}

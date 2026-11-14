@@ -9,4 +9,4 @@ export { Screen, TopBar, TOP_TITLE_MAX_FONT_SCALE, type ScreenProps } from './sc
 export { CARD_HEADING_INSET, Heading, type HeadingProps } from './heading';
 export { Text, type TextProps } from './text';
 export { TextScaleScope } from './text-scale-scope';
-export { AmountRow, type AmountRowProps } from './amount-row';
+export { AmountRow, AmountRowGroup, type AmountRowProps } from './amount-row';

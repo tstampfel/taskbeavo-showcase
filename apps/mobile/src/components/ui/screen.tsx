@@ -22,7 +22,7 @@ import { textStyle } from './text-style';
 export const TOP_TITLE_MAX_FONT_SCALE = 1.6;
 
 /** The width beside the top bar title: the bar's padding, the two buttons and their gaps. */
-const TOP_TITLE_INSET = 2 * spacing.lg + 2 * minTapTarget + 2 * spacing.sm;
+export const TOP_TITLE_INSET = 2 * spacing.lg + 2 * minTapTarget + 2 * spacing.sm;
 
 /**
  * From this text scale on, the footer scrolls with the body instead of staying pinned: at the

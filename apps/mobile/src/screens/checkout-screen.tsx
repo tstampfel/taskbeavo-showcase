@@ -37,7 +37,16 @@ import {
 import { Text } from '../components/ui/text';
 import { Checkbox } from '../components/sign-in/checkbox';
 import { TraderIdentity } from '../components/trader-identity';
-import { AmountRow, Badge, Button, Card, Heading, Screen, Sheet } from '../components/ui';
+import {
+  AmountRow,
+  AmountRowGroup,
+  Badge,
+  Button,
+  Card,
+  Heading,
+  Screen,
+  Sheet,
+} from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 import { fonts } from '../fonts';
 import type { PaymentSheet } from '../payments/stripe-config';
@@ -319,13 +328,16 @@ function Summary({
   return (
     <Card testID="checkout-summary" style={styles.summary}>
       {children}
-      <Line label={t('checkout.summary.price')} value={money(price)} />
-      <Line label={t('checkout.summary.fee')} value={money(fee)} />
-      {credit > 0 ? (
-        <Line label={t('checkout.summary.credit')} value={`−${money(credit)}`} />
-      ) : null}
-      <View style={styles.rule} />
-      <Line label={t('checkout.summary.total')} value={money(total)} strong />
+      {/* One block: its rows are all on one line or all stacked (review R1-3). */}
+      <AmountRowGroup>
+        <Line label={t('checkout.summary.price')} value={money(price)} />
+        <Line label={t('checkout.summary.fee')} value={money(fee)} />
+        {credit > 0 ? (
+          <Line label={t('checkout.summary.credit')} value={`−${money(credit)}`} />
+        ) : null}
+        <View style={styles.rule} />
+        <Line label={t('checkout.summary.total')} value={money(total)} strong />
+      </AmountRowGroup>
     </Card>
   );
 }

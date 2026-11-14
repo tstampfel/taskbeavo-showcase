@@ -1,4 +1,14 @@
 import { spacing } from '@taskbeavo/ui-tokens';
+import type { ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import type { StyleProp, TextStyle } from 'react-native';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { CARD_HEADING_INSET, fitsOnOneLine } from './heading';
@@ -21,12 +31,45 @@ export interface AmountRowProps {
   testID?: string;
 }
 
+interface Group {
+  /** Whether every row of the group fits on one line. */
+  allFit: boolean;
+  report(id: string, fits: boolean): () => void;
+}
+
+const GroupContext = createContext<Group | null>(null);
+
+/**
+ * Money rows that are read as one block, such as a cancellation's refund lines or a checkout
+ * summary: they are all on one line or all stacked. Deciding row by row made them zigzag where
+ * the one-line estimate is close, as at Android's nonlinear font scaling (review R1-3).
+ */
+export function AmountRowGroup({ children }: { children: ReactNode }) {
+  const [fits, setFits] = useState<ReadonlyMap<string, boolean>>(new Map());
+  const report = useCallback((id: string, fit: boolean) => {
+    setFits((current) => (current.get(id) === fit ? current : new Map(current).set(id, fit)));
+    return () =>
+      setFits((current) => {
+        if (!current.has(id)) return current;
+        const next = new Map(current);
+        next.delete(id);
+        return next;
+      });
+  }, []);
+  const value = useMemo(
+    () => ({ allFit: [...fits.values()].every(Boolean), report }),
+    [fits, report],
+  );
+  return <GroupContext.Provider value={value}>{children}</GroupContext.Provider>;
+}
+
 /**
  * A money row: the label on the left, the amount on the right (the mockups' summary lines).
  * When the two don't fit on one line, as at the largest text sizes in French or German, the
  * amount goes on its own line under the label, still on the right, and the label gets the full
  * width, so its words wrap whole instead of breaking mid-word beside the amount (BEAV-223).
- * Screen readers hear one element, "label: amount".
+ * Screen readers hear one element, "label: amount". Inside an `AmountRowGroup` the rows of a
+ * block decide together.
  */
 export function AmountRow({
   label,
@@ -43,7 +86,7 @@ export function AmountRow({
     useTextScaleCap(label, style, { inset }),
     useTextScaleCap(value, [style, valueStyle], { inset }),
   );
-  const row = fitsOnOneLine(
+  const fits = fitsOnOneLine(
     [
       { text: label, fontSize },
       { text: value, fontSize },
@@ -52,6 +95,11 @@ export function AmountRow({
     width - inset,
     Math.min(fontScale, cap),
   );
+  const group = useContext(GroupContext);
+  const id = useId();
+  const report = group?.report;
+  useLayoutEffect(() => (report ? report(id, fits) : undefined), [report, id, fits]);
+  const row = group ? fits && group.allFit : fits;
   return (
     <View
       style={row ? styles.row : styles.stack}
