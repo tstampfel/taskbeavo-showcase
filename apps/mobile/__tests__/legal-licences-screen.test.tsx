@@ -6,6 +6,7 @@ import { StyleSheet } from 'react-native';
 import { i18n } from '../src/i18n';
 import { LegalLicencesScreen, MAXMIND_URL } from '../src/screens/legal-licences-screen';
 import { SettingsScreen } from '../src/screens/settings-screen';
+import { TITLE_MAX_FONT_SCALE } from '../src/screens/sign-in-screen';
 
 const en = catalogues.en;
 
@@ -132,5 +133,12 @@ describe('Settings and Legal design', () => {
       textTransform: 'uppercase',
     });
     expect(screen.getByText(en.settings.languagesNote)).toBeOnTheScreen();
+  });
+
+  it('lets the section labels grow past the page-title cap at large text', async () => {
+    await i18n.changeLanguage('en');
+    await renderScreen();
+    const label = screen.getByRole('header', { name: en.settings.licences });
+    expect(label.props.maxFontSizeMultiplier).toBeGreaterThan(TITLE_MAX_FONT_SCALE);
   });
 });

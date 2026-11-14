@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import { Heading, ListCard, ListRow } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
-import { Page, PAGE_HEADING_INSET, TITLE_MAX_FONT_SCALE } from './sign-in-screen';
+import { Page, PAGE_HEADING_INSET } from './sign-in-screen';
 
 /**
  * Settings: Business details (BEAV-199), Privacy and data (BEAV-83) and Legal and licences
@@ -40,7 +40,8 @@ export function SettingsScreen({
 /** A section label above a list card: the mockups' small bold capitals (`.c`, 21b, 19c). */
 export function SectionLabel({ children }: { children: string }) {
   return (
-    <Heading style={styles.section} inset={PAGE_HEADING_INSET} maxScale={TITLE_MAX_FONT_SCALE}>
+    // Unlike page titles, a small label has no fixed cap: it grows as far as its words fit.
+    <Heading style={styles.section} inset={PAGE_HEADING_INSET}>
       {children}
     </Heading>
   );

@@ -1,9 +1,10 @@
-import { borderWidth, colors, minTapTarget, spacing } from '@taskbeavo/ui-tokens';
+import { borderWidth, colors, minTapTarget, spacing, typography } from '@taskbeavo/ui-tokens';
 import type { ReactElement, ReactNode } from 'react';
 import { Children, cloneElement, isValidElement } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { fonts } from '../../fonts';
 import { Card } from './card';
+import { wordFitFontScale } from './heading';
 import { textStyle } from './text-style';
 
 export interface ListCardProps {
@@ -53,9 +54,17 @@ export function ListRow({
   divided = false,
   testID,
 }: ListRowProps) {
+  // At the largest text sizes a long word such as "information" would break mid-word; the title
+  // grows only as far as its longest word still fits beside the chevron or control.
+  const titleWidth = useWindowDimensions().width - TITLE_INSET;
   const text = (
     <View style={styles.text}>
-      <Text style={styles.title}>{title}</Text>
+      <Text
+        style={styles.title}
+        maxFontSizeMultiplier={wordFitFontScale(title, typography.body.fontSize, titleWidth)}
+      >
+        {title}
+      </Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
   );
@@ -92,6 +101,10 @@ export function ListRow({
 }
 
 const CHEVRON_SIZE = 9;
+/** The widest trailing control, a native switch (51pt on iOS). */
+const TRAILING_WIDTH = 52;
+/** The width beside a row's title: page and card padding on both sides, the gap, the trailing control. */
+const TITLE_INSET = 4 * spacing.lg + spacing.md + TRAILING_WIDTH;
 const CHEVRON_STROKE = 2;
 
 const styles = StyleSheet.create({

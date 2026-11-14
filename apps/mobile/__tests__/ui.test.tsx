@@ -347,6 +347,19 @@ describe('ListCard and ListRow', () => {
     });
   });
 
+  it('caps the title text scale so its longest word still fits on a line', async () => {
+    await renderUi(
+      <ListCard>
+        <ListRow title="One" onPress={() => {}} />
+        <ListRow title="Company information" onPress={() => {}} />
+      </ListCard>,
+    );
+    const short = screen.getByText('One').props.maxFontSizeMultiplier as number;
+    const long = screen.getByText('Company information').props.maxFontSizeMultiplier as number;
+    expect(long).toBeGreaterThanOrEqual(1);
+    expect(long).toBeLessThan(short);
+  });
+
   it('opens a link with the link role', async () => {
     await renderUi(
       <ListCard>
