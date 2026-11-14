@@ -542,7 +542,7 @@ for (const answer of ['yes', 'no'] as const) {
 
     const prompt = page.getByTestId('locale-prompt');
     await expect(prompt.getByRole('heading', { level: 1 })).toHaveText(
-      'Deutsch auch für E-Mails und Benachrichtigungen verwenden?',
+      'Deutsch auch für E-Mails und Mitteilungen verwenden?',
     );
     await expect(prompt).toContainText('Ihr Konto verwendet derzeit Hrvatski.');
     const before = api.operations.filter((o) => o.name === 'SetLocale').length;

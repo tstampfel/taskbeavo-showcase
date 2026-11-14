@@ -148,8 +148,35 @@ describe('Heading', () => {
   });
 });
 
-/** Translation keys rendered inside a <Heading> anywhere in the app. */
-function headingKeys(): string[] {
+/** Where a heading sits: its font size and the line width it gets on the narrowest iPhone. */
+interface HeadingPlace {
+  key: string;
+  where: string;
+  fontSize: number;
+  width: number;
+}
+
+/**
+ * Components that pass a translated prop to a `Heading`, with the size and room it gets there
+ * (the insets are the ones each component passes, the country picker's Done button taken at its
+ * default-size width).
+ */
+const HEADING_PROPS: Record<string, { prop: string; fontSize: number; inset: number }> = {
+  Screen: { prop: 'title', fontSize: typography.button.fontSize, inset: 2 * 16 + 2 * 44 + 2 * 8 },
+  TopBar: { prop: 'title', fontSize: typography.button.fontSize, inset: 2 * 16 + 2 * 44 + 2 * 8 },
+  Page: { prop: 'title', fontSize: typography.label.fontSize, inset: 2 * 8 + 2 * 44 },
+  Sheet: { prop: 'title', fontSize: typography.h2.fontSize, inset: 2 * 16 + 44 + 8 },
+  Outcome: { prop: 'title', fontSize: typography.h1.fontSize, inset: CARD_HEADING_INSET },
+  Reasons: { prop: 'legend', fontSize: typography.h2.fontSize, inset: CARD_HEADING_INSET },
+  CountryPicker: { prop: 'label', fontSize: typography.h2.fontSize, inset: 2 * 16 + 100 },
+};
+
+/**
+ * Every translation key the app shows as a heading: written inside a <Heading>, or passed to a
+ * component that renders its prop as one. Keys built at run time (template literals with
+ * `${…}`) can't be found this way.
+ */
+function headingPlaces(): HeadingPlace[] {
   const root = join(__dirname, '..');
   const files: string[] = [];
   const walk = (dir: string) => {
@@ -161,14 +188,32 @@ function headingKeys(): string[] {
   };
   walk(join(root, 'src'));
   walk(join(root, 'app'));
-  const keys = new Set<string>();
+  const places: HeadingPlace[] = [];
+  const keysIn = (text: string) =>
+    [...text.matchAll(/\bt\(\s*[`']([\w.]+)[`']/g)].map(([, key]) => key!);
   for (const file of files) {
     const source = readFileSync(file, 'utf8');
     for (const [element] of source.matchAll(/<Heading\b[\s\S]*?<\/Heading>/g)) {
-      for (const [, key] of element.matchAll(/\bt\(\s*[`']([\w.]+)[`']/g)) keys.add(key!);
+      for (const key of keysIn(element)) {
+        places.push({
+          key,
+          where: 'Heading',
+          fontSize: typography.h1.fontSize,
+          width: IPHONE_SE_WIDTH - CARD_HEADING_INSET,
+        });
+      }
+    }
+    for (const [name, { prop, fontSize, inset }] of Object.entries(HEADING_PROPS)) {
+      // Up to the next tag: arrow functions in other props contain ">" but not "<".
+      for (const [, attributes] of source.matchAll(new RegExp(`<${name}\\b([^<]*)`, 'g'))) {
+        const value = new RegExp(`\\b${prop}=\\{([^}]*)\\}`).exec(attributes!)?.[1] ?? '';
+        for (const key of keysIn(value)) {
+          places.push({ key, where: `${name} ${prop}`, fontSize, width: IPHONE_SE_WIDTH - inset });
+        }
+      }
     }
   }
-  return [...keys];
+  return places;
 }
 
 function message(locale: (typeof locales)[number], key: string): string {
@@ -181,22 +226,28 @@ function message(locale: (typeof locales)[number], key: string): string {
 }
 
 describe('heading copy in hr, en, de and fr', () => {
-  const keys = headingKeys();
+  const places = headingPlaces();
 
-  it('finds the headings', () => {
-    expect(keys).toEqual(
-      expect.arrayContaining(['cancel.helper.title', 'cancel.withdrawal.title']),
+  it('finds the headings, including those passed as props', () => {
+    const found = places.map(({ key, where }) => `${where}: ${key}`);
+    expect(found).toEqual(
+      expect.arrayContaining([
+        'Heading: cancel.helper.title',
+        'Heading: cancel.withdrawal.title',
+        'Screen title: cancel.title',
+        'Reasons legend: cancel.reasonsLegend',
+        'Outcome title: checkout.expired.title',
+        'Sheet title: businessDetails.confirmTitle',
+        'Page title: signIn.continueWithEmail',
+        'CountryPicker label: signIn.country',
+      ]),
     );
   });
 
-  it.each(locales)(
-    '%s: every heading word fits a card on the narrowest iPhone at h1 size',
-    (locale) => {
-      const width = IPHONE_SE_WIDTH - CARD_HEADING_INSET;
-      const tooLong = keys.filter(
-        (key) => longestRunEm(message(locale, key)) * typography.h1.fontSize > width,
-      );
-      expect(tooLong).toEqual([]);
-    },
-  );
+  it.each(locales)('%s: every heading word fits its line on the narrowest iPhone', (locale) => {
+    const tooLong = places
+      .filter(({ key, fontSize, width }) => longestRunEm(message(locale, key)) * fontSize > width)
+      .map(({ key, where }) => `${where}: ${key}`);
+    expect(tooLong).toEqual([]);
+  });
 });

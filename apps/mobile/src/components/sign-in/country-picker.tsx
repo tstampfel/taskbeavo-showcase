@@ -28,6 +28,8 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
   const locale = i18n.language as Locale;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  // The Done button shares the header line; its width grows with the text size.
+  const [doneWidth, setDoneWidth] = useState<number>(minTapTarget);
   const countries = useMemo(() => sortedCountries(locale), [locale]);
   const shown = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase(locale);
@@ -60,12 +62,18 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
       <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
         <SafeAreaView style={styles.sheet}>
           <View style={styles.header}>
-            <Heading style={[textStyle('h2'), styles.value]}>{label}</Heading>
+            <Heading
+              style={[textStyle('h2'), styles.value, styles.title]}
+              inset={2 * spacing.lg + doneWidth}
+            >
+              {label}
+            </Heading>
             <Button
               label={t('signIn.countryDone')}
               variant="ghost"
               size="sm"
               onPress={() => setOpen(false)}
+              onLayout={(event) => setDoneWidth(event.nativeEvent.layout.width)}
             />
           </View>
           <TextInput
@@ -126,6 +134,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  title: { flexShrink: 1 },
   search: {
     minHeight: controlHeight.md,
     paddingHorizontal: spacing.lg,

@@ -266,7 +266,7 @@
     "signIn": "Anmelden",
     "signOut": "Abmelden",
     "signedInAs": "Angemeldet als {name}",
-    "localePromptTitle": "{language} auch für E-Mails und Benachrichtigungen verwenden?",
+    "localePromptTitle": "{language} auch für E-Mails und Mitteilungen verwenden?",
     "localePromptBody": "Ihr Konto verwendet derzeit {account}.",
     "localePromptYes": "Ja",
     "localePromptNo": "Nicht jetzt"
