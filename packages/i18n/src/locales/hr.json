@@ -561,6 +561,11 @@
     },
     "confirm": "Otkaži rezervaciju",
     "cancelling": "Otkazujemo…",
+    "seeRefund": "Pogledajte povrat",
+    "refundTitle": "Vaš povrat novca",
+    "stepBack": "Natrag",
+    "final": "Otkazivanje je konačno.",
+    "finalNoFault": "Otkazivanje je konačno. Ako nitko nije kriv, vratite se i odaberite taj razlog: pomagača ćemo zamoliti da se složi.",
     "policyLink": "Pravila otkazivanja",
     "withdrawal": {
       "title": "Raskid ugovora",

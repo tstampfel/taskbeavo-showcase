@@ -103,3 +103,86 @@
   display: inline-flex;
   align-items: center;
 }
+
+/* Mockup 13b–c (BEAV-211): one step at a time, the reasons grouped in cards. */
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-lg);
+}
+
+.step h2:focus {
+  outline: none;
+}
+
+.step h2:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-color-green);
+  outline-offset: 2px;
+}
+
+.label {
+  padding: 0;
+  margin-bottom: var(--tb-space-sm);
+  font-size: var(--tb-font-label-size);
+  line-height: var(--tb-font-label-line);
+  font-weight: var(--tb-font-label-weight);
+  color: var(--tb-color-ink-muted);
+}
+
+.reasons legend.h2 {
+  padding: 0;
+  margin-bottom: var(--tb-space-sm);
+}
+
+.reasonCard {
+  gap: 0;
+  padding: var(--tb-space-xs) var(--tb-space-lg);
+}
+
+.reasonCard .reason {
+  min-height: 52px;
+  padding: var(--tb-space-xs) 0;
+  line-height: var(--tb-font-body-line);
+  overflow-wrap: anywhere;
+}
+
+.reasonCard .reason + .reason {
+  border-top: var(--tb-border-thin) solid var(--tb-color-line);
+}
+
+.reason input {
+  flex: none;
+}
+
+.caps {
+  margin: 0;
+  font-size: var(--tb-font-caption-size);
+  line-height: var(--tb-font-caption-line);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ok {
+  color: var(--tb-color-green);
+}
+
+.total {
+  padding-top: var(--tb-space-sm);
+  border-top: var(--tb-border-thin) solid var(--tb-color-line);
+}
+
+.center {
+  text-align: center;
+}
+
+/* The step's button bar (the mockups' `.foot`), at the end of the step. */
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-sm);
+  margin: 0 calc(-1 * var(--tb-space-lg)) calc(-1 * var(--tb-space-lg));
+  padding: var(--tb-space-md) var(--tb-space-lg) var(--tb-space-lg);
+  border-top: var(--tb-border-thin) solid var(--tb-color-line);
+  background: var(--tb-color-off-white);
+}

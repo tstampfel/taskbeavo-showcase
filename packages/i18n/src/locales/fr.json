@@ -561,6 +561,11 @@
     },
     "confirm": "Annuler la réservation",
     "cancelling": "Annulation…",
+    "seeRefund": "Voir le remboursement",
+    "refundTitle": "Votre remboursement",
+    "stepBack": "Retour",
+    "final": "L’annulation est définitive.",
+    "finalNoFault": "L’annulation est définitive. Si personne n’est en faute, revenez en arrière et choisissez ce motif : nous demanderons alors l’accord de votre aidant.",
     "policyLink": "Conditions d’annulation",
     "withdrawal": {
       "title": "Se rétracter du contrat",

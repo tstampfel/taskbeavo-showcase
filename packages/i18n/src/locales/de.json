@@ -561,6 +561,11 @@
     },
     "confirm": "Buchung stornieren",
     "cancelling": "Wird storniert…",
+    "seeRefund": "Erstattung ansehen",
+    "refundTitle": "Ihre Erstattung",
+    "stepBack": "Zurück",
+    "final": "Die Stornierung ist endgültig.",
+    "finalNoFault": "Die Stornierung ist endgültig. Wenn niemand schuld ist, gehen Sie zurück und wählen Sie den Grund dort: Ihre Hilfskraft wird dann um Zustimmung gebeten.",
     "policyLink": "Stornobedingungen",
     "withdrawal": {
       "title": "Vom Vertrag zurücktreten",
