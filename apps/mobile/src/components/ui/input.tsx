@@ -1,7 +1,8 @@
 import { borderWidth, controlHeight, inputColors, radii, spacing } from '@taskbeavo/ui-tokens';
 import { useState } from 'react';
 import type { TextInputProps } from 'react-native';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
+import { Text } from './text';
 import { textStyle } from './text-style';
 
 export interface InputProps extends Omit<TextInputProps, 'style' | 'placeholderTextColor'> {

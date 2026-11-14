@@ -1,7 +1,8 @@
 import { colors, spacing } from '@taskbeavo/ui-tokens';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import { Text } from './ui/text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Heading } from './ui';
 import { textStyle } from './ui/text-style';

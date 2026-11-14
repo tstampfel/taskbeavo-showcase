@@ -12,19 +12,23 @@ import {
   type DetailCheckout,
 } from '@taskbeavo/graphql';
 import { defaultLocale, formatDateTime, formatMoney, isLocale, type Locale } from '@taskbeavo/i18n';
-import { colors, radii, spacing } from '@taskbeavo/ui-tokens';
+import { colors, radii, spacing, typography } from '@taskbeavo/ui-tokens';
 import { useEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Linking,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { ActivityIndicator, Linking, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Text } from '../components/ui/text';
 import { TraderIdentity } from '../components/trader-identity';
-import { Badge, Button, Card, Heading, Note, Screen } from '../components/ui';
+import {
+  BADGE_PADDING,
+  Badge,
+  Button,
+  CARD_HEADING_INSET,
+  Card,
+  Heading,
+  Note,
+  Screen,
+} from '../components/ui';
+import { lineEm, wordsFit } from '../components/ui/heading';
 import { textStyle } from '../components/ui/text-style';
 
 /** The booking screens the detail screen links into, by their route segment. */
@@ -41,6 +45,33 @@ type Link = { link: keyof BookingLinks; screen: BookingScreen; primary?: boolean
 
 /** From this text scale on, the progress steps are a list rather than four columns. */
 const STACKED_STEPS_FONT_SCALE = 1.3;
+
+/** The progress steps' dot, and the gap beside it in the list. */
+const STEP_DOT = 20;
+/** The width beside a step label in the list: the screen padding, the dot and its gap. */
+const STEP_LABEL_INSET = 2 * spacing.lg + STEP_DOT + spacing.sm;
+
+/**
+ * Whether the steps are a list: at large text, or wherever a label's longest word would not
+ * fit its quarter of the line, as in French ("Paiement", "demandé") (BEAV-223).
+ */
+export function stepsStacked(labels: readonly string[], width: number, fontScale: number) {
+  if (fontScale >= STACKED_STEPS_FONT_SCALE) return true;
+  const column = (width - 2 * spacing.lg) / labels.length;
+  return labels.some((label) => !wordsFit(label, typography.caption.fontSize * fontScale, column));
+}
+
+/** Whether the status badge fits on one line beside the start time without breaking its words. */
+export function startsBesideStatus(
+  startsAt: string,
+  status: string,
+  width: number,
+  fontScale: number,
+): boolean {
+  const badge = lineEm(status) * typography.caption.fontSize * fontScale + BADGE_PADDING;
+  const rest = width - badge - spacing.sm;
+  return rest > 0 && wordsFit(startsAt, typography.label.fontSize * fontScale, rest);
+}
 
 const LINKS: readonly Link[] = [
   { link: 'release', screen: 'release', primary: true },
@@ -59,6 +90,7 @@ const LINKS: readonly Link[] = [
 export function BookingDetailScreen({ bookingId, onOpen, onBack }: BookingDetailScreenProps) {
   const { t, i18n } = useTranslation();
   const locale: Locale = isLocale(i18n.language) ? i18n.language : defaultLocale;
+  const { width, fontScale } = useWindowDimensions();
   const booking = useQuery(BookingDetailDocument, {
     variables: { id: bookingId },
     fetchPolicy: 'cache-and-network',
@@ -117,6 +149,12 @@ export function BookingDetailScreen({ bookingId, onOpen, onBack }: BookingDetail
   const poster = view.role === 'poster';
   const held = view.steps && view.status !== 'AWAITING_PAYMENT' && view.status !== 'CLOSED';
   const links = LINKS.filter(({ link }) => view.links[link]);
+  const startsAt = t('bookingDetail.startsAt', { time: time(current.slotStart) });
+  const status = t(`bookingDetail.status.${view.status}`);
+  // The status badge sits beside the start time while the badge fits on one line and the
+  // time's words still fit beside it; at large text it goes under the time, as a flex row
+  // squeezes the time to a sliver on Android (BEAV-223).
+  const startsBeside = startsBesideStatus(startsAt, status, width - CARD_HEADING_INSET, fontScale);
 
   return (
     <Screen
@@ -129,12 +167,12 @@ export function BookingDetailScreen({ bookingId, onOpen, onBack }: BookingDetail
       {view.steps && <Steps steps={view.steps} />}
 
       <Card style={styles.card}>
-        <View style={styles.between}>
-          <Text style={[textStyle('label'), styles.ink, styles.grow]}>
-            {t('bookingDetail.startsAt', { time: time(current.slotStart) })}
+        <View style={startsBeside ? styles.between : styles.card} testID="booking-starts">
+          <Text style={[textStyle('label'), styles.ink, startsBeside && styles.grow]}>
+            {startsAt}
           </Text>
           <Badge
-            label={t(`bookingDetail.status.${view.status}`)}
+            label={status}
             tone={view.status === 'PAYMENT_REQUESTED' ? 'orange' : 'green'}
             testID="booking-status"
           />
@@ -176,16 +214,19 @@ export function BookingDetailScreen({ bookingId, onOpen, onBack }: BookingDetail
 
 function Steps({ steps }: { steps: NonNullable<BookingDetail['steps']> }) {
   const { t } = useTranslation();
+  const { width, fontScale } = useWindowDimensions();
+  const labels = steps.map(({ step }) => t(`bookingDetail.steps.${step}`));
   // At large text the four columns are too narrow for whole words: list the steps instead.
-  const stacked = useWindowDimensions().fontScale >= STACKED_STEPS_FONT_SCALE;
+  const stacked = stepsStacked(labels, width, fontScale);
+  const column = (width - 2 * spacing.lg) / steps.length;
   return (
     <View
       accessibilityLabel={t('bookingDetail.stepsLabel')}
       style={stacked ? styles.stepsStacked : styles.steps}
       testID="booking-steps"
     >
-      {steps.map(({ step, state }) => {
-        const label = t(`bookingDetail.steps.${step}`);
+      {steps.map(({ step, state }, index) => {
+        const label = labels[index]!;
         return (
           <View
             key={step}
@@ -211,9 +252,11 @@ function Steps({ steps }: { steps: NonNullable<BookingDetail['steps']> }) {
             <Text
               style={[
                 textStyle('caption'),
-                !stacked && styles.stepLabel,
+                stacked ? styles.stepLabelStacked : styles.stepLabel,
                 state === 'current' ? styles.ink : styles.muted,
               ]}
+              {...(stacked ? { inset: STEP_LABEL_INSET } : { lineWidth: column })}
+              testID={`booking-step-label-${step}`}
             >
               {label}
             </Text>
@@ -410,9 +453,11 @@ const styles = StyleSheet.create({
   stepsStacked: { gap: spacing.sm },
   stepStacked: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   stepLabel: { textAlign: 'center' },
+  // Without it the label runs past the right edge instead of wrapping beside the dot.
+  stepLabelStacked: { flexShrink: 1 },
   dot: {
-    width: 20,
-    height: 20,
+    width: STEP_DOT,
+    height: STEP_DOT,
     // In the stacked list at large text a long label must not squeeze the dot.
     flexShrink: 0,
     borderRadius: radii.pill,

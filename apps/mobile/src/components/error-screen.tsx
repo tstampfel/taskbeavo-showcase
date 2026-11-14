@@ -1,6 +1,7 @@
 import { colors, spacing } from '@taskbeavo/ui-tokens';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Text } from './ui/text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../fonts';
 import { Button, Heading } from './ui';

@@ -1,10 +1,10 @@
-import { borderWidth, colors, minTapTarget, spacing, typography } from '@taskbeavo/ui-tokens';
+import { borderWidth, colors, minTapTarget, spacing } from '@taskbeavo/ui-tokens';
 import type { ReactElement, ReactNode } from 'react';
 import { Children, cloneElement, isValidElement } from 'react';
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from './text';
 import { fonts } from '../../fonts';
 import { Card } from './card';
-import { wordFitFontScale } from './heading';
 import { textStyle } from './text-style';
 
 export interface ListCardProps {
@@ -54,18 +54,18 @@ export function ListRow({
   divided = false,
   testID,
 }: ListRowProps) {
-  // At the largest text sizes a long word such as "information" would break mid-word; the title
-  // grows only as far as its longest word still fits beside the chevron or control.
-  const titleWidth = useWindowDimensions().width - TITLE_INSET;
+  // At the largest text sizes a long word such as "information" would break mid-word; the
+  // texts grow only as far as their longest word still fits beside the chevron or control.
   const text = (
     <View style={styles.text}>
-      <Text
-        style={styles.title}
-        maxFontSizeMultiplier={wordFitFontScale(title, typography.body.fontSize, titleWidth)}
-      >
+      <Text style={styles.title} inset={TITLE_INSET}>
         {title}
       </Text>
-      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+      {subtitle ? (
+        <Text style={styles.subtitle} inset={TITLE_INSET}>
+          {subtitle}
+        </Text>
+      ) : null}
     </View>
   );
   if (!onPress) {

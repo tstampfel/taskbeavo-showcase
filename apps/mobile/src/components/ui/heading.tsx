@@ -3,13 +3,15 @@ import type { ReactNode } from 'react';
 import { Children, isValidElement } from 'react';
 import type { TextProps } from 'react-native';
 import { StyleSheet, Text, useWindowDimensions } from 'react-native';
+import { useRegisterHeading } from './text-scale-scope';
 
 /*
  * Why headings need this: iOS and Android break a word in the middle when the word alone is
  * wider than the line, and at the largest accessibility text sizes a bold heading word such as
  * "cancelling" or "Stornierungsbedingungen" is (BEAV-219). Text that can't fit a word must not
  * grow past the size where the word still fits, so each heading caps its own text scale there.
- * Short headings keep growing with the user's text size; body text is untouched.
+ * Short headings keep growing with the user's text size; body text follows the same rule
+ * (`Text`, BEAV-223).
  */
 
 /**
@@ -67,6 +69,34 @@ export function longestRunEm(text: string): number {
   return longest;
 }
 
+/** Whether every word of `text`, rendered at `fontSize` points, fits in `width`. */
+export function wordsFit(text: string, fontSize: number, width: number): boolean {
+  return longestRunEm(text) * fontSize <= width * SAFETY;
+}
+
+/** The estimated width, in em, of `text` set on one line: never narrower than it renders. */
+export function lineEm(text: string): number {
+  let em = 0;
+  for (const char of text) em += /\s/.test(char) ? NARROW_EM : charEm(char);
+  return em;
+}
+
+/**
+ * Whether texts set side by side on one line, at `fontScale`, with `extra` points of padding
+ * and gaps, fit in `width`. Used to decide between a row and a stack before layout, because
+ * a flex row squeezes text to a sliver rather than wrapping it on Android.
+ */
+export function fitsOnOneLine(
+  parts: readonly { text: string; fontSize: number }[],
+  extra: number,
+  width: number,
+  fontScale: number,
+): boolean {
+  let needed = extra;
+  for (const { text, fontSize } of parts) needed += lineEm(text) * fontSize * fontScale;
+  return needed <= width * SAFETY;
+}
+
 /**
  * The largest text scale at which every word of `text`, set at `fontSize`, fits in `width`, for
  * `maxFontSizeMultiplier`. Never below 1: at the design size the layouts fit their words, and
@@ -121,7 +151,8 @@ export interface HeadingProps extends Omit<
 /**
  * A heading (`accessibilityRole="header"`) whose long words wrap at word boundaries at every
  * text size: it grows with the user's text size until its longest word would no longer fit on
- * a line, and stops there.
+ * a line, and stops there. Body text in the same `TextScaleScope` grows no further than it
+ * (BEAV-223).
  */
 export function Heading({
   inset = CARD_HEADING_INSET,
@@ -132,13 +163,10 @@ export function Heading({
 }: HeadingProps) {
   const { width } = useWindowDimensions();
   const fontSize = StyleSheet.flatten(style)?.fontSize ?? DEFAULT_FONT_SIZE;
+  const scale = wordFitFontScale(textOf(children), fontSize, width - inset, maxScale);
+  useRegisterHeading(scale, fontSize);
   return (
-    <Text
-      accessibilityRole="header"
-      maxFontSizeMultiplier={wordFitFontScale(textOf(children), fontSize, width - inset, maxScale)}
-      style={style}
-      {...props}
-    >
+    <Text accessibilityRole="header" maxFontSizeMultiplier={scale} style={style} {...props}>
       {children}
     </Text>
   );

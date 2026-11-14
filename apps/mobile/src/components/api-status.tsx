@@ -2,7 +2,8 @@ import { useQuery } from '@apollo/client/react';
 import { ApiVersionDocument } from '@taskbeavo/graphql';
 import { colors } from '@taskbeavo/ui-tokens';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Text } from './ui/text';
 import { fonts } from '../fonts';
 
 /** Sample query: shows that the app reaches the API through Apollo. */

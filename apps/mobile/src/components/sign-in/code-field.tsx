@@ -1,6 +1,7 @@
 import { CODE_LENGTH, normalizeCode } from '@taskbeavo/graphql';
 import { borderWidth, colors, inputColors, radii, spacing } from '@taskbeavo/ui-tokens';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
+import { Text } from '../ui/text';
 import { fonts } from '../../fonts';
 import { textStyle } from '../ui/text-style';
 

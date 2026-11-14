@@ -10,7 +10,8 @@ import {
 } from '@taskbeavo/ui-tokens';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Text } from '../ui/text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Heading } from '../ui';
 import { textStyle } from '../ui/text-style';

@@ -1,7 +1,11 @@
 import type { BadgeTone } from '@taskbeavo/ui-tokens';
-import { badgeTones, radii, spacing } from '@taskbeavo/ui-tokens';
-import { StyleSheet, Text, View } from 'react-native';
+import { badgeTones, spacing } from '@taskbeavo/ui-tokens';
+import { StyleSheet, View } from 'react-native';
+import { Text } from './text';
 import { textStyle } from './text-style';
+
+/** The padding on both sides of a badge's text, together. */
+export const BADGE_PADDING = 2 * spacing.sm;
 
 export interface BadgeProps {
   /** Visible text, already translated. */
@@ -25,7 +29,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     minHeight: spacing.xl,
     justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
-    borderRadius: radii.pill,
+    paddingHorizontal: BADGE_PADDING / 2,
+    // A pill at one line; half the minimum height, not radii.pill, so a label that wraps at
+    // large text keeps square-ish ends instead of an oval that cuts into its lines.
+    borderRadius: spacing.xl / 2,
   },
 });

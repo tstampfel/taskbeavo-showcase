@@ -1,6 +1,7 @@
 import { colors, radii, spacing } from '@taskbeavo/ui-tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from './text';
 import { textStyle } from './text-style';
 
 export type NoteTone = 'green' | 'warn' | 'red';

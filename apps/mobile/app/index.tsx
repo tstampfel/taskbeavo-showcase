@@ -1,7 +1,8 @@
 import { colors } from '@taskbeavo/ui-tokens';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import { Text } from '../src/components/ui/text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AccountRow } from '../src/components/account-row';
 import { ApiStatus } from '../src/components/api-status';

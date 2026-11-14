@@ -28,8 +28,18 @@ import { defaultLocale, formatDate, formatMoney, isLocale, type Locale } from '@
 import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Card, Heading, Input, Note, Screen } from '../components/ui';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../components/ui/text';
+import {
+  AmountRow,
+  Button,
+  CARD_HEADING_INSET,
+  Card,
+  Heading,
+  Input,
+  Note,
+  Screen,
+} from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 
 export interface CancelScreenProps {
@@ -380,7 +390,9 @@ function Reasons<K extends string>({
           style={[styles.dot, checked && styles.dotChecked]}
           testID={`cancel-reason-dot-${reason.key}`}
         />
-        <Text style={[textStyle('body'), styles.ink, styles.flex]}>{label}</Text>
+        <Text style={[textStyle('body'), styles.ink, styles.flex]} inset={REASON_LABEL_INSET}>
+          {label}
+        </Text>
       </Pressable>
     );
   };
@@ -523,12 +535,13 @@ function Row({
   strong?: boolean;
   muted?: boolean;
 }) {
-  const tone = [textStyle(strong ? 'label' : 'small'), muted ? styles.muted : styles.ink];
   return (
-    <View style={styles.row} accessible accessibilityLabel={`${label}: ${value}`}>
-      <Text style={[...tone, styles.flex]}>{label}</Text>
-      <Text style={[...tone, strong && styles.amount]}>{value}</Text>
-    </View>
+    <AmountRow
+      label={label}
+      value={value}
+      style={[textStyle(strong ? 'label' : 'small'), muted ? styles.muted : styles.ink]}
+      valueStyle={strong && styles.amount}
+    />
   );
 }
 
@@ -634,6 +647,10 @@ function lastDay(endsAt: string, locale: Locale): string {
   return formatDate(new Date(new Date(endsAt).getTime() - 1), locale, 'long');
 }
 
+const RADIO_DOT = 24;
+/** The width beside a reason's label: the screen and card padding, the radio and its gap. */
+const REASON_LABEL_INSET = CARD_HEADING_INSET + RADIO_DOT + spacing.md;
+
 const styles = StyleSheet.create({
   ink: { color: colors.ink },
   muted: { color: colors.inkMuted },
@@ -656,8 +673,8 @@ const styles = StyleSheet.create({
   reasonRule: { borderTopWidth: borderWidth.thin, borderTopColor: colors.line },
   // The mockups' `.radio`: an outlined circle, filled by a thick green ring when picked.
   dot: {
-    width: 24,
-    height: 24,
+    width: RADIO_DOT,
+    height: RADIO_DOT,
     // A wrapping label at large text must not squeeze the circle.
     flexShrink: 0,
     borderRadius: radii.pill,
@@ -666,5 +683,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   dotChecked: { borderWidth: 7, borderColor: colors.green },
-  row: { flexDirection: 'row', gap: spacing.md },
 });

@@ -19,7 +19,8 @@ import { colors, controlHeight, minTapTarget, radii, spacing } from '@taskbeavo/
 import { IntlMessageFormat } from 'intl-messageformat';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../components/ui/text';
 import type { ProviderCredential, SignInApi } from '../auth/sign-in-api';
 import { Checkbox } from '../components/sign-in/checkbox';
 import { CodeField } from '../components/sign-in/code-field';
