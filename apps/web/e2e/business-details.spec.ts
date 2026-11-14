@@ -282,3 +282,58 @@ test('sends a signed-out visitor to sign-in and back', async ({ page, stubGraphq
   await page.goto('/en/settings');
   await expect(page).toHaveURL(/\/en\/sign-in\?next=%2Fsettings$/);
 });
+
+// Mockups 19a and 14c (BEAV-213): one column at every width, the consent switches in a list
+// card with the documents as list rows under it, and the business kind as radio cards.
+test('Settings is one centred column, laid out as mockups 19a and 14c', async ({
+  page,
+  stubGraphql,
+}, testInfo) => {
+  await stubGraphql(answers({ business: null }));
+  for (const locale of ['en', 'de', 'fr'] as const) {
+    await page.goto(`/${locale}/settings`);
+    const business = page.getByTestId('business-details');
+    const privacy = page.getByTestId('privacy-settings');
+    await expect(privacy.getByRole('switch')).toHaveCount(3);
+    const b = (await business.boundingBox())!;
+    const p = (await privacy.boundingBox())!;
+    // Stacked, never side by side.
+    expect(p.y, locale).toBeGreaterThanOrEqual(b.y + b.height);
+    expect(Math.abs(p.x - b.x), locale).toBeLessThan(1);
+    expect(Math.abs(p.width - b.width), locale).toBeLessThan(1);
+    if (testInfo.project.name === 'desktop') {
+      expect(p.width, locale).toBeLessThanOrEqual(560);
+      expect(Math.abs(p.x + p.width / 2 - 640), locale).toBeLessThan(2);
+    }
+    expect(await noHorizontalScroll(page), locale).toBe(true);
+  }
+
+  await page.goto('/en/settings');
+  const switches = page.getByTestId('privacy-consents');
+  // Each switch is named by its row title and described by its caption.
+  await expect(
+    switches.getByRole('switch', { name: 'News and offers by email' }),
+  ).toHaveAccessibleDescription('Booking and payment messages always arrive.');
+  // The whole row is the tap target.
+  for (const row of await switches.locator('label').all()) {
+    expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  }
+  const documents = page.getByTestId('privacy-documents');
+  await expect(documents.getByRole('link', { name: 'Privacy notice' })).toHaveAttribute(
+    'href',
+    '/en/privacy',
+  );
+  await expect(documents.getByRole('link', { name: 'Cookie policy' })).toHaveAttribute(
+    'href',
+    '/en/cookies',
+  );
+
+  await page.getByTestId('business-add').click();
+  const kinds = page.getByRole('group', { name: 'Type of business' });
+  await expect(kinds.getByRole('radio')).toHaveCount(2);
+  for (const card of await kinds.locator('label').all()) {
+    expect((await card.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  }
+  await kinds.getByText('Company').click();
+  await expect(page.getByTestId('business-kind-COMPANY')).toBeChecked();
+});

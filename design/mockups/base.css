@@ -79,7 +79,7 @@ body{font-family:'Manrope',sans-serif;background:#DCD9CE;color:#17211C;padding:4
 .check.on{background:#1F5C46;border-color:#1F5C46}
 .radio{width:24px;height:24px;border-radius:999px;border:2px solid #5E6661;flex:none;background:#fff}
 .radio.on{border:7px solid #1F5C46}
-.toggle{width:52px;height:32px;border-radius:999px;background:#D5D2C7;position:relative;flex:none}
+.toggle{width:52px;height:32px;border-radius:999px;background:#7D8580;position:relative;flex:none}
 .toggle::after{content:'';position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:999px;background:#fff}
 .toggle.on{background:#1F5C46}
 .toggle.on::after{left:23px}

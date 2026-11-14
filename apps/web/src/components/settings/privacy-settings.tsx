@@ -12,9 +12,9 @@ import { toApiLocale, type Locale } from '@taskbeavo/i18n';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { useAnalyticsConsent } from '../../consent/use-analytics-consent';
-import styles from '../consent/consent.module.css';
 import { errorMessage } from '../sign-in/error-message';
-import own from '../sign-in/sign-in.module.css';
+import { LinkRow, ListCard, SwitchRow } from '../ui';
+import styles from './settings.module.css';
 
 type Marketing = Extract<ConsentPurpose, 'MARKETING_EMAIL' | 'MARKETING_PUSH'>;
 const MARKETING: { purpose: Marketing; label: 'marketingEmail' | 'marketingPush' }[] = [
@@ -27,7 +27,8 @@ const MARKETING: { purpose: Marketing; label: 'marketingEmail' | 'marketingPush'
  * browser, and news and offers by email and by push. All off until the user agrees; every
  * change is logged as a CONSENT row before it shows as saved. Booking and payment messages
  * can't be switched off, so they aren't here. The mockup's "price-suggestion statistics"
- * switch is left out: TaskBeavo never suggests prices (hard rule k).
+ * switch is left out: TaskBeavo never suggests prices (hard rule k). Laid out as mockup 19a:
+ * the switches in a list card, the footnote under it, then the documents as list rows.
  */
 export function PrivacySettings() {
   const t = useTranslations();
@@ -70,79 +71,49 @@ export function PrivacySettings() {
   const failure = error ?? (browser.failed ? errorMessage(t, browser.failed) : null);
 
   return (
-    <section className={own.panel} aria-labelledby={titleId} data-testid="privacy-settings">
-      <h2 id={titleId} className={own.title}>
+    <section className={styles.section} aria-labelledby={titleId} data-testid="privacy-settings">
+      <h2 id={titleId} className={styles.heading}>
         {t('privacySettings.title')}
       </h2>
-      <div className={styles.options}>
-        <Toggle
-          label={t('privacySettings.analytics')}
-          description={t('privacySettings.analyticsWeb')}
+      <ListCard data-testid="privacy-consents">
+        <SwitchRow
+          title={t('privacySettings.analytics')}
+          subtitle={t('privacySettings.analyticsWeb')}
           checked={browser.choice?.analytics === true}
           disabled={browser.saving || browser.choice === undefined}
           onChange={setAnalytics}
           testId="privacy-analytics"
         />
         {MARKETING.map(({ purpose, label }) => (
-          <Toggle
+          <SwitchRow
             key={purpose}
-            label={t(`privacySettings.${label}`)}
-            description={t('privacySettings.marketingBody')}
+            title={t(`privacySettings.${label}`)}
+            subtitle={t('privacySettings.marketingBody')}
             checked={granted(purpose)}
             disabled={loading || !data}
             onChange={(value) => setMarketing(purpose, value)}
             testId={`privacy-${purpose.toLowerCase().replace('_', '-')}`}
           />
         ))}
-      </div>
+      </ListCard>
       {failure && (
-        <p className={own.error} role="alert">
+        <p className={styles.error} role="alert">
           {failure}
         </p>
       )}
-      <p className={own.muted}>{t('privacySettings.footnote')}</p>
-      <a className={styles.link} href={legalPath('privacy', locale)}>
-        {t('legal.documents.PRIVACY')}
-      </a>
-      <a className={styles.link} href={legalPath('cookies', locale)}>
-        {t('legal.documents.COOKIES')}
-      </a>
+      <p className={styles.caption}>{t('privacySettings.footnote')}</p>
+      <ListCard data-testid="privacy-documents">
+        <LinkRow
+          title={t('legal.documents.PRIVACY')}
+          href={legalPath('privacy', locale)}
+          testId="privacy-notice-link"
+        />
+        <LinkRow
+          title={t('legal.documents.COOKIES')}
+          href={legalPath('cookies', locale)}
+          testId="privacy-cookies-link"
+        />
+      </ListCard>
     </section>
-  );
-}
-
-function Toggle({
-  label,
-  description,
-  checked,
-  disabled,
-  onChange,
-  testId,
-}: {
-  label: string;
-  description: string;
-  checked: boolean;
-  disabled: boolean;
-  onChange(value: boolean): void;
-  testId: string;
-}) {
-  const id = useId();
-  return (
-    <label className={styles.option} htmlFor={id}>
-      <span className={styles.optionText}>
-        <strong>{label}</strong>
-        <span>{description}</span>
-      </span>
-      <input
-        id={id}
-        type="checkbox"
-        role="switch"
-        className={styles.switch}
-        checked={checked}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.checked)}
-        data-testid={testId}
-      />
-    </label>
   );
 }
