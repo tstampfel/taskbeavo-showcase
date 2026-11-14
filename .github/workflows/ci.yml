@@ -199,6 +199,11 @@ jobs:
         run: bash scripts/test_check_public_tree.sh
         env:
           REQUIRE_GITLEAKS: '1'
+      # The demo screenshots keep one size per set, so the README rows line up (docs/demo/README.md).
+      - name: Demo screenshot sizes and metadata
+        run: python3 scripts/check_demo_screenshots.py
+      - name: Tests for the demo screenshot check
+        run: python3 scripts/test_check_demo_screenshots.py
 
   web-e2e:
     name: Web e2e
