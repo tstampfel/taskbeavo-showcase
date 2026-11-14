@@ -4,6 +4,7 @@ import { Children, isValidElement } from 'react';
 import type { TextProps } from 'react-native';
 import { StyleSheet, Text, useWindowDimensions } from 'react-native';
 import { useRegisterHeading } from './text-scale-scope';
+import { withTextBoxRounding } from './text-style';
 
 /*
  * Why headings need this: iOS and Android break a word in the middle when the word alone is
@@ -210,7 +211,12 @@ export function Heading({
   const floor = textScaleFloor(fontScale, fontSize);
   useRegisterHeading(Math.max(1, Math.min(Math.max(fit, floor), maxScale ?? Infinity)), fontSize);
   return (
-    <Text accessibilityRole="header" maxFontSizeMultiplier={scale} style={style} {...props}>
+    <Text
+      accessibilityRole="header"
+      maxFontSizeMultiplier={scale}
+      style={withTextBoxRounding(style)}
+      {...props}
+    >
       {children}
     </Text>
   );

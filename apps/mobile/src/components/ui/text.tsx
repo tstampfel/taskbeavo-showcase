@@ -10,6 +10,7 @@ import {
   wordFitFontScale,
 } from './heading';
 import { useHeadingCap } from './text-scale-scope';
+import { withTextBoxRounding } from './text-style';
 
 /*
  * Body text at the largest text sizes (BEAV-223). Like headings (BEAV-219), a paragraph, a
@@ -112,6 +113,7 @@ export function Text({
     <NativeText
       maxFontSizeMultiplier={Math.max(1, Math.min(cap, maxFontSizeMultiplier ?? Infinity))}
       {...props}
+      style={withTextBoxRounding(props.style)}
     >
       {hasElements(children) ? (
         <NestedText.Provider value>{children}</NestedText.Provider>

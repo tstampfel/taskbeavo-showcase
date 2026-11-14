@@ -1,6 +1,6 @@
 import { minTapTarget, spacing, typography } from '@taskbeavo/ui-tokens';
 import { fireEvent, render, screen, within } from '@testing-library/react-native';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   CountryPicker,
@@ -108,15 +108,6 @@ describe('CountryPicker', () => {
         expect(wordsFit(label, typography.h2.fontSize * scale, full)).toBe(true);
       },
     );
-
-    it('sets the title in the font’s own line height, which iOS wraps as it measures', async () => {
-      // With h2's fixed line height, iOS drew "Država u kojoj živite" on two lines in a box
-      // measured for three, the second line running past the right edge (iPhone 17e, AX5).
-      const title = await openAt(390, 3.571, 'hr', 'Država u kojoj živite');
-      const style = StyleSheet.flatten(title.props.style);
-      expect(style.fontSize).toBe(typography.h2.fontSize);
-      expect(style.lineHeight).toBeUndefined();
-    });
 
     it('keeps the title beside Done at the default text size', async () => {
       const label = 'Država u kojoj živite';

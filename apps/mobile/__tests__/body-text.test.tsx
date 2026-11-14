@@ -2,11 +2,12 @@ import { typography } from '@taskbeavo/ui-tokens';
 import { render, screen } from '@testing-library/react-native';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, Platform, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { catalogues, locales } from '@taskbeavo/i18n';
 import {
   AmountRow,
+  Button,
   Heading,
   ListCard,
   ListRow,
@@ -31,6 +32,7 @@ import {
   wordFitFontScale,
 } from '../src/components/ui/heading';
 import { headingCap } from '../src/components/ui/text-scale-scope';
+import { TEXT_BOX_ROUNDING } from '../src/components/ui/text-style';
 
 /** iOS's largest accessibility text size (AX5) scales 17pt body text to 53pt. */
 const AX5 = 53 / 17;
@@ -464,22 +466,6 @@ describe('review round 3 (BEAV-223)', () => {
     expect(body.props.maxFontSizeMultiplier).toBeGreaterThanOrEqual(2);
   });
 
-  // R4-1: iOS drew a modal title with a fixed line height on fewer lines than it measured.
-  it('sets a sheet title in the font’s own line height', async () => {
-    atSize(390, AX5);
-    const title = 'Unternehmensdaten entfernen?';
-    await render(
-      <SafeAreaProvider initialMetrics={metrics}>
-        <Sheet visible onClose={jest.fn()} title={title} closeLabel="Schließen">
-          <Text>x</Text>
-        </Sheet>
-      </SafeAreaProvider>,
-    );
-    const style = StyleSheet.flatten(screen.getByRole('header', { name: title }).props.style);
-    expect(style.fontSize).toBe(typography.h2.fontSize);
-    expect(style.lineHeight).toBeUndefined();
-  });
-
   it.each([
     [375, 'Unternehmensdaten'],
     [402, 'Unternehmensdaten'],
@@ -603,5 +589,82 @@ describe('the app’s text', () => {
     walk(join(root, 'src'));
     walk(join(root, 'app'));
     expect(offenders).toEqual([]);
+  });
+});
+
+describe('review round 5 (BEAV-223): text boxes never shorter than their lines on iOS', () => {
+  // R4-1, R5-1: Yoga can round a text box a fraction of a point below the height React Native
+  // measured, and iOS then folds the last line into the one above (react-native#58970).
+  function bottomPadding(element: ReturnType<typeof screen.getByText>) {
+    return StyleSheet.flatten(element.props.style)?.paddingBottom;
+  }
+
+  async function renderAll(extra?: object) {
+    atFontScale(AX5);
+    await render(
+      <>
+        <Heading style={[{ fontSize: typography.h2.fontSize }, extra]}>
+          Land, in dem Sie leben
+        </Heading>
+        <Text style={[{ fontSize: typography.small.fontSize }, extra]}>
+          Wie eingetragen, bis zu 200 Zeichen.
+        </Text>
+        <Button label="Speichern" onPress={jest.fn()} />
+      </>,
+    );
+    return [
+      screen.getByRole('header'),
+      screen.getByText(/Wie eingetragen/),
+      screen.getByText('Speichern'),
+    ];
+  }
+
+  it('gives every shared text component the extra 0.01pt on iOS', async () => {
+    for (const element of await renderAll()) expect(bottomPadding(element)).toBe(TEXT_BOX_ROUNDING);
+  });
+
+  it('adds it to a bottom padding the text already has', async () => {
+    const [heading, text] = await renderAll({ paddingBottom: 4 });
+    expect(bottomPadding(heading!)).toBe(4 + TEXT_BOX_ROUNDING);
+    expect(bottomPadding(text!)).toBe(4 + TEXT_BOX_ROUNDING);
+  });
+
+  it('leaves Android alone', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+    for (const element of await renderAll()) expect(bottomPadding(element)).toBeUndefined();
+  });
+
+  it('gives a link inside a sentence none: padding has no effect on a span', async () => {
+    atFontScale(AX5);
+    await render(
+      <Text style={{ fontSize: typography.body.fontSize }}>
+        Ich akzeptiere die <Text>Nutzungsbedingungen</Text> heute und hier.
+      </Text>,
+    );
+    expect(bottomPadding(screen.getByText('Nutzungsbedingungen'))).toBeUndefined();
+  });
+
+  it('is the only raw React Native Text: everything else uses the shared components', () => {
+    const raw: string[] = [];
+    const visit = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const path = join(dir, name);
+        if (statSync(path).isDirectory()) visit(path);
+        else if (/\.tsx?$/.test(name)) {
+          const source = readFileSync(path, 'utf8');
+          const imports = source.match(/import\s*\{([^}]*)\}\s*from\s*'react-native'/g) ?? [];
+          if (imports.some((line) => /(^|[\s{,])Text(\s+as\s+\w+)?\s*[,}]/.test(line))) {
+            raw.push(relative(join(__dirname, '..'), path));
+          }
+        }
+      }
+    };
+    visit(join(__dirname, '..', 'src'));
+    visit(join(__dirname, '..', 'app'));
+    expect(raw.sort()).toEqual([
+      'src/components/ui/button.tsx',
+      'src/components/ui/heading.tsx',
+      'src/components/ui/text.tsx',
+    ]);
   });
 });

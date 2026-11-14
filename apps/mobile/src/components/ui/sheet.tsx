@@ -120,9 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.line,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
-  // The font's own line height: iOS can draw a title with a fixed one on fewer lines than it
-  // measured, running past the right edge at the largest text sizes (review R4-1).
-  title: { flex: 1, color: colors.ink, lineHeight: undefined },
+  title: { flex: 1, color: colors.ink },
   close: {
     width: minTapTarget,
     height: minTapTarget,

@@ -202,10 +202,7 @@ const styles = StyleSheet.create({
   // Done first, on the right, then the title on the whole line under it.
   headerStacked: { flexDirection: 'column-reverse', gap: spacing.sm },
   doneRow: { flexDirection: 'row', justifyContent: 'flex-end' },
-  // The font's own line height, not h2's fixed one: in this modal, iOS drew a title with a fixed
-  // line height on fewer lines than it measured, so "Država u / kojoj živite" ran past the
-  // right edge at AX5 on a 390pt phone, above an empty line (review R4-1).
-  title: { flexShrink: 1, lineHeight: undefined },
+  title: { flexShrink: 1 },
   search: {
     minHeight: controlHeight.md,
     paddingHorizontal: spacing.lg,
