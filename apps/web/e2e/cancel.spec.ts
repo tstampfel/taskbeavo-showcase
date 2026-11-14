@@ -139,6 +139,56 @@ test('the reason first, then the refund with the API amounts, Back keeps the rea
   expect(await noHorizontalScroll(page)).toBe(true);
 });
 
+test('a deadline passing on step 2 shows the new amount there and confirms that one', async ({
+  page,
+  stubGraphql,
+}) => {
+  // 24 h before the start passes while the poster reads step 2: the server refuses the old
+  // refund with CANCELLATION_CHANGED (backend bookings/cancel.py), and the page refetches.
+  const early = {
+    ...late,
+    case: 'EARLY',
+    refundCents: 3_360,
+    helperCompensationCents: 0,
+    keptFeeCents: 0,
+  };
+  let preview: typeof late = early;
+  const cancelled: Variables[] = [];
+  await stubGraphql(
+    answers(() => booking({ cancelPreview: preview }), {
+      CancelBooking: (variables) => {
+        cancelled.push(variables);
+        if (cancelled.length === 1) {
+          preview = late;
+          return {
+            data: null,
+            errors: [{ message: 'changed', extensions: { code: 'CANCELLATION_CHANGED' } }],
+          };
+        }
+        return { data: { cancelBooking: booking({ cancelPreview: preview }) } };
+      },
+    }),
+  );
+  await page.goto('/en/bookings/booking-1/cancel');
+  await page.getByTestId('cancel-reason-NO_LONGER_NEEDED').check();
+  await page.getByTestId('cancel-see-refund').click();
+  const rows = page.getByTestId('cancel-refund-rows');
+  await expect(rows).toContainText('€33.60');
+  await expect(rows).not.toContainText('€25.21');
+
+  await page.getByTestId('cancel-confirm').click();
+  // Still on step 2, with the server's new amounts and the reason why.
+  const refund = page.getByTestId('cancel-step-refund');
+  await expect(rows).toContainText('€25.21');
+  await expect(rows).toContainText('€7.50');
+  await expect(refund).toContainText('the helper keeps part of the price');
+  await expect(page.getByText('The refund changed since you opened this screen')).toBeVisible();
+
+  await page.getByTestId('cancel-confirm').click();
+  await expect.poll(() => cancelled).toHaveLength(2);
+  expect(cancelled.map((v) => v.expectedRefundCents)).toEqual([3_360, 2_521]);
+});
+
 test('a no-fault reason asks the helper on step 2 instead of cancelling', async ({
   page,
   stubGraphql,
