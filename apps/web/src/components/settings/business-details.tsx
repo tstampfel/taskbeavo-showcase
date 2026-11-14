@@ -12,8 +12,8 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useRouter } from '../../i18n/navigation';
 import { errorMessage } from '../sign-in/error-message';
-import styles from '../sign-in/sign-in.module.css';
-import { Button, Card, Input, Sheet } from '../ui';
+import styles from './settings.module.css';
+import { Button, Card, CheckIcon, Input, Note, Sheet } from '../ui';
 
 const KINDS: PosterBusinessKind[] = ['OBRT', 'COMPANY'];
 
@@ -32,7 +32,8 @@ function oibError(t: Translate, error: unknown): string | null {
  * Settings → Business details (BEAV-199): the obrt or company a poster books for, through the
  * BEAV-195 operations. Saving asks first, because a business poster books registered
  * businesses only and private helpers' open offers on their tasks are withdrawn. Only the
- * masked OIB ever comes back, so editing asks for the OIB again.
+ * masked OIB ever comes back, so editing asks for the OIB again. The form follows mockup 14c's
+ * business branch, as on mobile (BEAV-215): the kind as radio cards, then the name and OIB.
  */
 export function BusinessDetails() {
   const t = useTranslations();
@@ -53,8 +54,8 @@ export function BusinessDetails() {
 
   if (!viewer && error && !loading) {
     return (
-      <section className={styles.panel} data-testid="business-load-error">
-        <h2 className={styles.title}>{t('businessDetails.title')}</h2>
+      <section className={styles.section} data-testid="business-load-error">
+        <h2 className={styles.heading}>{t('businessDetails.title')}</h2>
         <p className={styles.error} role="alert">
           {errorMessage(t, error)}
         </p>
@@ -119,17 +120,17 @@ function BusinessSummary({
   };
 
   return (
-    <section className={styles.panel} data-testid="business-details">
-      <h2 className={styles.title}>{t('businessDetails.title')}</h2>
+    <section className={styles.section} data-testid="business-details">
+      <h2 className={styles.heading}>{t('businessDetails.title')}</h2>
       {notice ? (
-        <p className={styles.note} role="status" data-testid="business-notice">
+        <Note icon={<CheckIcon size={18} />} role="status" data-testid="business-notice">
           {notice}
-        </p>
+        </Note>
       ) : null}
       <p className={styles.muted}>{t('businessDetails.intro')}</p>
       {business ? (
         <Card data-testid="business-saved">
-          <p className={styles.label}>{business.name}</p>
+          <p className={styles.name}>{business.name}</p>
           <p className={styles.text}>{t(`businessDetails.kind.${business.kind}`)}</p>
           <p className={styles.text} data-testid="business-oib">
             {t('businessDetails.savedOib', { oib: business.oibMasked })}
@@ -233,19 +234,19 @@ function BusinessForm({
 
   return (
     <form
-      className={styles.panel}
+      className={styles.section}
       data-testid="business-form"
       onSubmit={(event) => {
         event.preventDefault();
         setConfirming(true);
       }}
     >
-      <h2 className={styles.title}>{t('businessDetails.title')}</h2>
+      <h2 className={styles.heading}>{t('businessDetails.title')}</h2>
       <fieldset className={styles.fieldset}>
-        <legend className={styles.label}>{t('businessDetails.kindLabel')}</legend>
-        <div className={styles.segments}>
+        <legend className={styles.legend}>{t('businessDetails.kindLabel')}</legend>
+        <div className={styles.stack}>
           {KINDS.map((option) => (
-            <label key={option} className={styles.segment}>
+            <label key={option} className={styles.kind}>
               <input
                 type="radio"
                 name="kind"

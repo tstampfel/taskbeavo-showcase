@@ -137,7 +137,7 @@ function PhoneNumber({
         <Button type="submit" fullWidth disabled={loading} data-testid="send-sms">
           {t('phone.send')}
         </Button>
-        <Button variant="ghost" fullWidth onClick={onLater} data-testid="phone-later">
+        <Button variant="ghost" size="sm" fullWidth onClick={onLater} data-testid="phone-later">
           {t('phone.later')}
         </Button>
       </div>

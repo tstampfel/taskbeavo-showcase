@@ -1,0 +1,132 @@
+/* The mockups' list card: `.card` with `padding: 4px 14px` and `.hr` lines between rows. */
+.card {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--tb-space-xs) var(--tb-space-md);
+  border-radius: var(--tb-radius-lg);
+  background: var(--tb-color-white);
+  box-shadow: var(--tb-shadow-card);
+  color: var(--tb-color-ink);
+  list-style: none;
+}
+
+.card > li + li {
+  border-top: var(--tb-border-thin) solid var(--tb-color-line);
+}
+
+.item {
+  display: flex;
+}
+
+/* At least 52px (64px with a caption in the mockups); taller rows grow with the text. */
+.row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--tb-space-md);
+  box-sizing: border-box;
+  min-height: var(--tb-control-md);
+  padding: var(--tb-space-md) var(--tb-space-xs);
+  color: inherit;
+  text-decoration: none;
+}
+
+.pressable {
+  cursor: pointer;
+}
+
+.pressable:focus-visible,
+.switch:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-input-focus-border);
+  outline-offset: var(--tb-border-focus);
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.title {
+  font-size: var(--tb-font-body-size);
+  line-height: var(--tb-font-body-line);
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--tb-color-ink-muted);
+  font-size: var(--tb-font-caption-size);
+  line-height: var(--tb-font-caption-line);
+  font-weight: 600;
+}
+
+.chevron {
+  display: inline-flex;
+  flex: none;
+  color: var(--tb-color-ink-muted);
+}
+
+/*
+ * The mockups' `.toggle`: a 52 × 32 track with a white knob. The off track is the control
+ * colour, not the mockup's light grey, so the switch keeps 3:1 against the card (WCAG 1.4.11).
+ */
+.switch {
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  width: 52px;
+  height: 32px;
+  margin: 0;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-control);
+  appearance: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-white);
+  transition: left 0.15s;
+}
+
+.switch:checked {
+  background: var(--tb-color-green);
+}
+
+.switch:checked::after {
+  left: 23px;
+}
+
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch,
+  .switch::after {
+    transition: none;
+  }
+}
+
+/* Windows high contrast: the track and knob keep visible edges. */
+@media (forced-colors: active) {
+  .switch {
+    border: var(--tb-border-thin) solid;
+  }
+
+  .switch::after {
+    background: currentcolor;
+  }
+}

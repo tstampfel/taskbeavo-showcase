@@ -3,7 +3,7 @@
 import { CODE_LENGTH, formatCountdown, normalizeCode, signInErrorOf } from '@taskbeavo/graphql';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { Button } from '../ui';
+import { Button, Card } from '../ui';
 import { errorMessage } from './error-message';
 import styles from './sign-in.module.css';
 import { useSecondsLeft } from './use-countdown';
@@ -96,12 +96,12 @@ export function CodeStep({
     return (
       <div className={styles.panel} data-testid={`${testId}-locked`}>
         <Title className={styles.title}>{title}</Title>
-        <div className={styles.card} role="alert">
+        <Card className={styles.locked} role="alert">
           <CardTitle className={styles.cardTitle}>{t('signIn.lockedTitle')}</CardTitle>
           <p className={styles.muted}>
             {t('signIn.lockedBody', { time: formatCountdown(lockedSeconds) })}
           </p>
-        </div>
+        </Card>
       </div>
     );
   }

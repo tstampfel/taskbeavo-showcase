@@ -175,16 +175,28 @@
   outline-offset: 2px;
 }
 
-.card {
-  display: flex;
-  flex-direction: column;
+.locked {
   align-items: center;
-  gap: var(--tb-space-sm);
-  padding: var(--tb-space-xl);
-  border: 1px solid var(--tb-color-line);
-  border-radius: var(--tb-radius-lg);
-  background: var(--tb-color-white);
   text-align: center;
+}
+
+/* Mockup 15h: the confirmation in a card, the danger button under its explanation. */
+.notMeCard {
+  gap: var(--tb-space-lg);
+}
+
+.textLink {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  min-height: var(--tb-tap-target);
+  color: var(--tb-color-green);
+  font-weight: 700;
+}
+
+.textLink:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-input-focus-border);
+  outline-offset: 2px;
 }
 
 .cardTitle {

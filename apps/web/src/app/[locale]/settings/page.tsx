@@ -4,7 +4,7 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import { notFound } from 'next/navigation';
 import { BusinessDetails } from '../../../components/settings/business-details';
 import { PrivacySettings } from '../../../components/settings/privacy-settings';
-import styles from '../../../components/sign-in/sign-in.module.css';
+import styles from '../../../components/settings/settings.module.css';
 import { routing } from '../../../i18n/routing';
 import { AppShell } from '../../../components/shell/app-shell';
 
@@ -19,7 +19,8 @@ export async function generateMetadata({
 
 /**
  * Account settings: Business details (BEAV-199), the obrt or company a poster books for, and
- * Privacy and data (BEAV-83), the analytics and marketing consent switches.
+ * Privacy and data (BEAV-83), the analytics and marketing consent switches. One column at
+ * every width (mockups 14c and 19a; BEAV-213).
  */
 export default async function SettingsPage({ params }: PageProps<'/[locale]/settings'>) {
   const { locale } = await params;

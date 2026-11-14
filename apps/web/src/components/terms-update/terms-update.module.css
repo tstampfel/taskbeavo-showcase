@@ -1,25 +1,115 @@
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tb-space-sm);
-  margin: 0;
+/*
+ * We've updated our terms (mockup 21b): one centred column at every width. The button bar
+ * (PinnedFoot) bleeds into this column's side and bottom padding.
+ */
+.main {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
   padding: var(--tb-space-lg);
-  border: 1px solid var(--tb-color-line);
-  border-radius: var(--tb-radius-lg);
-  background: var(--tb-color-white);
-  list-style: none;
 }
 
-.heading {
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-lg);
+}
+
+.text,
+.muted,
+.error {
   margin: 0;
   font-size: var(--tb-font-small-size);
   line-height: var(--tb-font-small-line);
+}
+
+.muted {
+  color: var(--tb-color-ink-muted);
+}
+
+.center {
+  text-align: center;
+}
+
+.error {
+  color: var(--tb-color-error);
+  font-weight: 700;
+}
+
+.changes {
+  gap: var(--tb-space-md);
+}
+
+/* The mockup's `.c` label inside the card, in ink. */
+.caps {
+  margin: 0;
+  font-size: var(--tb-font-caption-size);
+  line-height: var(--tb-font-caption-line);
   font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ticks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tick {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-space-sm);
+  font-size: var(--tb-font-small-size);
+  line-height: var(--tb-font-small-line);
+}
+
+/* As tall as the first line, at any text size, so the tick stays beside it. */
+.tickIcon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: var(--tb-font-small-line);
+  color: var(--tb-color-green);
+}
+
+.inlineLink {
+  color: var(--tb-color-green);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.inlineLink:focus-visible,
+.checkRow input:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-input-focus-border);
+  outline-offset: 2px;
+}
+
+.checkRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-space-md);
+  min-height: var(--tb-tap-target);
+  font-size: var(--tb-font-small-size);
+  line-height: var(--tb-font-small-line);
+  cursor: pointer;
+}
+
+.checkRow input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--tb-color-green);
 }
 
 .link {
   display: inline-flex;
+  align-self: flex-start;
   align-items: center;
   min-height: var(--tb-tap-target);
   color: var(--tb-color-green);
@@ -31,11 +121,15 @@
   outline-offset: 2px;
 }
 
+/*
+ * Limited mode (mockup 21c's note). At desktop width it lines up with the pages' centred
+ * column (560px less its padding) instead of running the full width of the window.
+ */
 .banner {
   display: flex;
   flex-direction: column;
   gap: var(--tb-space-xs);
-  margin: var(--tb-space-md) var(--tb-space-lg) 0;
+  margin: var(--tb-space-md) max(var(--tb-space-lg), calc((100% - 528px) / 2)) 0;
   padding: var(--tb-space-md) var(--tb-space-lg);
   border-radius: var(--tb-radius-md);
   background: var(--tb-color-orange-tint);

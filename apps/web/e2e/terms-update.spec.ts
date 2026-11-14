@@ -344,3 +344,93 @@ test('leaving a page before the screen opens still opens it on the next page', a
   await expect(page).toHaveURL(/\/en\/terms-update\?next=%2Fverify-phone$/);
   await expect(page.getByTestId('terms-update-version')).toContainText('2027-01');
 });
+
+// Mockup 21b (BEAV-213): the "What's changed" card with a tick per line, then the full-terms
+// link, the refusal line and the tick box, then the button bar with a small "Not now".
+test('lays the screen out as mockup 21b', async ({ page }, testInfo) => {
+  await stubApi(page);
+  await page.goto('/en/terms-update');
+
+  const changes = page.getByRole('heading', { level: 2, name: "What's changed" });
+  await expect(changes).toBeVisible();
+  const card = page.getByTestId('terms-update').locator('ul');
+  await expect(card.locator('li')).toHaveCount(2);
+  await expect(card.locator('li svg[aria-hidden="true"]')).toHaveCount(2);
+
+  // In reading order. Accept is left out: on a phone its bar is pinned to the screen's bottom.
+  const order = await Promise.all(
+    ['terms-update-read', 'terms-update-refuse', 'terms-update-agree'].map(
+      async (id) => (await page.getByTestId(id).boundingBox())!.y,
+    ),
+  );
+  expect(order).toEqual([...order].sort((a, b) => a - b));
+
+  const foot = page.getByTestId('terms-update-foot');
+  await expect(foot.getByTestId('terms-update-accept')).toBeVisible();
+  await expect(foot.getByTestId('terms-update-not-now')).toBeVisible();
+  await expect(foot).toContainText('Tick the box to accept');
+  // "Not now" is the small ghost button under Accept; both keep a 44px tap target.
+  for (const id of ['terms-update-accept', 'terms-update-not-now']) {
+    expect((await page.getByTestId(id).boundingBox())!.height, id).toBeGreaterThanOrEqual(44);
+  }
+  // At desktop width the screen is a centred column, not the full window.
+  if (testInfo.project.name === 'desktop') {
+    const box = (await page.getByTestId('terms-update').boundingBox())!;
+    expect(box.width).toBeLessThanOrEqual(560);
+    expect(Math.abs(box.x + box.width / 2 - 640)).toBeLessThan(2);
+  }
+  expect(await noHorizontalScroll(page)).toBe(true);
+});
+
+const overlaps = (a: { y: number; height: number }, b: { y: number; height: number }) =>
+  a.y < b.y + b.height && b.y < a.y + a.height;
+const sticks = (page: Page) =>
+  page
+    .getByTestId('terms-update-foot')
+    .evaluate((el) => getComputedStyle(el).position === 'sticky');
+
+// The button bar is pinned only while it fits (BEAV-210's PinnedFoot): with 200% text it must
+// never cover the tick box or its links, in any language, on a 375px phone (WCAG 2.2 2.4.11).
+for (const height of [812, 667]) {
+  test(`with 200% text at 375×${height}, the button bar never covers the tick box`, async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'a phone-width check');
+    await stubApi(page);
+    await page.setViewportSize({ width: 375, height });
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Page.setFontSizes', { fontSizes: { standard: 32, fixed: 26 } });
+
+    for (const locale of ['hr', 'en', 'de', 'fr'] as const) {
+      await page.goto(`/${locale}/terms-update`);
+      const foot = page.getByTestId('terms-update-foot');
+      const box = page.getByTestId('terms-update-agree');
+      await expect(box).toBeVisible();
+      expect(await sticks(page), locale).toBe(false);
+      for (const target of [box, page.getByTestId('terms-update-close')]) {
+        await target.focus();
+        await target.scrollIntoViewIfNeeded();
+        expect(overlaps((await target.boundingBox())!, (await foot.boundingBox())!), locale).toBe(
+          false,
+        );
+      }
+      expect(await noHorizontalScroll(page), locale).toBe(true);
+    }
+  });
+}
+
+test('at the default text size the button bar is pinned and clear of the tick box', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'a phone-width check');
+  await stubApi(page);
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.goto('/de/terms-update');
+  const foot = page.getByTestId('terms-update-foot');
+  await expect(foot).toHaveAttribute('data-pinned', 'true');
+  expect(await sticks(page)).toBe(true);
+  await expect(page.getByTestId('terms-update-accept')).toBeInViewport();
+  const box = page.getByTestId('terms-update-agree');
+  await box.focus();
+  expect(overlaps((await box.boundingBox())!, (await foot.boundingBox())!)).toBe(false);
+});
