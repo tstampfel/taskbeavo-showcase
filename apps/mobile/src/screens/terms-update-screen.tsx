@@ -10,11 +10,21 @@ import { formatDate, toApiLocale, type Locale } from '@taskbeavo/i18n';
 import { IntlMessageFormat } from 'intl-messageformat';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, ActivityIndicator, Pressable, Text } from 'react-native';
+import { colors, spacing, typography } from '@taskbeavo/ui-tokens';
+import {
+  AccessibilityInfo,
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { Checkbox } from '../components/sign-in/checkbox';
 import { errorMessage } from '../components/sign-in/error-message';
 import { markTermsUpdateShown } from '../components/terms-banner';
 import { Button, Card, Heading } from '../components/ui';
+import { SectionLabel } from './settings-screen';
 import { ErrorText, Page, PAGE_HEADING_INSET, styles } from './sign-in-screen';
 
 export interface TermsUpdateScreenProps {
@@ -35,7 +45,9 @@ type Shown = { kind: string; version: string; date: string };
  * The API checks the version (TERMS_NOT_ACCEPTED if it changed meanwhile) and records the
  * acceptance with this session's platform; "Not now" leaves the account limited. Checkout
  * never counts as accepting (user decision 2026-11-05). A HELPER_TERMS document is named and
- * opened as the Helper terms.
+ * opened as the Helper terms. Laid out as mockup 21b: no top bar, the "What's changed" card
+ * with ticked lines, the full-terms link, and a small "Not now" under Accept; the refusal line
+ * and the tick box are the app's own (legal requirements the mockup leaves out).
  */
 export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdateScreenProps) {
   const { t, i18n } = useTranslation();
@@ -101,6 +113,7 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
             <Button
               label={t('termsUpdate.notNow')}
               variant="ghost"
+              size="sm"
               onPress={onDone}
               testID="terms-update-not-now"
             />
@@ -167,6 +180,7 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
           <Button
             label={t('termsUpdate.notNow')}
             variant="ghost"
+            size="sm"
             disabled={busy}
             onPress={onDone}
             testID="terms-update-not-now"
@@ -182,18 +196,24 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
           {t('termsUpdate.version', shown)}
         </Text>
       ) : null}
-      <Card variant="flat">
-        <Heading style={styles.strong}>{t('termsUpdate.whatsChanged')}</Heading>
+      <Card testID="terms-update-changes">
+        <SectionLabel inCard>{t('termsUpdate.whatsChanged')}</SectionLabel>
         {/* NEEDS REVIEW (lawyer): the per-version summary of changes is legal text and comes
             from the lawyer with BEAV-182; until then a marked draft. The bookings and refusal
             lines are DRAFT legal sentences too (BEAV-39). */}
-        <Text style={styles.small}>{t('termsUpdate.summaryDraft', { kind })}</Text>
+        <Ticked>{t('termsUpdate.summaryDraft', { kind })}</Ticked>
         {shown ? (
-          <Text style={styles.small} testID="terms-update-bookings">
-            {t('termsUpdate.bookingsKeep', shown)}
-          </Text>
+          <Ticked testID="terms-update-bookings">{t('termsUpdate.bookingsKeep', shown)}</Ticked>
         ) : null}
       </Card>
+      <Pressable
+        accessibilityRole="link"
+        onPress={() => openLegal(page, locale)}
+        style={styles.linkButton}
+        testID="terms-update-read"
+      >
+        <Text style={styles.link}>{t('termsUpdate.readFull', { kind })}</Text>
+      </Pressable>
       <Text style={styles.small} testID="terms-update-refuse">
         <Rich
           locale={locale}
@@ -204,14 +224,6 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
           testID="terms-update-close"
         />
       </Text>
-      <Pressable
-        accessibilityRole="link"
-        onPress={() => openLegal(page, locale)}
-        style={styles.linkButton}
-        testID="terms-update-read"
-      >
-        <Text style={styles.link}>{t('termsUpdate.readFull', { kind })}</Text>
-      </Pressable>
       {/* Only once the document is loaded: the line names its version and date (R1-1). */}
       {shown ? (
         <Checkbox
@@ -236,6 +248,51 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
     </Page>
   );
 }
+
+/** A line of the "What's changed" card, after a green tick (21b). */
+function Ticked({ children, testID }: { children: string; testID?: string }) {
+  // As tall as the first line of the text at the user's text size, so the tick stays on it.
+  const { fontScale } = useWindowDimensions();
+  return (
+    <View style={tickStyles.row}>
+      <View
+        style={[tickStyles.box, { height: typography.small.lineHeight * fontScale }]}
+        importantForAccessibility="no-hide-descendants"
+        accessibilityElementsHidden
+        testID="terms-update-tick"
+      >
+        <View style={tickStyles.tick} />
+      </View>
+      <Text style={[styles.small, tickStyles.text]} testID={testID}>
+        {children}
+      </Text>
+    </View>
+  );
+}
+
+const TICK_WIDTH = 12;
+const TICK_STROKE = 2;
+
+const tickStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  box: {
+    width: spacing.lg,
+
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // A tick: the bottom and right sides of a box, turned 45°.
+  tick: {
+    width: TICK_WIDTH / 2,
+    height: TICK_WIDTH,
+    marginTop: -TICK_STROKE,
+    borderRightWidth: TICK_STROKE,
+    borderBottomWidth: TICK_STROKE,
+    borderColor: colors.green,
+    transform: [{ rotate: '45deg' }],
+  },
+  text: { flex: 1 },
+});
 
 /** A catalogue message with one tag rendered as an inline link. */
 export function Rich({

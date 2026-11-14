@@ -1,6 +1,8 @@
 import { SignInError, type SignInAnswer, type ViewerFieldsFragment } from '@taskbeavo/graphql';
 import { catalogues } from '@taskbeavo/i18n';
+import { colors, minTapTarget, radii } from '@taskbeavo/ui-tokens';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { i18n } from '../src/i18n';
 import type { LanguageDeps } from '../src/i18n/preference';
 import { SignInScreen, type SignInScreenProps } from '../src/screens/sign-in-screen';
@@ -318,5 +320,59 @@ describe('SignInScreen', () => {
     await waitFor(() => expect(props.onSignedIn).toHaveBeenCalled());
     expect(lang.saveToAccount.mock.calls).toEqual(saved);
     expect(i18n.language).toBe('fr');
+  });
+});
+
+// BEAV-215: the sign-in steps use the app's shared top bar and controls.
+describe('SignInScreen design', () => {
+  it('has the shared top bar: a round, labelled back button and the title as heading', async () => {
+    await show();
+    await fireEvent.press(screen.getByTestId('email-sign-in'));
+    const back = screen.getByTestId('screen-back');
+    expect(back.props.accessibilityLabel).toBe(en.signIn.back);
+    expect(StyleSheet.flatten(back.props.style)).toMatchObject({
+      width: minTapTarget,
+      height: minTapTarget,
+      borderRadius: radii.pill,
+      backgroundColor: colors.white,
+    });
+    expect(screen.getByRole('header', { name: en.signIn.continueWithEmail })).toBeTruthy();
+    // Drawn, not a "‹" glyph.
+    expect(screen.queryByText('‹', { includeHiddenElements: true })).toBeNull();
+    await fireEvent.press(back);
+    expect(screen.getByTestId('sign-in-welcome')).toBeTruthy();
+  });
+
+  it('draws the welcome screen without a top bar', async () => {
+    await show();
+    expect(screen.queryByTestId('screen-back')).toBeNull();
+    expect(screen.getByRole('header', { name: en.signIn.welcomeTitle })).toBeTruthy();
+  });
+
+  it('outlines an unticked box in the mockups’ grey, filled green once ticked', async () => {
+    await show({ api: api({ verifyEmailCode: detailsRequired }) });
+    await emailCode();
+    await screen.findByTestId('account-details');
+    const box = () => StyleSheet.flatten(screen.getByTestId('is-adult-box').props.style);
+    expect(box()).toMatchObject({ borderColor: colors.inkMuted, backgroundColor: colors.white });
+    await fireEvent.press(screen.getByTestId('is-adult'));
+    expect(box()).toMatchObject({ borderColor: colors.green, backgroundColor: colors.green });
+  });
+
+  it('shows the lockout in a white card', async () => {
+    await show({
+      api: api({
+        verifyEmailCode: jest.fn(async () => {
+          throw new SignInError('LOCKED', 600);
+        }),
+      }),
+    });
+    await emailCode();
+    const locked = await screen.findByTestId('email-code-locked');
+    expect(StyleSheet.flatten(locked.props.style)).toMatchObject({
+      backgroundColor: colors.white,
+      borderRadius: radii.lg,
+    });
+    expect(screen.getByRole('header', { name: en.signIn.lockedTitle })).toBeTruthy();
   });
 });

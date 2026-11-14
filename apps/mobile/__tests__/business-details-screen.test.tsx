@@ -5,9 +5,12 @@ import {
   SetPosterBusinessDocument,
 } from '@taskbeavo/graphql';
 import { catalogues } from '@taskbeavo/i18n';
+import { colors, minTapTarget } from '@taskbeavo/ui-tokens';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { GraphQLError } from 'graphql';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { fonts } from '../src/fonts';
 import { i18n } from '../src/i18n';
 import { BusinessDetailsScreen } from '../src/screens/business-details-screen';
 
@@ -218,5 +221,46 @@ describe('BusinessDetailsScreen', () => {
       { request: { query: PosterBusinessDocument }, result: { data: { viewer: null } } },
     ]);
     await waitFor(() => expect(onSignedOut).toHaveBeenCalledTimes(1));
+  });
+});
+
+// BEAV-215: mockup 14c, the business branch: the kind as radio cards, then the fields.
+describe('BusinessDetailsScreen design', () => {
+  it('offers the kind as radio cards, the picked one outlined in green', async () => {
+    await renderScreen([loaded(null)]);
+    await fireEvent.press(await screen.findByTestId('business-add'));
+    const obrt = screen.getByRole('radio', { name: en.kind.OBRT });
+    const company = screen.getByRole('radio', { name: en.kind.COMPANY });
+    const outline = (node: typeof obrt) => StyleSheet.flatten(node.props.style);
+    expect(obrt.props.accessibilityState).toMatchObject({ checked: true });
+    expect(outline(obrt)).toMatchObject({
+      borderColor: colors.green,
+      backgroundColor: colors.white,
+    });
+    expect(Number(outline(company).minHeight)).toBeGreaterThanOrEqual(minTapTarget);
+    await fireEvent.press(company);
+    expect(
+      screen.getByRole('radio', { name: en.kind.COMPANY }).props.accessibilityState,
+    ).toMatchObject({ checked: true });
+    expect(outline(screen.getByRole('radio', { name: en.kind.OBRT })).borderColor).toBe(
+      colors.line,
+    );
+  });
+
+  it('confirms a save in a green note and shows the business name in bold', async () => {
+    await renderScreen([
+      loaded(null),
+      setMock(
+        { kind: 'OBRT', name: 'Obrt Primjer', oib: OIB },
+        { data: { setPosterBusiness: user(business()) } },
+      ),
+    ]);
+    await fillAndConfirm();
+    const notice = await screen.findByTestId('business-notice');
+    expect(StyleSheet.flatten(notice.props.style).backgroundColor).toBe(colors.greenTint);
+    expect(StyleSheet.flatten(screen.getByText('Obrt Primjer').props.style)).toMatchObject({
+      fontFamily: fonts.bold,
+      color: colors.ink,
+    });
   });
 });

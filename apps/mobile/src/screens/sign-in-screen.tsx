@@ -19,24 +19,14 @@ import { colors, controlHeight, minTapTarget, radii, spacing } from '@taskbeavo/
 import { IntlMessageFormat } from 'intl-messageformat';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  AccessibilityInfo,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AccessibilityInfo, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { ProviderCredential, SignInApi } from '../auth/sign-in-api';
 import { Checkbox } from '../components/sign-in/checkbox';
 import { CodeField } from '../components/sign-in/code-field';
 import { CountryPicker } from '../components/sign-in/country-picker';
 import { errorMessage } from '../components/sign-in/error-message';
 import { useSecondsLeft } from '../components/sign-in/use-seconds-left';
-import { Button, Heading, Input } from '../components/ui';
+import { Button, Card, Heading, Input, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 import { fonts } from '../fonts';
 import {
@@ -200,6 +190,10 @@ export function SignInScreen(props: SignInScreenProps) {
 
 // --- Steps -------------------------------------------------------------------------------
 
+/**
+ * The account screens' frame: the shared `Screen` with its top bar, scrolling body and footer
+ * (BEAV-215). Without a title or back button there is no top bar (welcome, 21b).
+ */
 export function Page({
   title,
   onBack,
@@ -215,48 +209,15 @@ export function Page({
 }) {
   const { t } = useTranslation();
   return (
-    <SafeAreaView style={styles.safeArea} testID={testID}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        {onBack || title ? (
-          <View style={styles.top}>
-            {onBack ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('signIn.back')}
-                onPress={onBack}
-                style={styles.iconButton}
-                testID={`${testID}-back`}
-              >
-                <Text
-                  style={styles.backArrow}
-                  importantForAccessibility="no"
-                  accessibilityElementsHidden
-                >
-                  ‹
-                </Text>
-              </Pressable>
-            ) : (
-              <View style={styles.iconButton} />
-            )}
-            <Heading
-              style={styles.topTitle}
-              inset={TOP_TITLE_INSET}
-              maxScale={TITLE_MAX_FONT_SCALE}
-            >
-              {title}
-            </Heading>
-            <View style={styles.iconButton} />
-          </View>
-        ) : null}
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          {children}
-        </ScrollView>
-        {footer ? <View style={styles.foot}>{footer}</View> : null}
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <Screen
+      title={title}
+      onBack={onBack}
+      backLabel={t('signIn.back')}
+      footer={footer}
+      testID={testID}
+    >
+      {children}
+    </Screen>
   );
 }
 
@@ -534,12 +495,12 @@ export function CodeStep({
         <Text style={styles.link}>{changeLabel}</Text>
       </Pressable>
       {lockedSeconds > 0 ? (
-        <View style={styles.card} accessibilityRole="alert" testID={`${testID}-locked`}>
-          <Text style={styles.h2}>{t('signIn.lockedTitle')}</Text>
+        <Card style={styles.locked} accessibilityRole="alert" testID={`${testID}-locked`}>
+          <Heading style={styles.h2}>{t('signIn.lockedTitle')}</Heading>
           <Text style={styles.mutedCenter}>
             {t('signIn.lockedBody', { time: formatCountdown(lockedSeconds) })}
           </Text>
-        </View>
+        </Card>
       ) : (
         <>
           <CodeField
@@ -855,31 +816,10 @@ function LocalePrompt({
  */
 export const TITLE_MAX_FONT_SCALE = 1.6;
 
-/** The width beside the top bar title: the bar's padding and the two buttons. */
-const TOP_TITLE_INSET = 2 * spacing.sm + 2 * minTapTarget;
-
 /** The width beside a heading in the page body: its padding on both sides. */
 export const PAGE_HEADING_INSET = 2 * spacing.lg;
 
 export const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: colors.offWhite },
-  flex: { flex: 1 },
-  top: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sm,
-  },
-  iconButton: {
-    minWidth: minTapTarget,
-    minHeight: minTapTarget,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backArrow: { fontFamily: fonts.bold, fontSize: 32, lineHeight: 36, color: colors.green },
-  topTitle: { ...textStyle('label'), flex: 1, textAlign: 'center', color: colors.ink },
-  body: { flexGrow: 1, gap: spacing.lg, padding: spacing.lg },
-  foot: { gap: spacing.md, padding: spacing.lg },
   welcome: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: spacing.lg },
   display: { ...textStyle('display'), color: colors.ink, textAlign: 'center' },
   h1: { ...textStyle('h1'), color: colors.ink },
@@ -889,18 +829,14 @@ export const styles = StyleSheet.create({
   strong: { ...textStyle('small'), fontFamily: fonts.bold, color: colors.ink },
   muted: { ...textStyle('small'), color: colors.inkMuted },
   mutedCenter: { ...textStyle('small'), color: colors.inkMuted, textAlign: 'center' },
+  caption: { ...textStyle('caption'), color: colors.inkMuted },
   error: { ...textStyle('small'), fontFamily: fonts.bold, color: colors.error },
   required: { fontFamily: fonts.bold, color: colors.error },
   link: { ...textStyle('small'), fontFamily: fonts.bold, color: colors.green },
   inlineLink: { fontFamily: fonts.bold, color: colors.green, textDecorationLine: 'underline' },
   linkButton: { alignSelf: 'flex-start', minHeight: minTapTarget, justifyContent: 'center' },
-  card: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    padding: spacing.xl,
-    borderRadius: radii.lg,
-    backgroundColor: colors.white,
-  },
+  // The lockout: a white card, centred (the mockups' `.card` with its padding at 20pt).
+  locked: { alignItems: 'center', gap: spacing.sm, padding: spacing.xl },
   providerCard: {
     gap: spacing.xs,
     padding: spacing.md,
