@@ -6,7 +6,8 @@
   "What's changed" bullets (a draft placeholder until the lawyer's per-version summary,
   BEAV-182), the beaver, and 21c's home feed around the note (open booking card, disabled
   "Post a task"); 21a the 30-day notice card (BEAV-182); 21d Settings, Legal; 21e the web
-  terms page. Delete each frame once built.
+  terms page. Delete each frame once built. BEAV-215 added the app's refusal line and the
+  unticked agree box (with its version and date) to 21b, which Accept waits for.
 -->
 <div class="screen" id="21a Terms change · 30-day notice">{{sb}}
  <div class="body" style="gap:12px;padding-top:4px">
@@ -33,8 +34,10 @@
    <div class="row s" style="align-items:flex-start">{{i:check:18:#2E8B57}}<span>Bookings you already made keep the terms you booked under.</span></div>
   </div>
   <span class="link s">Read the full Terms and conditions</span>
+  <span class="s">If you don't agree, you can still finish your open bookings, download your data and <span class="link">close your account</span> free of charge.</span>
+  <div class="row s" style="align-items:flex-start;gap:12px"><span class="check"></span><span>I have read and agree to the updated <span class="link">Terms and conditions</span> (version 1.2, in force from 1 Dec 2026).</span></div>
  </div>
- <div class="foot"><div class="btn pri">Accept</div><div class="btn ghost sm">Not now</div></div>
+ <div class="foot"><div class="btn dis">Accept</div><span class="s mut" style="text-align:center">Tick the box to accept</span><div class="btn ghost sm">Not now</div></div>
 </div>
 
 <div class="screen" id="21c Limited mode · terms not accepted">{{sb}}

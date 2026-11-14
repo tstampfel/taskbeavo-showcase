@@ -6,7 +6,9 @@ import {
   ViewerDocument,
 } from '@taskbeavo/graphql';
 import { catalogues } from '@taskbeavo/i18n';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { minTapTarget, typography } from '@taskbeavo/ui-tokens';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { GraphQLError } from 'graphql';
 import {
   markTermsUpdateShown,
@@ -347,5 +349,33 @@ describe('TermsBanner', () => {
 
     await waitFor(() => expect(screen.queryByTestId('terms-banner')).toBeNull());
     expect(mockPush).not.toHaveBeenCalled();
+  });
+});
+
+// BEAV-215: mockup 21b.
+describe('TermsUpdateScreen design', () => {
+  it('has no top bar, and a white card headed by small capitals with ticked lines', async () => {
+    await renderScreen([status(true), terms('2026-12')], {});
+    const card = await screen.findByTestId('terms-update-changes');
+    expect(screen.queryByTestId('screen-back')).toBeNull();
+    // Raised (a soft shadow), not outlined.
+    expect(StyleSheet.flatten(card.props.style).borderWidth).toBeUndefined();
+    const label = screen.getByRole('header', { name: de.whatsChanged });
+    expect(StyleSheet.flatten(label.props.style)).toMatchObject({ textTransform: 'uppercase' });
+    expect(
+      within(card).getAllByTestId('terms-update-tick', { includeHiddenElements: true }),
+    ).toHaveLength(2);
+  });
+
+  it('shows "Not now" as a small button that is still a 44pt target', async () => {
+    await renderScreen([status(true), terms('2026-12')], {});
+    await screen.findByTestId('terms-update-changes');
+    const notNow = screen.getByRole('button', { name: de.notNow });
+    expect(StyleSheet.flatten(within(notNow).getByText(de.notNow).props.style).fontSize).toBe(
+      typography.small.fontSize,
+    );
+    expect(Number(StyleSheet.flatten(notNow.props.style).minHeight)).toBeGreaterThanOrEqual(
+      minTapTarget,
+    );
   });
 });
