@@ -72,6 +72,7 @@ function render(locale: Locale, b: ReturnType<typeof booking>, viewer: string) {
         locale={locale}
         busy={false}
         actions={actions}
+        summary={{ title: 'Grocery run for Mama', slotStart: '2026-11-08T08:00:00Z' }}
       />
     </NextIntlClientProvider>,
   );
@@ -171,5 +172,94 @@ describe('ArrivalPanel', () => {
     const out = render('fr', booking('h', { canAnswerLate: true }), 'p');
     expect(out).toContain(html(catalogues.fr.arrival.lateCancel));
     expect(out).toContain(html(catalogues.fr.arrival.lateKeep));
+  });
+
+  // BEAV-212: aligned with mockup 18 (18a, 18c-18i).
+  const part = (out: string, testId: string) => {
+    const start = out.indexOf(`data-testid="${testId}"`);
+    expect(start, testId).toBeGreaterThan(-1);
+    return out.slice(start);
+  };
+
+  it.each(locales)('opens with the slot, the status and the task in one card, in %s', (locale) => {
+    for (const viewer of ['h', 'p']) {
+      const summary = part(render(locale, booking('h'), viewer), 'arrival-summary');
+      expect(summary).toContain('Grocery run for Mama');
+      expect(summary).toContain('data-testid="arrival-status"');
+    }
+  });
+
+  it.each(locales)(
+    "before setting off, the bar holds On my way and I've arrived (18a), in %s",
+    (locale) => {
+      const t = catalogues[locale].arrival;
+      const out = render(locale, booking('h', { canTap: true }), 'h');
+      const foot = part(out, 'arrival-foot');
+      expect(foot).toContain('data-testid="arrival-on-my-way"');
+      expect(foot).toContain('data-testid="arrival-arrived"');
+      expect(out).toContain(html(t.etaLegend));
+      expect(out).toContain(html(t.onMyWayHint));
+      expect(out).toContain('data-testid="arrival-running-late"');
+    },
+  );
+
+  it.each(locales)('once on the way, the chips send a new arrival time (18g), in %s', (locale) => {
+    const t = catalogues[locale].arrival;
+    const out = render(
+      locale,
+      booking('h', {
+        canTap: true,
+        onMyWayAt: '2026-11-08T07:40:00Z',
+        etaAt: '2026-11-08T08:15:00Z',
+      }),
+      'h',
+    );
+    expect(out).toContain(html(t.runningLate));
+    expect(out).toContain(html(t.lateHint));
+    expect(out).toContain('data-testid="arrival-eta-30"');
+    expect(part(out, 'arrival-foot')).toMatch(
+      /<button[^>]*disabled=""[^>]*data-testid="arrival-send-late"/,
+    );
+    expect(out).not.toContain('arrival-on-my-way');
+    expect(out).not.toContain('arrival-running-late');
+  });
+
+  it('explains what support looks at next to "I was there" (18h)', () => {
+    const out = render(
+      'en',
+      booking('h', { noShowContestBy: '2026-11-09T10:00:00Z', canContestNoShow: true }),
+      'h',
+    );
+    expect(part(out, 'arrival-no-show')).toContain(html(catalogues.en.arrival.contestExplainer));
+  });
+
+  it.each(locales)(
+    'badges where a reported no-show stands for the poster (18e, 18f), in %s',
+    (locale) => {
+      const t = catalogues[locale].arrival.noShowBadge;
+      const by = { noShowContestBy: '2026-11-09T10:00:00Z' };
+      expect(part(render(locale, booking('h', by), 'p'), 'arrival-no-show')).toContain(
+        html(t.reported),
+      );
+      expect(
+        part(
+          render(locale, booking('h', { ...by, noShowContestedAt: '2026-11-08T12:00:00Z' }), 'p'),
+          'arrival-no-show',
+        ),
+      ).toContain(html(t.contested));
+      expect(
+        part(
+          render(locale, booking('h', { ...by, noShowSettledAt: '2026-11-09T10:01:00Z' }), 'p'),
+          'arrival-no-show',
+        ),
+      ).toContain(html(t.settled));
+    },
+  );
+
+  it('gives the poster no button bar: every answer sits with its question', () => {
+    const out = render('en', booking('h', { canAnswerLate: true, canConfirmCame: true }), 'p');
+    expect(out).not.toContain('arrival-foot');
+    expect(part(out, 'arrival-late')).toContain('data-testid="arrival-late-keep"');
+    expect(part(out, 'arrival-did-they-come')).toContain('data-testid="arrival-came-yes"');
   });
 });

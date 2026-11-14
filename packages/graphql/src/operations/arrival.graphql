@@ -110,3 +110,15 @@ mutation RespondToEarlyStart($bookingId: ID!, $confirm: Boolean!, $locale: Local
     ...ArrivalFields
   }
 }
+
+# The day-of-the-job page's summary card (web, BEAV-212): the task's title. No address or
+# contact here; those stay on the booking detail, where the server gates them (hard rule e).
+query BookingArrivalTask($id: ID!) {
+  booking(id: $id) {
+    id
+    task {
+      id
+      title
+    }
+  }
+}
