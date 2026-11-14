@@ -118,7 +118,7 @@ Check rounding (Decimal, integer cents). The matching fiscal receipts and storno
 - Every new user-facing string, error code, push, email, SMS and PDF text has keys in all four catalogs (`hr`, `en`, `de`, `fr`); the missing-key check passes. No hard-coded text in components.
 - Croatian plurals use ICU `one`/`few`/`other`.
 - Backend messages are rendered in the recipient's locale, not the sender's.
-- Legal texts (terms, privacy, withdrawal information, cancellation policy) are flagged for professional translation and lawyer review, never machine-translated. Fiscal receipts are issued in Croatian.
+- Legal texts (terms, privacy, withdrawal information, cancellation policy) are flagged for professional translation and lawyer review, never machine-translated. At a real launch, fiscal receipts are issued in Croatian.
 
 ### 13. Marketplace, not a work organiser (rule k)
 

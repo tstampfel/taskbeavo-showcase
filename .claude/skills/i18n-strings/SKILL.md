@@ -76,7 +76,7 @@ Backend `.po` catalogs aren't part of it: their msgids come from the code throug
 
 ## Legal texts are different
 
-Terms, helper terms, privacy notice, withdrawal information, cancellation policy and cookie policy are **never machine-translated** and never drafted here. Put placeholder text clearly marked `DRAFT – needs professional translation and lawyer review` and list the document in the PR description under "Needs professional translation". The versions themselves live in `LEGAL_DOCUMENT` (see `legal-terms`). Fiscal receipts are issued in Croatian; the email around them can include a translated summary.
+Terms, helper terms, privacy notice, withdrawal information, cancellation policy and cookie policy are **never machine-translated** and never drafted here. Put placeholder text clearly marked `DRAFT – needs professional translation and lawyer review` and list the document in the PR description under "Needs professional translation". The versions themselves live in `LEGAL_DOCUMENT` (see `legal-terms`). At a real launch, fiscal receipts are issued in Croatian (the showcase issues none); the email around them can include a translated summary.
 
 User content (chat, task descriptions, reviews) is shown as written; there is no auto-translation at launch.
 
