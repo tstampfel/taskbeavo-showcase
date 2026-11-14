@@ -1,3 +1,15 @@
+<!--
+  Web aligned in BEAV-212 (apps/web components/booking): 7b's "Payment requested" card first
+  (clock icon, "Waiting for the poster to release €…" for the helper; the poster is asked to
+  release when happy), the on-site contact card with the avatar and a Call button (only from
+  the exact place the server sends, hard rule e; "Shown to you only while booked" sits once,
+  under the address), and the safety line as a note. Amounts are the API's.
+  Kept here for what isn't built yet: 7a Request payment (photos, note) and 7d/7e/7f Release
+  payment, the tip and the success screen wait for BEAV-116, BEAV-117 and BEAV-118; until then
+  /bookings/[id]/release is a placeholder with no action and no amount. 7b's timeline and
+  reminders, the contact's language and "no smartphone" line, and "Contact support" aren't in
+  the API yet. 7c is a push. Delete each frame once built.
+-->
 <div class="screen" id="7a Helper · Request payment">{{sb}}
  <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Request payment</span><span style="width:44px"></span></div>
  <div class="body" style="gap:12px;padding-top:0">

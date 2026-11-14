@@ -1,3 +1,17 @@
+<!--
+  Web aligned in BEAV-212 (apps/web components/arrival): a summary card (slot, status line,
+  task), the arrival time chips as pills with the bell note, and the helper's button bar
+  (On my way and I've arrived; once on the way, Send new arrival time and I've arrived) pinned
+  only while it fits (PinnedFoot). 18c the late answer, 18d "Did your helper come?" with 18e's
+  warning as a note and the API refund, the no-show badges of 18e/18f, 18h the orange-edged
+  "I was there" card, and 18i the early start. Every amount is the API's (hard rule g); the
+  day-of-job statuses stay evidence taps only (hard rule k).
+  Kept here for what isn't built yet: 18b is a chat prompt (no chat yet); 18c's refund amount on
+  "Cancel for free" (the late answer has no preview in the API); 18f's refunded amount, card and
+  "Re-open task" on this page (the booking detail and cancel pages show the outcome); the
+  on-site contact card on this page (it is on the booking detail, one tap back). The no-access
+  frames (13j-13l) wait for BEAV-125, /bookings/[id]/no-access is a placeholder until then.
+-->
 <div class="screen" id="18a Helper · On my way">{{sb}}
  <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Grocery run for Mama</span><span class="ibtn">{{i:more}}</span></div>
  <div class="body" style="gap:12px;padding-top:0">
