@@ -6,13 +6,15 @@ import {
   signInErrorOf,
   type PosterBusinessKind,
 } from '@taskbeavo/graphql';
-import { spacing } from '@taskbeavo/ui-tokens';
+import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
 import type { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { errorMessage } from '../components/sign-in/error-message';
-import { Button, Card, Input, Sheet } from '../components/ui';
+import { Button, Card, Input, Note, Sheet } from '../components/ui';
+import { textStyle } from '../components/ui/text-style';
+import { fonts } from '../fonts';
 import { ErrorText, Page, styles as pageStyles } from './sign-in-screen';
 
 const KINDS: PosterBusinessKind[] = ['OBRT', 'COMPANY'];
@@ -35,7 +37,8 @@ export interface BusinessDetailsScreenProps {
  * Settings → Business details (BEAV-199): the obrt or company a poster books for, through the
  * BEAV-195 operations. Saving asks first, because a business poster books registered
  * businesses only and private helpers' open offers on their tasks are withdrawn. Only the
- * masked OIB ever comes back, so editing asks for the OIB again.
+ * masked OIB ever comes back, so editing asks for the OIB again. The form follows mockup 14c's
+ * business branch: the kind as radio cards, then the name and OIB fields.
  */
 export function BusinessDetailsScreen({ onBack, onSignedOut }: BusinessDetailsScreenProps) {
   const { t } = useTranslation();
@@ -135,19 +138,14 @@ function BusinessSummary({
   return (
     <Page testID="business-details" title={t('businessDetails.title')} onBack={onBack}>
       {notice ? (
-        <Text
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-          style={pageStyles.strong}
-          testID="business-notice"
-        >
-          {notice}
-        </Text>
+        <View accessibilityRole="alert" accessibilityLiveRegion="polite">
+          <Note testID="business-notice">{notice}</Note>
+        </View>
       ) : null}
       <Text style={pageStyles.muted}>{t('businessDetails.intro')}</Text>
       {business ? (
         <Card testID="business-saved">
-          <Text style={pageStyles.label}>{business.name}</Text>
+          <Text style={styles.name}>{business.name}</Text>
           <Text style={pageStyles.small}>{t(`businessDetails.kind.${business.kind}`)}</Text>
           <Text style={pageStyles.small} testID="business-oib">
             {t('businessDetails.savedOib', { oib: business.oibMasked })}
@@ -271,7 +269,7 @@ function BusinessForm({
       <View
         accessibilityRole="radiogroup"
         accessibilityLabel={t('businessDetails.kindLabel')}
-        style={pageStyles.segments}
+        style={styles.kinds}
       >
         {KINDS.map((option) => {
           const selected = option === kind;
@@ -285,12 +283,11 @@ function BusinessForm({
                 setKind(option);
                 setFieldError(null);
               }}
-              style={[pageStyles.segment, selected && pageStyles.segmentOn]}
+              style={[styles.kind, selected && styles.kindOn]}
               testID={`business-kind-${option}`}
             >
-              <Text style={[pageStyles.segmentLabel, selected && pageStyles.segmentLabelOn]}>
-                {t(`businessDetails.kind.${option}`)}
-              </Text>
+              <View style={[styles.dot, selected && styles.dotOn]} />
+              <Text style={styles.kindLabel}>{t(`businessDetails.kind.${option}`)}</Text>
             </Pressable>
           );
         })}
@@ -347,4 +344,33 @@ function BusinessForm({
 
 const styles = StyleSheet.create({
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  name: { ...textStyle('body'), fontFamily: fonts.bold, color: colors.ink },
+  kinds: { gap: spacing.sm },
+  // The mockups' selectable `.card` (14b, 14c): white, outlined green with a filled radio when
+  // picked. The unpicked card keeps a hairline so its edge shows on off-white.
+  kind: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    minHeight: minTapTarget + spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: radii.lg,
+    borderWidth: borderWidth.focus,
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+  },
+  kindOn: { borderColor: colors.green },
+  kindLabel: { ...textStyle('body'), fontFamily: fonts.bold, color: colors.ink, flex: 1 },
+  // The mockups' `.radio`, as on the cancel screen.
+  dot: {
+    width: 24,
+    height: 24,
+    flexShrink: 0,
+    borderRadius: radii.pill,
+    borderWidth: 2,
+    borderColor: colors.inkMuted,
+    backgroundColor: colors.white,
+  },
+  dotOn: { borderWidth: 7, borderColor: colors.green },
 });

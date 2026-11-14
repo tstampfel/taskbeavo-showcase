@@ -24,7 +24,10 @@ export function Checkbox({ checked, onChange, label, accessibilityLabel, testID 
       style={styles.row}
       testID={testID}
     >
-      <View style={[styles.box, checked && styles.checked]}>
+      <View
+        style={[styles.box, checked && styles.checked]}
+        testID={testID ? `${testID}-box` : undefined}
+      >
         {checked ? <Text style={styles.tick}>✓</Text> : null}
       </View>
       <View style={styles.label}>
@@ -40,7 +43,9 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: colors.control,
+    // The mockups' `.check` outline: muted ink, 3:1 or better against white and off-white.
+    borderColor: colors.inkMuted,
+    flexShrink: 0,
     borderRadius: radii.sm,
     backgroundColor: colors.white,
     alignItems: 'center',
