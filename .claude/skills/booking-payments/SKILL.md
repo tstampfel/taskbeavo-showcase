@@ -12,7 +12,7 @@ TaskBeavo is the helper's agent, not the merchant of record. The poster's card i
 
 **Plan:** `docs/PLAN.md`, sections "State machine for task, booking and payment"; "Money flow: destination charges keep TaskBeavo out of possession of funds"; "TaskBeavo cancellation policy (revised, consumer-safe)"; ""Couldn't do the job": how Airtasker handles it and the TaskBeavo flow"; "Checkout with card authentication (3D Secure)". Read the matching section before changing behaviour; the plan is the source of truth for product rules, and this skill is how to build them.
 
-The no-access and no-show flows on the day are in `trust-safety`; receipts and stornos are built in `tax-jobs`; the checkout consent and policy acceptance in `legal-terms`.
+The no-access and no-show flows on the day are in `trust-safety`; fiscal receipts and stornos are launch-only and not built in the showcase (hard rule f; `tax-jobs` holds the launch design); the checkout consent and policy acceptance in `legal-terms`.
 
 ## The state machine
 
@@ -90,9 +90,11 @@ stripe.PaymentIntent.create(
 1. Verify the signature with `STRIPE_WEBHOOK_SECRET`; reject with 400 if it fails.
 2. `INSERT INTO stripe_events (id, type, payload) ... ON CONFLICT (id) DO NOTHING`. If nothing was inserted, return 200, because the event was already handled.
 3. Dispatch by type and apply the transition through the state machine. If the booking is already past the target state (an out-of-order event), record it and do nothing.
-4. Fiscal side effects follow confirmed state only (the fee receipt itself is written in the release transaction, a working assumption: BEAV-30):
-   - `payment_intent.succeeded` → FUNDS_HELD; the fee's fiscal receipt is issued at release for now (rule f; PLAN.md 4e, BEAV-128)
-   - `charge.refunded` → refund state, plus a storno receipt if the fee already has a receipt (partial-refund form open: BEAV-30, BEAV-131)
+4. Apply the confirmed state:
+   - `payment_intent.succeeded` → FUNDS_HELD
+   - `charge.refunded` → refund state
+
+   Launch-only, not built in the showcase (hard rule f): at a real launch the fee's fiscal receipt would be written in the release transaction (a working assumption: BEAV-30; PLAN.md 4e), and a refund of a fee that already has a receipt would create a storno (partial-refund form open: BEAV-30, BEAV-131).
 5. Return 2xx quickly. Heavy work goes to Celery, keyed by the event ID.
 
 Handle at minimum: `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.requires_action` (restarts the checkout's 30 minutes), `charge.refunded`, `transfer.reversed` (confirms a settlement with no poster refund, R = 0; `bookings/settlement.py`), `charge.dispute.created`/`closed`, `payout.paid`/`payout.failed` (connected account), and `account.updated`.
@@ -114,8 +116,8 @@ Handle at minimum: `payment_intent.succeeded`, `payment_intent.payment_failed`, 
 | Case | Poster refund | Helper gets | TaskBeavo keeps |
 |---|---|---|---|
 | Before acceptance | nothing charged | 0 | 0 |
-| Within 1 h of accepting, or before the late window | full price + fee | 0 | 0 (no fee receipt yet under the at-release working assumption, BEAV-30; a storno only if one was issued) |
-| Late cancel by poster | the rest | 25% of price, min €5, max €20 | 12% of the helper compensation (fiscal receipt for that amount; if a receipt for the full fee was already issued, the storno form is open: BEAV-30, BEAV-131) |
+| Within 1 h of accepting, or before the late window | full price + fee | 0 | 0 (launch-only: no fee receipt yet under the at-release working assumption, BEAV-30; a storno only if one was issued) |
+| Late cancel by poster | the rest | 25% of price, min €5, max €20 | 12% of the helper compensation (launch-only: a fiscal receipt for that amount; if a receipt for the full fee was already issued, the storno form is open: BEAV-30, BEAV-131) |
 | Late cancel, trader helper inside the 14-day withdrawal period | full price + fee | 0 | 0 |
 | No access, call-out accepted or no reply in 48 h | the rest | 25% of price, min €5, max €15 | 12% of the call-out |
 | No access, poster reschedules | nothing | full price later, on release | the fee, on release |
@@ -159,6 +161,6 @@ Run the `compliance-check` skill on the diff, and fix every FAIL before asking f
 - [ ] Cancellation amounts come only from `cancellation.py`, matching the policy table (rule g)
 - [ ] Early-start consent required before the PaymentIntent (rule g)
 - [ ] Service area re-checked before the booking is created (rule j)
-- [ ] Fiscal receipt written in the release transaction (working assumption, BEAV-30), and a storno for a refunded fee that already has one, in the form BEAV-30/BEAV-131 settles (rule f)
+- [ ] Fiscal receipt and storno: N/A in the showcase (launch-only, rule f); never a failing box. At a real launch: receipt written in the release transaction (working assumption, BEAV-30), and a storno for a refunded fee that already has one, in the form BEAV-30/BEAV-131 settles
 - [ ] Tests: transitions, concurrency, webhook replay, fixtures, cancellation table
 - [ ] `compliance-check` run, with no FAIL

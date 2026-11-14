@@ -43,7 +43,7 @@ Before writing code, pick every matching project skill and load it with the Skil
 | Legal pages, terms acceptance, checkout consent | `legal-terms` |
 | Moderation, contact filter, report/block, incidents, no-show, no-access | `trust-safety` |
 | Sign-in, phone verification, sessions, suspension, Download my data | `auth-and-accounts` |
-| Fiscal receipts, ZKI/JIR, storno, DAC7 | `tax-jobs` |
+| Fiscal receipts, ZKI/JIR, storno, DAC7 reporting | Launch-only, not built in the showcase (hard rule f): don't build it; `ask` the coordinator if a ticket asks for it. `tax-jobs` holds the launch design |
 | Deep links, push/camera/location permissions, cache persist, store privacy forms, Maestro | `mobile-platform` |
 | Profiles, checkout, personal data, telemetry, receipts | `compliance-check` before you finish |
 
