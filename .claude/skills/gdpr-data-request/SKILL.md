@@ -21,7 +21,7 @@ Keep `backend/privacy/data_map.py` up to date. Every model with personal data de
 |---|---|
 | `DELETE` | push tokens, sessions, drafts, saved searches, chat messages the user sent (replaced with "deleted message"), task photos (R2) |
 | `ANONYMISE` | user row (name → "Deleted user", email → `deleted+<uuid>@invalid`), reviews (keep the rating, drop the text and author name), tasks (drop the description and exact address, keep the category, city and price for statistics) |
-| `ARCHIVE` | fiscal receipts, invoices, payment records, `stripe_events` references, DAC7 seller data (legal name, address, OIB/TIN, DOB, IBAN), consent records. Move these to the `archive` schema, readable only by the `archive_reader` role, with a `retain_until` date (11 years for accounting/fiscal; DAC7 retention for DAC7). |
+| `ARCHIVE` | fiscal receipts (launch-only: the showcase issues none, hard rule f), invoices, payment records, `stripe_events` references, DAC7 seller data (legal name, address, OIB/TIN, DOB, IBAN), consent records. Move these to the `archive` schema, readable only by the `archive_reader` role, with a `retain_until` date (11 years for accounting/fiscal; DAC7 retention for DAC7). |
 
 A new model with personal data and no entry in the data map makes `test_data_map_complete` fail. That's intentional.
 

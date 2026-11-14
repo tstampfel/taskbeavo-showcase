@@ -1,6 +1,6 @@
 ---
 name: compliance-check
-description: Review a TaskBeavo diff, branch or PR and output a pass/fail checklist for hard rules a–k, covering fiscal receipt and storno (ZKI/FINA, JIR/CIS), DAC7 seller data fields and quarterly totals, consumer withdrawal/early-start consent, cancellation amounts, GDPR deletion and retention, agent-not-merchant-of-record Stripe setup, no PII in Sentry/Honeycomb telemetry, terms acceptance records (LEGAL_DOCUMENT, TERMS_ACCEPTANCE), consent logging (CONSENT, CONSENT_RECORD), the Croatian service-area rule, the marketplace-not-work-organiser rule (no price setting, steering or penalties for helpers), and i18n coverage in hr, en, de and fr. Use this before merging anything that touches payments, bookings, cancellations, refunds, receipts, user or helper profiles, personal data, account deletion, sign-up, legal pages, consent, checkout UI, onboarding, task location, user-facing text or telemetry, and whenever someone asks "is this compliant", "check GDPR/fiscalization/DAC7", or "review this payment change". booking-payments and the payments-reviewer agent always run it.
+description: Review a TaskBeavo diff, branch or PR and output a pass/fail checklist for hard rules a–k, covering fiscal receipt and storno and DAC7 reporting (N/A in the showcase, launch-only), DAC7 seller data fields kept as collected, consumer withdrawal/early-start consent, cancellation amounts, GDPR deletion and retention, agent-not-merchant-of-record Stripe setup, no PII in Sentry/Honeycomb telemetry, terms acceptance records (LEGAL_DOCUMENT, TERMS_ACCEPTANCE), consent logging (CONSENT, CONSENT_RECORD), the Croatian service-area rule, the marketplace-not-work-organiser rule (no price setting, steering or penalties for helpers), and i18n coverage in hr, en, de and fr. Use this before merging anything that touches payments, bookings, cancellations, refunds, receipts, user or helper profiles, personal data, account deletion, sign-up, legal pages, consent, checkout UI, onboarding, task location, user-facing text or telemetry, and whenever someone asks "is this compliant", "check GDPR/fiscalization/DAC7", or "review this payment change". booking-payments and the payments-reviewer agent always run it.
 ---
 
 # Compliance check
@@ -39,7 +39,9 @@ This is an engineering check, not legal advice. When the answer depends on legal
 - No charge on the platform account followed by a separate payout; no customer money via TaskBeavo's bank account.
 - Copy, receipts and terms present the helper as the provider and TaskBeavo as the intermediary.
 
-### 3. Fiscal receipt and storno (rule f)
+### 3. Fiscal receipt and storno (rule f, launch-only)
+
+**Showcase: N/A.** The showcase builds no CIS fiscalization (owner decision 2026-11-14; hard rule f is launch-only). Mark this row N/A with the note "launch-only, not built in the showcase", never FAIL for a missing receipt, ZKI, JIR or storno. FAIL only if a change calls CIS or loads a FINA certificate, which would be a government integration. The checks below apply at a real launch:
 
 - Every service fee charged (including the 12% kept on late-cancel or call-out compensation) creates a fiscal receipt, written in the release transaction under the working assumption (BEAV-30; the tax adviser may move it to the charge). A storno's form for a partial refund is open (BEAV-30, BEAV-131).
 - The ZKI is signed with the FINA certificate (loaded from the secret file, never committed), and the JIR is obtained from CIS. If CIS is unavailable, the receipt is stored with its ZKI and a retry task re-sends it within the legal deadline.
@@ -47,6 +49,8 @@ This is an engineering check, not legal advice. When the answer depends on legal
 - Numbering is sequential per premises and device, without gaps; receipts are immutable.
 
 ### 4. DAC7 (rule h retention, reporting)
+
+**Showcase:** DAC7 reporting (quarterly totals, the January report, payout holds, filing with Porezna) is launch-only and N/A; never FAIL for its absence. The seller fields helper onboarding already collects must not be removed, and if a change touches them they must stay encrypted where required and survive account deletion in the restricted archive (rule h). The full list below applies at a real launch:
 
 - Helper onboarding stores the DAC7 seller fields: legal name, primary address, TIN/OIB and issuing country, date of birth (individuals), IBAN/financial account, and VAT or business registration (entities).
 - Quarterly totals per seller can be derived from stored records: consideration paid, fees and commissions withheld, and number of activities.
@@ -71,7 +75,7 @@ All amounts come from `bookings/cancellation.py`, and the tests cover:
 | Helper cancel or no-show | full refund, plus a €5 TaskBeavo-funded credit if under 24 h |
 | No fault | full refund |
 
-Check rounding (Decimal, integer cents) and the matching receipts and stornos.
+Check rounding (Decimal, integer cents). The matching fiscal receipts and stornos are launch-only (area 3) and N/A in the showcase.
 
 ### 7. GDPR deletion and retention (rule h)
 
@@ -136,8 +140,8 @@ Always output exactly this:
 |---|---|---|---|
 | 1 | Money flow & idempotency (a, c) | PASS / FAIL / NEEDS REVIEW / N/A | ... |
 | 2 | Agent not merchant of record (b) | ... | ... |
-| 3 | Fiscal receipt & storno (f) | ... | ... |
-| 4 | DAC7 fields & quarterly totals | ... | ... |
+| 3 | Fiscal receipt & storno (f, launch-only) | N/A in the showcase | ... |
+| 4 | DAC7 fields (kept) & reporting (launch-only) | ... | ... |
 | 5 | Withdrawal / early-start consent (g) | ... | ... |
 | 6 | Cancellation amounts (g) | ... | ... |
 | 7 | GDPR deletion & retention (e, h) | ... | ... |

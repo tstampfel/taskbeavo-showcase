@@ -1,6 +1,6 @@
 ---
 name: backend-deploy
-description: Build and deploy TaskBeavo's Django backend with Docker and Render, covering backend/Dockerfile (python:3.12-slim, uv sync --frozen, GDAL/GEOS/PROJ, non-root user, collectstatic), docker-compose.yml for local dev, Render services (web, Celery worker, Celery beat, Key Value) in Frankfurt, the pre-deploy migrate, environment variables and secret files (Stripe, Sentry, Honeycomb, R2, FINA certificate), health checks, and the AWS ECS Fargate migration path as reference. Use this whenever the Dockerfile, compose file, render.yaml, env vars, secrets, worker/beat processes or deployment of the backend change, or someone asks "how do we deploy", "add an env var", "the build fails", "set up Render".
+description: Build and deploy TaskBeavo's Django backend with Docker and Render, covering backend/Dockerfile (python:3.12-slim, uv sync --frozen, GDAL/GEOS/PROJ, non-root user, collectstatic), docker-compose.yml for local dev, Render services (web, Celery worker, Celery beat, Key Value) in Frankfurt, the pre-deploy migrate, environment variables and secret files (Stripe, Sentry, Honeycomb, R2; the FINA certificate only at a real launch), health checks, and the AWS ECS Fargate migration path as reference. Use this whenever the Dockerfile, compose file, render.yaml, env vars, secrets, worker/beat processes or deployment of the backend change, or someone asks "how do we deploy", "add an env var", "the build fails", "set up Render".
 ---
 
 # Backend deploy
@@ -9,7 +9,7 @@ The backend is a single Docker image that runs as three processes (web, worker, 
 
 **Plan:** `docs/PLAN.md`, sections "Deployment: Docker on Render now, an easy path to AWS later"; "A Django monolith, Expo apps and Stripe fit a solo React developer". Read the matching section before changing behaviour; the plan is the source of truth for product rules, and this skill is how to build them.
 
-The FINA certificate's use (signing, expiry warning) is owned by `tax-jobs`; this skill only mounts it as a Render secret file.
+The FINA certificate and `CIS_URL` are launch-only: the showcase builds no government integration (hard rule f), so don't wire them into settings, Celery or Render; their empty placeholders in `backend/.env.example` stay unused. At a real launch, the certificate's use (signing, expiry warning) is owned by `tax-jobs`, and this skill only mounts it as a Render secret file.
 
 ## Files
 
@@ -77,14 +77,14 @@ Use one env group per environment, `taskbeavo-backend-staging` and `taskbeavo-ba
 | `OTEL_EXPORTER_OTLP_ENDPOINT=https://api.eu1.honeycomb.io`, `OTEL_EXPORTER_OTLP_HEADERS=x-honeycomb-team=<key>`, `OTEL_SERVICE_NAME` (per service) | |
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PRIVATE_BUCKET`, `R2_PUBLIC_BUCKET`, `R2_PUBLIC_BASE_URL` (optional `R2_ENDPOINT_URL`) | private bucket for originals, evidence and receipts; public bucket only for metadata-free task photos a task has claimed (`docs/r2.md`) |
 | `FIELD_ENCRYPTION_KEY` | OIB/IBAN encryption; rotate with a re-encrypt migration |
-| `FINA_CERT_PATH=/etc/secrets/fina.p12`, `FINA_CERT_PASSWORD`, `CIS_URL` | |
+| `FINA_CERT_PATH=/etc/secrets/fina.p12`, `FINA_CERT_PASSWORD`, `CIS_URL` | launch-only; not set in the showcase |
 | `EMAIL_BACKEND=core.resend.ResendEmailBackend`, `RESEND_API_KEY` | required; SMTP (`EMAIL_HOST*`) also works |
 | `WEB_APP_URL` | required; notification email links |
 | `TASKBEAVO_LEGAL_NAME`, `TASKBEAVO_OIB`, `TASKBEAVO_ADDRESS`, `TASKBEAVO_CONTACT_EMAIL` | required; TaskBeavo's trader identity in the contract confirmation email |
 | `EXPO_ACCESS_TOKEN`, `POSTHOG_KEY` | optional |
 | `GEOIP_CITY_DATABASE`, `MAXMIND_ACCOUNT_ID`, `MAXMIND_LICENSE_KEY` (secret) | optional; the GeoLite2 City database the API keeps current itself, and the MaxMind account that downloads it (see below) |
 
-The **FINA certificate** is a Render **secret file** (`fina.p12`, mounted at `/etc/secrets/`). Never commit it or bake it into the image.
+At a real launch, the **FINA certificate** is a Render **secret file** (`fina.p12`, mounted at `/etc/secrets/`). Never commit it or bake it into the image.
 
 ### GeoLite2 City database (BEAV-190)
 
@@ -128,6 +128,6 @@ Don't do this without a decision. It's kept here so the setup stays portable:
 - [ ] Compose runs postgis, redis, django, celery and stripe-cli; `/healthz` OK
 - [ ] Render: api, worker and **single** beat in Frankfurt; Key Value with `noeviction`; pre-deploy migrate; health check `/healthz`
 - [ ] New variables in `.env.example` and settings; set in the Render env group by the user
-- [ ] FINA certificate only as a secret file; no secrets in the image or repo; live Stripe keys only in Render
+- [ ] No secrets in the image or repo; live Stripe keys only in Render (at a real launch, the FINA certificate only as a secret file)
 - [ ] Migrations are backward-compatible
 - [ ] User confirmed before deploy; Sentry release and Honeycomb traces verified afterwards

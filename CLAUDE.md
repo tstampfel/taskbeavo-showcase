@@ -2,7 +2,7 @@
 
 TaskBeavo is a local help marketplace in Croatia, launching in Dubrovnik first. Many posters are diaspora families in Germany, Austria and Switzerland booking help for their parents back home, so German, French and remote booking matter as much as Croatian.
 
-The goal is a complete, working product published as a public showcase: every flow works end to end with external services in test or sandbox mode (Stripe test mode, the CIS test environment, EAS preview builds). A real commercial launch is optional and later; its prerequisites (company, FINA certificate, binding opinion, lawyer-approved texts, insurance, helper recruiting, store submissions) are documented in `docs/PLAN.md` but don't block building. The hard rules below apply in full.
+The goal is a complete, working product published as a public showcase: every flow works end to end with external services in test or sandbox mode (Stripe test mode, EAS preview builds). A real commercial launch is optional and later; its prerequisites (company, FINA certificate, binding opinion, lawyer-approved texts, insurance, helper recruiting, store submissions, and the government integrations: CIS fiscalization, DAC7 reporting, eRačun and Porezna uprava filings) are documented in `docs/PLAN.md` but don't block building. The hard rules below apply in full.
 
 The business plan is `docs/PLAN.md`. It is the source of truth for product, legal and tax rules; each skill names the plan sections it implements.
 
@@ -78,7 +78,7 @@ e) **Privacy.** Never expose phone numbers (except the on-site contact's phone, 
 - **Exact address, access details** (doorbell, floor, gate code, key) **and the on-site contact's phone** are visible only to the helper of an accepted booking, and only while it is active (the poster who owns the contact also sees its phone). Everyone else, and the helper once the booking closes, sees the approximate area.
 - **A registered business** (obrt or company) shows its business name and OIB on its public profile and on each offer, as a trader must. Its geographic business address goes only to the signed-in poster of a task it offered on, on that offer and at checkout; the public profile shows only the town, because many obrts are registered at the owner's home. Nothing changes for private helpers.
 
-f) **Fiscalization.** Every service fee charged creates a fiscal receipt: the ZKI is signed with the FINA certificate, and the JIR comes from CIS. Refunds create a storno receipt.
+f) **Fiscalization (launch-only).** A real launch must create a fiscal receipt for every service fee charged: the ZKI is signed with the FINA certificate, and the JIR comes from CIS. Refunds create a storno receipt. The showcase builds no government integration (owner decision 2026-11-14): no CIS fiscalization, FINA certificate, DAC7 reporting, eRačun or Porezna uprava filing, not even against a test environment. Don't build them, and don't fail a change for their absence; the `tax-jobs` skill keeps the launch design.
 
 g) **Cancellation policy.**
 
@@ -95,7 +95,7 @@ g) **Cancellation policy.**
 
 The consumer's consent to an early start (giving up the 14-day withdrawal right) is captured at checkout. The amounts are computed in `bookings/cancellation.py` and nowhere else.
 
-h) **GDPR.** Account deletion deletes or anonymises personal data within one month. Accounting and fiscal records are kept for 11 years, and DAC7 data for its retention period, in a restricted archive.
+h) **GDPR.** Account deletion deletes or anonymises personal data within one month. Accounting and fiscal records are kept for 11 years, and the DAC7 seller data collected at onboarding for its retention period, in a restricted archive.
 
 i) **i18n and accessibility.** All user-facing strings go through `packages/i18n` (`hr`, `en`, `de`, `fr`). The API returns enum keys and error codes, not text; only emails, push, SMS and PDFs are translated on the backend, in the recipient's language. Legal texts are never machine-translated. Tap targets are at least 44px, and contrast meets WCAG AA.
 
@@ -165,7 +165,7 @@ Rows marked "(planned)" don't run yet. When you scaffold something, make it answ
 | `legal-terms` | Legal pages, LEGAL_DOCUMENT versions, TERMS_ACCEPTANCE, re-acceptance and limited mode |
 | `trust-safety` | Category rules, contact-detail filter, report and block, incidents, DSA appeals, no-show and no-access flows |
 | `auth-and-accounts` | Sign-in, phone verification, sessions, rate limits, suspension, recovery, DATA_REQUEST flows |
-| `tax-jobs` | Fiscalization service (ZKI, JIR, storno) and DAC7 reporting |
+| `tax-jobs` | Launch-only, not built in the showcase: fiscalization service (ZKI, JIR, storno) and DAC7 reporting |
 | `mobile-platform` | Expo native setup: deep links, push and permissions, cache persistence, store privacy forms, Maestro e2e |
 | `taskbeavo-manager` | Run the BEAV Jira epics through Orca: pick unblocked tickets, start employee and reviewer workers, track them to an open PR |
 | `taskbeavo-employee` | Dispatched by the manager: implement, fix review findings, open the PR for one BEAV ticket |
