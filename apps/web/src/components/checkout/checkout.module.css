@@ -261,9 +261,12 @@
 }
 
 /*
- * The order button bar. It sticks to the bottom of the screen while the page scrolls, and sits
- * at the end of the page once reached. On a short viewport (large text, landscape phones) it
- * stays in the flow, so it never covers the consent boxes.
+ * The order button bar (PinnedFoot). It is pinned to the bottom of the screen only when both
+ * hold: PinnedFoot measured that it takes at most 35% of the screen (data-pinned), and the
+ * screen is at least 40em tall. Media-query em follows the browser's text size, so large text
+ * or a short, landscape screen leaves the bar at the end of the page, where it never covers the
+ * consent boxes or the helper's details (review R1-1). While pinned, PinnedFoot sets the page's
+ * scroll-padding-bottom to the bar's height, so a focused box scrolls clear of it.
  */
 .foot {
   display: flex;
@@ -275,8 +278,8 @@
   background: var(--tb-color-off-white);
 }
 
-@media (min-height: 600px) {
-  .foot {
+@media (min-height: 40em) {
+  .foot[data-pinned='true'] {
     position: sticky;
     bottom: 0;
   }

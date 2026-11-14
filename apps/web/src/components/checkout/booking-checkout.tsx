@@ -26,6 +26,7 @@ import { useRouter } from '../../i18n/navigation';
 import { Button } from '../ui';
 import { BookingOutcome, DeclineNote, SecureLine, Summary } from './checkout-parts';
 import styles from './checkout.module.css';
+import { PinnedFoot } from './pinned-foot';
 import { takeSecret } from './secret-handoff';
 
 // While confirming, the booking is also refetched in case the live event is missed.
@@ -318,7 +319,7 @@ function PayForm({
     >
       {decline ? <DeclineNote decline={decline} /> : null}
       <PaymentElement options={PAYMENT_ELEMENT_OPTIONS} />
-      <div className={styles.foot} data-testid="checkout-foot">
+      <PinnedFoot>
         <Button
           type="submit"
           fullWidth
@@ -332,7 +333,7 @@ function PayForm({
               // confirms the card payment (the bank may ask for 3-D Secure).
               t('cardPay', { amount: formatMoney(totalCents, locale) })}
         </Button>
-      </div>
+      </PinnedFoot>
     </form>
   );
 }
@@ -409,13 +410,13 @@ export function DemoPayForm({
           {t('demo.failed')}
         </p>
       ) : null}
-      <div className={styles.foot} data-testid="checkout-foot">
+      <PinnedFoot>
         <Button type="submit" fullWidth disabled={busy} aria-busy={busy} data-testid="checkout-pay">
           {retry || decline
             ? t('declined.tryAgain')
             : t('cardPay', { amount: formatMoney(totalCents, locale) })}
         </Button>
-      </div>
+      </PinnedFoot>
     </form>
   );
 }
