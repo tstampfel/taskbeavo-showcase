@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { currentSchedule, loadFees } from '../../../components/fees/fee-schedules';
 import { FeesView } from '../../../components/fees/fees-view';
+import { SiteHeader } from '../../../components/shell/site-header';
 import { localeAlternates } from '../../../i18n/metadata';
 
 function checked(locale: string): Locale {
@@ -29,11 +30,14 @@ export default async function FeesPage({ params }: PageProps<'/[locale]/fees'>) 
   setRequestLocale(locale);
   const { schedules, cancellation } = await loadFees();
   return (
-    <FeesView
-      schedule={currentSchedule(schedules)}
-      upcoming={schedules.filter((schedule) => schedule.status === 'UPCOMING')}
-      cancellation={cancellation}
-      locale={locale}
-    />
+    <>
+      <SiteHeader />
+      <FeesView
+        schedule={currentSchedule(schedules)}
+        upcoming={schedules.filter((schedule) => schedule.status === 'UPCOMING')}
+        cancellation={cancellation}
+        locale={locale}
+      />
+    </>
   );
 }

@@ -3,6 +3,7 @@
 import * as Sentry from '@sentry/nextjs';
 import { useEffect } from 'react';
 import { ErrorView } from '../../components/error-view';
+import { SiteHeader } from '../../components/shell/site-header';
 
 /** A render error below the locale layout: reported, then a translated retry screen. */
 export default function LocaleError({
@@ -15,5 +16,11 @@ export default function LocaleError({
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
-  return <ErrorView onRetry={retry} />;
+  // Language and account stay reachable on the retry screen.
+  return (
+    <>
+      <SiteHeader />
+      <ErrorView onRetry={retry} />
+    </>
+  );
 }

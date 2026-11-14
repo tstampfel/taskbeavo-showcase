@@ -37,6 +37,10 @@
   "languageSwitcher": {
     "label": "Jezik"
   },
+  "appShell": {
+    "back": "Natrag",
+    "accountMenu": "Račun i jezik"
+  },
   "offers": {
     "count": "{count, plural, one {# ponuda} few {# ponude} other {# ponuda}}",
     "budget": "Budžet {amount}",

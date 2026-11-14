@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import styles from '../../../components/sign-in/sign-in.module.css';
 import { TermsUpdate } from '../../../components/terms-update/terms-update';
 import { routing } from '../../../i18n/routing';
+import { AppShell } from '../../../components/shell/app-shell';
 
 export async function generateMetadata({
   params,
@@ -23,14 +24,17 @@ export default async function TermsUpdatePage({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'termsUpdate' });
   const { next } = await searchParams;
   const { termsUpdate, signIn, errors } = await getMessages();
 
   return (
-    <main className={styles.main}>
-      <NextIntlClientProvider messages={{ termsUpdate, signIn, errors }}>
-        <TermsUpdate next={typeof next === 'string' ? next : null} />
-      </NextIntlClientProvider>
-    </main>
+    <AppShell title={t('metaTitle')}>
+      <main className={styles.main}>
+        <NextIntlClientProvider messages={{ termsUpdate, signIn, errors }}>
+          <TermsUpdate next={typeof next === 'string' ? next : null} />
+        </NextIntlClientProvider>
+      </main>
+    </AppShell>
   );
 }

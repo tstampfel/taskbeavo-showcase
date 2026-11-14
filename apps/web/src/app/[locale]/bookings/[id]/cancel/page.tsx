@@ -6,6 +6,7 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import { BookingCancel } from '../../../../../components/cancel/booking-cancel';
 import styles from '../../../../../components/cancel/cancel.module.css';
 import { routing } from '../../../../../i18n/routing';
+import { AppShell } from '../../../../../components/shell/app-shell';
 
 type Props = PageProps<'/[locale]/bookings/[id]/cancel'>;
 
@@ -24,11 +25,12 @@ export default async function BookingCancelPage({ params }: Props) {
   const { cancel, errors } = await getMessages();
   const t = await getTranslations({ locale, namespace: 'cancel' });
   return (
-    <main className={styles.main}>
-      <h1 className={styles.title}>{t('title')}</h1>
-      <NextIntlClientProvider messages={{ cancel, errors }}>
-        <BookingCancel bookingId={id} locale={locale} />
-      </NextIntlClientProvider>
-    </main>
+    <AppShell title={t('title')} back={`/bookings/${id}`}>
+      <main className={styles.main}>
+        <NextIntlClientProvider messages={{ cancel, errors }}>
+          <BookingCancel bookingId={id} locale={locale} />
+        </NextIntlClientProvider>
+      </main>
+    </AppShell>
   );
 }

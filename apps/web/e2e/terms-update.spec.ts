@@ -123,8 +123,11 @@ test('the first page of a visit opens the screen, and accepting ends limited mod
 
   await expect(page).toHaveURL(/\/de\/terms-update\?next=%2F$/);
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Wir haben unsere AGB aktualisiert' }),
+    page
+      .getByTestId('app-top-bar')
+      .getByRole('heading', { level: 1, name: 'Wir haben unsere AGB aktualisiert' }),
   ).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
   await expect(page.getByTestId('terms-update-version')).toContainText('2026-12');
   await expect(page.getByTestId('terms-update-version')).toContainText('1. Dezember 2026');
   const box = page.getByTestId('terms-update-agree');
@@ -317,6 +320,27 @@ test('a newer version taking effect in the same visit opens the screen again', a
   stub.version = '2027-01';
   await page.goto('/en/verify-phone');
 
+  await expect(page).toHaveURL(/\/en\/terms-update\?next=%2Fverify-phone$/);
+  await expect(page.getByTestId('terms-update-version')).toContainText('2027-01');
+});
+
+test('leaving a page before the screen opens still opens it on the next page', async ({ page }) => {
+  const stub = await stubApi(page);
+  await page.goto('/en');
+  await expect(page).toHaveURL(/\/en\/terms-update/);
+  await page.getByTestId('terms-update-not-now').click();
+  await expect(page.getByTestId('terms-banner')).toBeVisible();
+
+  // A newer version reaches the next page's banner, but its way to the screen never lands.
+  stub.version = '2027-01';
+  const held = (url: URL) => url.pathname === '/en/terms-update' && url.searchParams.has('_rsc');
+  await page.route(held, () => undefined);
+  const opening = page.waitForRequest((request) => held(new URL(request.url())));
+  await page.getByTestId('legal-footer').getByRole('link', { name: 'Fees' }).click();
+  await opening;
+  await page.unroute(held);
+
+  await page.goto('/en/verify-phone');
   await expect(page).toHaveURL(/\/en\/terms-update\?next=%2Fverify-phone$/);
   await expect(page.getByTestId('terms-update-version')).toContainText('2027-01');
 });

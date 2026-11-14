@@ -1,0 +1,134 @@
+/* App shell top bar (mockups' .top): back, centred title, account menu. */
+.bar {
+  padding: var(--tb-space-sm) var(--tb-space-lg);
+}
+
+/* At desktop width the bar lines up with the pages' centred column. */
+.barInner {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-sm);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Equal flexible sides keep the title centred; each grows to fit its buttons. */
+.side {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: var(--tb-space-sm);
+  min-width: var(--tb-tap-target);
+}
+
+.sideEnd {
+  justify-content: flex-end;
+  min-width: max-content;
+}
+
+.title {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.375rem;
+  font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* The mockups' .ibtn: a 44px white circle. */
+.iconButton {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--tb-tap-target);
+  height: var(--tb-tap-target);
+  padding: 0;
+  border: var(--tb-border-thin) solid var(--tb-color-line);
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-white);
+  color: var(--tb-color-green);
+  cursor: pointer;
+}
+
+.iconButton:focus-visible,
+.textLink:focus-visible,
+.menuLink:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-input-focus-border);
+  outline-offset: var(--tb-border-focus);
+}
+
+.iconButton[aria-expanded='true'] {
+  border-color: var(--tb-color-green);
+}
+
+/* Public pages' header. */
+.site {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--tb-space-md);
+  padding: var(--tb-space-md) var(--tb-space-lg) 0;
+}
+
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tb-tap-target);
+  color: var(--tb-color-green);
+  font-weight: 700;
+}
+
+.menuRoot {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + var(--tb-space-sm));
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--tb-space-md);
+  box-sizing: border-box;
+  /* Never wider than a 375px screen minus its margins. */
+  width: min(320px, calc(100vw - 2 * var(--tb-space-lg)));
+  padding: var(--tb-space-lg);
+  border-radius: var(--tb-radius-lg);
+  background: var(--tb-color-white);
+  color: var(--tb-color-ink);
+  box-shadow: 0 8px 24px rgb(23 33 28 / 18%);
+  text-align: start;
+}
+
+.menu[hidden] {
+  display: none;
+}
+
+.menuWho {
+  margin: 0;
+  color: var(--tb-color-ink-muted);
+  font-size: var(--tb-font-small-size);
+  line-height: var(--tb-font-small-line);
+  overflow-wrap: anywhere;
+}
+
+.menuLink {
+  display: flex;
+  align-items: center;
+  min-height: var(--tb-tap-target);
+  color: var(--tb-color-green);
+  font-weight: 700;
+}
+
+.menuError {
+  margin: 0;
+  color: var(--tb-color-error);
+  font-size: var(--tb-font-small-size);
+}

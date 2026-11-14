@@ -6,6 +6,7 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import styles from '../../../../../../../components/checkout/checkout.module.css';
 import { OfferCheckout } from '../../../../../../../components/checkout/offer-checkout';
 import { routing } from '../../../../../../../i18n/routing';
+import { AppShell } from '../../../../../../../components/shell/app-shell';
 
 type Props = PageProps<'/[locale]/tasks/[id]/offers/[offerId]/checkout'>;
 
@@ -27,11 +28,12 @@ export default async function OfferCheckoutPage({ params }: Props) {
   const { checkout, errors, offers } = await getMessages();
   const t = await getTranslations({ locale, namespace: 'checkout' });
   return (
-    <main className={styles.main}>
-      <h1 className={styles.title}>{t('title')}</h1>
-      <NextIntlClientProvider messages={{ checkout, errors, offers }}>
-        <OfferCheckout taskId={id} offerId={offerId} locale={locale} />
-      </NextIntlClientProvider>
-    </main>
+    <AppShell title={t('title')} back={`/tasks/${id}/offers`}>
+      <main className={styles.main}>
+        <NextIntlClientProvider messages={{ checkout, errors, offers }}>
+          <OfferCheckout taskId={id} offerId={offerId} locale={locale} />
+        </NextIntlClientProvider>
+      </main>
+    </AppShell>
   );
 }

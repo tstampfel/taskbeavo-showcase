@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { PhoneVerification } from '../../../components/sign-in/phone-verification';
 import styles from '../../../components/sign-in/sign-in.module.css';
 import { routing } from '../../../i18n/routing';
+import { AppShell } from '../../../components/shell/app-shell';
 
 export async function generateMetadata({
   params,
@@ -23,14 +24,17 @@ export default async function VerifyPhonePage({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'phone' });
   const { next } = await searchParams;
   const { signIn, phone, errors, errorBoundary } = await getMessages();
 
   return (
-    <main className={styles.main}>
-      <NextIntlClientProvider messages={{ signIn, phone, errors, errorBoundary }}>
-        <PhoneVerification next={typeof next === 'string' ? next : null} />
-      </NextIntlClientProvider>
-    </main>
+    <AppShell title={t('metaTitle')}>
+      <main className={styles.main}>
+        <NextIntlClientProvider messages={{ signIn, phone, errors, errorBoundary }}>
+          <PhoneVerification next={typeof next === 'string' ? next : null} />
+        </NextIntlClientProvider>
+      </main>
+    </AppShell>
   );
 }

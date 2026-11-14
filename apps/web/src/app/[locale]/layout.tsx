@@ -5,11 +5,8 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { ApolloProvider } from '../../apollo/apollo-provider';
-import { AccountMenu } from '../../components/account-menu';
-import { ConsentBanner } from '../../components/consent/consent-banner';
-import { LanguageSwitcher } from '../../components/language-switcher';
 import { LegalFooter } from '../../components/legal/legal-document-view';
-import { TermsBanner } from '../../components/terms-update/terms-banner';
+import { pickMessages, SHELL_NAMESPACES } from '../../i18n/client-messages';
 import { siteUrl } from '../../i18n/metadata';
 import { routing } from '../../i18n/routing';
 
@@ -40,16 +37,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
   setRequestLocale(locale);
 
   // Only the namespaces client components use ship to the browser.
-  const {
-    apiStatus,
-    consent,
-    errorBoundary,
-    languageSwitcher,
-    sessions,
-    settings,
-    signIn,
-    termsUpdate,
-  } = await getMessages();
+  const messages = pickMessages(await getMessages(), SHELL_NAMESPACES);
   return (
     <html lang={locale}>
       <body
@@ -57,34 +45,9 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
         // The --tb-* variables feed the base components in components/ui.
         style={{ ...cssVariables(), margin: 0, background: colors.offWhite, color: colors.ink }}
       >
-        <NextIntlClientProvider
-          messages={{
-            apiStatus,
-            consent,
-            errorBoundary,
-            languageSwitcher,
-            sessions,
-            settings,
-            signIn,
-            termsUpdate,
-          }}
-        >
+        <NextIntlClientProvider messages={messages}>
           <ApolloProvider>
-            <header
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                gap: 12,
-                padding: '12px 16px 0',
-              }}
-            >
-              <AccountMenu />
-              <LanguageSwitcher />
-            </header>
-            <TermsBanner />
-            <ConsentBanner />
+            {/* Each page brings its header: AppShell when logged in, SiteHeader when public. */}
             {children}
             <LegalFooter locale={locale} />
           </ApolloProvider>

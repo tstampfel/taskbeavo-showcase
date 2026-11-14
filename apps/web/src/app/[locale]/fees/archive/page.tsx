@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { loadFees } from '../../../../components/fees/fee-schedules';
 import { FeesArchiveView } from '../../../../components/fees/fees-view';
+import { SiteHeader } from '../../../../components/shell/site-header';
 import { localeAlternates } from '../../../../i18n/metadata';
 
 function checked(locale: string): Locale {
@@ -32,5 +33,10 @@ export default async function FeesArchivePage({ params }: PageProps<'/[locale]/f
   const schedules = (await loadFees()).schedules.filter(
     (schedule) => schedule.status !== 'UPCOMING',
   );
-  return <FeesArchiveView schedules={schedules} locale={locale} />;
+  return (
+    <>
+      <SiteHeader />
+      <FeesArchiveView schedules={schedules} locale={locale} />
+    </>
+  );
 }

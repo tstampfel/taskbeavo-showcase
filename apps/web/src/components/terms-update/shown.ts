@@ -24,3 +24,18 @@ export function markTermsUpdateShown(viewerId: string, version: string | undefin
     // Storage blocked: at worst the page opens once more.
   }
 }
+
+// The screen this document is on its way to open, in memory only. The banner remembers it
+// instead of marking the screen shown: a push the next full page load cuts short never lands,
+// and a mark written before it would keep the screen from opening there. The page marks it
+// shown once it has opened.
+let opening: string | null = null;
+
+/** The banner set off to open the screen for this account and version, in this document. */
+export function termsUpdateOpening(viewerId: string, version: string | undefined): boolean {
+  return opening === shownValue(viewerId, version);
+}
+
+export function markTermsUpdateOpening(viewerId: string, version: string | undefined): void {
+  opening = shownValue(viewerId, version);
+}

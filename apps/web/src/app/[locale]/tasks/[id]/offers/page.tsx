@@ -5,6 +5,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { OffersView } from '../../../../../components/offers/offers-view';
 import { routing } from '../../../../../i18n/routing';
+import { pickMessages, SHELL_NAMESPACES } from '../../../../../i18n/client-messages';
 
 export async function generateMetadata({
   params,
@@ -21,12 +22,12 @@ export default async function TaskOffersPage({ params }: PageProps<'/[locale]/ta
   const { locale, id } = await params;
   if (!hasLocale(routing.locales, locale) || !LINK_ID.test(id)) notFound();
   setRequestLocale(locale);
-  const { offers } = await getMessages();
+  // OffersView draws the top bar itself (its title counts the offers), so the shell's
+  // namespaces come along.
+  const messages = pickMessages(await getMessages(), [...SHELL_NAMESPACES, 'offers']);
   return (
-    <main>
-      <NextIntlClientProvider messages={{ offers }}>
-        <OffersView taskId={id} locale={locale} />
-      </NextIntlClientProvider>
-    </main>
+    <NextIntlClientProvider messages={messages}>
+      <OffersView taskId={id} locale={locale} />
+    </NextIntlClientProvider>
   );
 }

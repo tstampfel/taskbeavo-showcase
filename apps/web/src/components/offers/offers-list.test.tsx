@@ -1,8 +1,8 @@
 import { TASK_TIME_ZONE, catalogues, formatMoney, locales, type Locale } from '@taskbeavo/i18n';
-import { NextIntlClientProvider } from 'next-intl';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { OffersList, type OffersListProps } from './offers-list';
+import { createTranslator, NextIntlClientProvider } from 'next-intl';
+import { OffersList, offersTitle, type OffersListProps } from './offers-list';
 
 const NOW = new Date('2026-11-05T10:00:00Z');
 
@@ -89,8 +89,8 @@ describe('OffersList', () => {
   it('lists open offers newest first, then withdrawn and expired ones greyed at the end', () => {
     const markup = render('en');
 
-    expect(markup).toContain('<h1');
-    expect(markup).toContain('5 offers');
+    // The count is the page title, in the top bar (offersTitle), not a second heading here.
+    expect(markup).not.toContain('<h1');
     expect(cardOrder(markup)).toEqual(['marko', 'stjepan', 'changed', 'withdrawn', 'late']);
     expect(card(markup, 'withdrawn')).toContain('Offer withdrawn');
     expect(card(markup, 'late')).toContain('Offer expired');
@@ -165,6 +165,18 @@ describe('OffersList', () => {
     expect(card(markup, 'changed')).toMatch(/disabled=""[^>]*aria-label="Accept the offer/);
   });
 
+  for (const locale of locales) {
+    it(`titles the page with every offer, or the open ones compared, in ${locale}`, () => {
+      const t = createTranslator({ locale, messages: catalogues[locale], namespace: 'offers' });
+      const list = offersTitle(t, OFFERS, { sort: 'newest', comparing: false, now: NOW });
+      const compared = offersTitle(t, OFFERS, { sort: 'newest', comparing: true, now: NOW });
+
+      expect(list).toBe(t('count', { count: 5 }));
+      // Withdrawn and expired offers can't be compared.
+      expect(compared).toBe(t('compareTitle', { count: 3 }));
+    });
+  }
+
   it('says when there are no offers yet', () => {
     expect(render('en', { offers: [] })).toContain('No offers yet.');
   });
@@ -173,7 +185,7 @@ describe('OffersList', () => {
     const markup = render('en', { comparing: true });
 
     expect(markup).toContain('data-testid="offers-compare"');
-    expect(markup).toContain('Compare 3 offers');
+    expect(markup).not.toContain('<h1');
     expect(markup).toContain('<th scope="row">Rating</th>');
     // Each offer's column is headed by its total, so screen readers tie cells to an offer.
     expect(markup).toContain(`<th scope="col">${formatMoney(3_136, 'en')}</th>`);

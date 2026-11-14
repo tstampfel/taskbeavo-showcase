@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { RankingView } from '../../../components/ranking/ranking-view';
+import { SiteHeader } from '../../../components/shell/site-header';
 import { localeAlternates } from '../../../i18n/metadata';
 
 function checked(locale: string): Locale {
@@ -28,5 +29,10 @@ export async function generateMetadata({
 export default async function RankingPage({ params }: PageProps<'/[locale]/ranking'>) {
   const locale = checked((await params).locale);
   setRequestLocale(locale);
-  return <RankingView locale={locale} />;
+  return (
+    <>
+      <SiteHeader />
+      <RankingView locale={locale} />
+    </>
+  );
 }

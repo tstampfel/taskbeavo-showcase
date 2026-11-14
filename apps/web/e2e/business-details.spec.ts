@@ -105,7 +105,10 @@ test('adds a business after explaining what changes, then shows only the masked 
   const stub = await stubGraphql(answers({ business: null }));
   await page.goto('/en/settings');
 
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(en.title);
+  // One title, in the top bar; Business details is a section of Settings, like Privacy and data.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Settings');
+  await expect(page.getByTestId('app-top-bar')).toContainText('Settings');
+  await expect(page.getByRole('heading', { level: 2, name: en.title })).toBeVisible();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
   await expect(page.getByTestId('business-none')).toHaveText(en.privatePoster);
   await page.getByTestId('business-add').click();
@@ -238,6 +241,7 @@ for (const [code, message] of [
 test('the account menu links to Settings', async ({ page, stubGraphql }) => {
   await stubGraphql(answers({ business: null }));
   await page.goto('/en');
+  await page.getByTestId('account-menu-button').click();
   await page.getByTestId('settings-link').click();
   await expect(page).toHaveURL(/\/en\/settings$/);
   await expect(page.getByTestId('business-none')).toBeVisible();

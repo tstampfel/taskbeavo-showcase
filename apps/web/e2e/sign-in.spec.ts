@@ -216,6 +216,10 @@ test('signs up with an email code, then verifies the phone', async ({ page }) =>
   // The account's language (German) takes over, and the phone step comes next.
   await expect(page).toHaveURL(/\/de\/verify-phone$/);
   await expect(page.getByTestId('phone-input')).toHaveValue('+49 ');
+  // One title, in the top bar; each step is a section under it.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Handynummer bestätigen');
+  await expect(page.getByTestId('app-top-bar')).toContainText('Handynummer bestätigen');
+  await expect(page.getByRole('heading', { level: 2, name: 'Ihre Handynummer' })).toBeVisible();
 
   // A +1 number gets the server's reason, translated, not a generic failure.
   await page.getByTestId('phone-input').fill('+1 415 555 0100');
@@ -227,8 +231,10 @@ test('signs up with an email code, then verifies the phone', async ({ page }) =>
   await page.getByTestId('phone-input').fill('+49 151 23456789');
   await page.getByTestId('send-sms').click();
   await expect(page.getByTestId('phone-code')).toContainText('Gesendet an +49 ••• 789');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
   await page.getByTestId('phone-code-input').fill('730912');
   await expect(page).toHaveURL(/\/de$/);
+  await page.getByTestId('account-menu-button').click();
   await expect(page.getByTestId('signed-in-as')).toHaveText('Angemeldet als Ana');
   await expectNoTokensInStorage(page);
 });
@@ -566,6 +572,7 @@ test('signing out clears the session and shows "Log in" again', async ({ page })
   });
   api.viewer = { ...user, phoneVerified: true };
   await page.goto('/en');
+  await page.getByTestId('account-menu-button').click();
   await expect(page.getByTestId('signed-in-as')).toHaveText('Signed in as Ana');
   await page.getByTestId('sign-out').click();
   await expect(page.getByTestId('sign-in-link')).toBeVisible();
@@ -583,6 +590,7 @@ test('"Log out of all devices" ends every session and shows "Log in" again', asy
   });
   api.viewer = { ...user, phoneVerified: true };
   await page.goto('/en');
+  await page.getByTestId('account-menu-button').click();
   await page.getByTestId('sign-out-everywhere').click();
   await expect(page.getByTestId('sign-in-link')).toBeVisible();
   expect(api.auth['sign-out-everywhere']).toHaveLength(1);
