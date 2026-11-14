@@ -798,7 +798,14 @@
     "earlyStartBodyWithdrawal": "Your helper has arrived and asks to start now. If you confirm, the job starts now and can no longer be cancelled. You can still withdraw from this booking with a registered business, with the withdrawal button in the app, until the job is fully done or the 14-day period ends, whichever comes first.",
     "earlyStartConfirm": "Start now",
     "earlyStartDecline": "Keep the booked time",
-    "earlyStartConfirmed": "The job started early."
+    "earlyStartConfirmed": "The job started early.",
+    "lateHint": "The poster gets a push. They can keep the booking or cancel for free; a late arrival never costs you anything.",
+    "contestExplainer": "Our team looks at the booking's record, including your On my way and I've arrived taps. You never pay anything.",
+    "noShowBadge": {
+      "reported": "Waiting for the helper",
+      "contested": "Our team is checking",
+      "settled": "Cancelled by the helper"
+    }
   },
   "bookingDetail": {
     "metaTitle": "Booking",
@@ -843,7 +850,8 @@
       "area": "Area: {area}",
       "areaUnknown": "The area isn't set yet.",
       "afterPayment": "You'll see the exact address once the payment is confirmed.",
-      "ended": "This booking is no longer active, so only the area is shown."
+      "ended": "This booking is no longer active, so only the area is shown.",
+      "accessTitle": "Access details"
     },
     "helperTitle": "Your helper",
     "checkout": {
@@ -864,6 +872,10 @@
       "noAccess": "Choose what happens next",
       "release": "Release payment"
     },
-    "safety": "Keep payment and chat in TaskBeavo to stay protected."
+    "safety": "Keep payment and chat in TaskBeavo to stay protected.",
+    "amountLabelPoster": "You pay",
+    "amountLabelHelper": "You get",
+    "requestedHelper": "Waiting for the poster to release {amount}.",
+    "requestedPoster": "Your helper has asked for payment. Release it when you're happy with the job."
   }
 }

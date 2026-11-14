@@ -798,7 +798,14 @@
     "earlyStartBodyWithdrawal": "Votre aidant est arrivé et demande à commencer maintenant. Si vous confirmez, la mission commence maintenant et ne peut plus être annulée. Vous pouvez encore vous rétracter de cette réservation auprès d’une entreprise enregistrée, avec le bouton de rétractation de l’application, jusqu’à ce que la mission soit entièrement réalisée ou que le délai de 14 jours prenne fin, selon ce qui arrive en premier.",
     "earlyStartConfirm": "Commencer maintenant",
     "earlyStartDecline": "Garder l’heure prévue",
-    "earlyStartConfirmed": "La mission a commencé plus tôt."
+    "earlyStartConfirmed": "La mission a commencé plus tôt.",
+    "lateHint": "Le client reçoit une notification. Il peut garder la réservation ou annuler gratuitement ; un retard ne vous coûte jamais rien.",
+    "contestExplainer": "Notre équipe examine l’historique de la réservation, y compris vos « En route » et « Je suis arrivé ». Vous ne payez jamais rien.",
+    "noShowBadge": {
+      "reported": "En attente de l’aidant",
+      "contested": "Notre équipe vérifie",
+      "settled": "Annulée par l’aidant"
+    }
   },
   "bookingDetail": {
     "metaTitle": "Réservation",
@@ -843,7 +850,8 @@
       "area": "Secteur : {area}",
       "areaUnknown": "Le secteur n’est pas encore défini.",
       "afterPayment": "Vous verrez l’adresse exacte une fois le paiement confirmé.",
-      "ended": "Cette réservation n’est plus active, seul le secteur est affiché."
+      "ended": "Cette réservation n’est plus active, seul le secteur est affiché.",
+      "accessTitle": "Détails d’accès"
     },
     "helperTitle": "Votre intervenant",
     "checkout": {
@@ -864,6 +872,10 @@
       "noAccess": "Choisir la suite",
       "release": "Verser le paiement"
     },
-    "safety": "Gardez le paiement et la discussion dans TaskBeavo pour rester protégé."
+    "safety": "Gardez le paiement et la discussion dans TaskBeavo pour rester protégé.",
+    "amountLabelPoster": "Vous payez",
+    "amountLabelHelper": "Vous recevez",
+    "requestedHelper": "En attente que le client verse {amount}.",
+    "requestedPoster": "Votre aidant a demandé le paiement. Versez-le quand le travail vous convient."
   }
 }

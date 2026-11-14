@@ -842,3 +842,14 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 
 - `cancel.seeRefund`: the reason step's button. `cancel.refundTitle`: the second step's heading. `cancel.stepBack`: back to the reason step.
 - ⚖ `cancel.final` and `cancel.finalNoFault`: under the final Cancel button. They restate the cancellation policy (cancelling is final; a no-fault reason asks the other side instead), so they follow the lawyer's final CANCELLATION wording. No withdrawal wording changed.
+
+## Booking detail and the day of the job (BEAV-212)
+
+DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check. None of it is legal text.
+
+- `bookingDetail.amountLabelPoster`, `bookingDetail.amountLabelHelper`: the label of the amount line on the booking summary card ("You pay" / "You get", the amount on the right).
+- `bookingDetail.requestedHelper`, `bookingDetail.requestedPoster`: the "Payment requested" card (mockup 7b). The poster's line asks them to release when happy; it never says the money moved.
+- `bookingDetail.place.accessTitle`: the label over the access details (doorbell, floor, gate code), shown only with the exact place.
+- `arrival.lateHint`: the note under the new arrival time chips (mockup 18g). "A late arrival never costs you anything" restates rule g (the helper never pays a penalty).
+- `arrival.contestExplainer`: next to "I was there" (mockup 18h). hr, de and fr quote the button labels as they read in each catalogue (`arrival.onMyWay`, `arrival.arrived`).
+- `arrival.noShowBadge.reported`, `.contested`, `.settled`: the badge on a reported no-show (mockups 18e, 18f).
