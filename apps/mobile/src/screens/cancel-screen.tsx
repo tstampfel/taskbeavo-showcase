@@ -29,7 +29,7 @@ import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Card, Input, Note, Screen } from '../components/ui';
+import { Button, Card, Heading, Input, Note, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 
 export interface CancelScreenProps {
@@ -192,13 +192,13 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
 
       {view.kind === 'done' && (
         <Card style={styles.card}>
-          <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
+          <Heading style={[textStyle('h2'), styles.ink]}>
             {view.withdrawal
               ? t('cancel.done.withdrawn')
               : view.byHelper && role === 'poster'
                 ? t('cancel.done.byHelper')
                 : t('cancel.done.cancelled')}
-          </Text>
+          </Heading>
           {view.awaitingSupport ? (
             <Text style={[textStyle('body'), styles.ink]}>{t('cancel.done.awaitingSupport')}</Text>
           ) : (
@@ -256,9 +256,7 @@ export function CancelScreen({ bookingId, onOpenPolicy, onBack }: CancelScreenPr
       {view.kind === 'helperCancel' && (
         <>
           <Card style={styles.card}>
-            <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
-              {t('cancel.helper.title')}
-            </Text>
+            <Heading style={[textStyle('h2'), styles.ink]}>{t('cancel.helper.title')}</Heading>
             <Text style={[textStyle('body'), styles.ink]} testID="helper-cancel-warning">
               {view.posterCreditCents > 0
                 ? t('cancel.helper.warningCredit', {
@@ -388,9 +386,7 @@ function Reasons<K extends string>({
   };
   return (
     <>
-      <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
-        {legend}
-      </Text>
+      <Heading style={[textStyle('h2'), styles.ink]}>{legend}</Heading>
       <Card accessibilityRole="radiogroup" style={styles.reasons}>
         {ordinary.map((key, index) =>
           radio({ kind: 'ordinary', key } as PickedReason, ordinaryLabel(key), index),
@@ -401,9 +397,7 @@ function Reasons<K extends string>({
           {noFaultHint ? (
             <Text style={[textStyle('small'), styles.muted]}>{noFaultHint}</Text>
           ) : null}
-          <Text accessibilityRole="header" style={[textStyle('label'), styles.ink]}>
-            {t('cancel.noFaultLegend')}
-          </Text>
+          <Heading style={[textStyle('label'), styles.ink]}>{t('cancel.noFaultLegend')}</Heading>
           <Card accessibilityRole="radiogroup" style={styles.reasons}>
             {NO_FAULT_REASONS.map((key, index) =>
               radio({ kind: 'noFault', key }, t(`cancel.noFaultReasons.${key}`), index),
@@ -446,11 +440,11 @@ function Pending({
       : t('cancel.pending.helperAsked', { reason });
   return (
     <Card style={styles.card} testID="no-fault-pending">
-      <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
+      <Heading style={[textStyle('h2'), styles.ink]}>
         {pending.awaitingSupport
           ? t('cancel.pending.underReview')
           : t('cancel.pending.hoursLeft', { hours: hoursLeft(pending.respondBy) })}
-      </Text>
+      </Heading>
       <Text style={[textStyle('body'), styles.ink]}>{asked}</Text>
       {pending.awaitingSupport && (
         <Text style={[textStyle('body'), styles.ink]}>{t('cancel.pending.underReviewBody')}</Text>
@@ -492,9 +486,9 @@ function Preview({ preview, money }: { preview: CancelPreview; money: (cents: nu
   const { t } = useTranslation();
   return (
     <Card selected style={styles.card} testID="cancel-preview">
-      <Text accessibilityRole="header" style={[textStyle('label'), styles.ink]}>
+      <Heading style={[textStyle('label'), styles.ink]}>
         {preview.full ? t('cancel.preview.full') : t('cancel.preview.title')}
-      </Text>
+      </Heading>
       <Text style={[textStyle('small'), styles.muted]}>{t(`cancel.cases.${preview.case}`)}</Text>
       <Row label={t('cancel.preview.youGetBack')} value={money(preview.refundCents)} strong />
       {preview.helperCompensationCents > 0 && (
@@ -572,9 +566,7 @@ function Withdrawal({
   };
   return (
     <Card style={styles.card}>
-      <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
-        {t('cancel.withdrawal.title')}
-      </Text>
+      <Heading style={[textStyle('h2'), styles.ink]}>{t('cancel.withdrawal.title')}</Heading>
       {offer.endsAt && (
         <Text style={[textStyle('small'), styles.ink]}>
           {t('cancel.withdrawal.until', { date: lastDay(offer.endsAt, locale) })}

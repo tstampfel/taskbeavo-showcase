@@ -7,7 +7,7 @@ import { AccountRow } from '../src/components/account-row';
 import { ApiStatus } from '../src/components/api-status';
 import { LanguageSwitcher } from '../src/components/language-switcher';
 import { TermsBanner } from '../src/components/terms-banner';
-import { Button } from '../src/components/ui';
+import { Button, Heading } from '../src/components/ui';
 import { fonts } from '../src/fonts';
 import { appLanguage } from '../src/i18n/language';
 import { chooseLocale } from '../src/i18n/preference';
@@ -21,9 +21,7 @@ export default function Welcome() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.appName}>{t('common.appName')}</Text>
-        <Text accessibilityRole="header" style={styles.headline}>
-          {t('welcome.headline')}
-        </Text>
+        <Heading style={styles.headline}>{t('welcome.headline')}</Heading>
         <Text style={styles.body}>{t('welcome.body')}</Text>
         <Text style={styles.comingSoon}>{t('home.comingSoon')}</Text>
         <TermsBanner />

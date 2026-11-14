@@ -12,7 +12,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../ui';
+import { Button, Heading } from '../ui';
 import { textStyle } from '../ui/text-style';
 
 export interface CountryPickerProps {
@@ -60,9 +60,7 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
       <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
         <SafeAreaView style={styles.sheet}>
           <View style={styles.header}>
-            <Text accessibilityRole="header" style={[textStyle('h2'), styles.value]}>
-              {label}
-            </Text>
+            <Heading style={[textStyle('h2'), styles.value]}>{label}</Heading>
             <Button
               label={t('signIn.countryDone')}
               variant="ghost"

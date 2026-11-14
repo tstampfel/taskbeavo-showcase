@@ -3,16 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fonts } from '../fonts';
-import { Button } from './ui';
+import { Button, Heading } from './ui';
 
 /** The translated "something went wrong" screen of the root error boundary. */
 export function ErrorScreen({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
   return (
     <SafeAreaView accessibilityRole="alert" style={styles.container}>
-      <Text accessibilityRole="header" style={styles.title}>
-        {t('errorBoundary.title')}
-      </Text>
+      <Heading style={styles.title}>{t('errorBoundary.title')}</Heading>
       <Text style={styles.body}>{t('errorBoundary.body')}</Text>
       <Button label={t('errorBoundary.retry')} onPress={onRetry} />
     </SafeAreaView>

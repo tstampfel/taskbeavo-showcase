@@ -37,7 +37,7 @@ import {
 } from 'react-native';
 import { Checkbox } from '../components/sign-in/checkbox';
 import { TraderIdentity } from '../components/trader-identity';
-import { Badge, Button, Card, Screen, Sheet } from '../components/ui';
+import { Badge, Button, Card, Heading, Screen, Sheet } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 import { fonts } from '../fonts';
 import type { PaymentSheet } from '../payments/stripe-config';
@@ -446,9 +446,7 @@ function OfferCheckout({
       </Text>
       {policy && consent ? (
         <View accessibilityRole="none" style={styles.stack} testID="checkout-consent">
-          <Text accessibilityRole="header" style={[textStyle('label'), styles.ink]}>
-            {t('checkout.consent.legend')}
-          </Text>
+          <Heading style={[textStyle('label'), styles.ink]}>{t('checkout.consent.legend')}</Heading>
           <Checkbox
             checked={ticks.cancellationPolicy}
             onChange={(checked) => setTicks((now) => ({ ...now, cancellationPolicy: checked }))}
@@ -708,9 +706,7 @@ function Outcome({
           </Text>
         </View>
       ) : null}
-      <Text accessibilityRole="header" style={[textStyle('h1'), styles.ink, styles.centered]}>
-        {title}
-      </Text>
+      <Heading style={[textStyle('h1'), styles.ink, styles.centered]}>{title}</Heading>
       <Text style={[textStyle('body'), styles.ink, styles.centered]}>{body}</Text>
       {waiting ? <ActivityIndicator accessibilityLabel={waiting} color={colors.green} /> : null}
       {note ? (

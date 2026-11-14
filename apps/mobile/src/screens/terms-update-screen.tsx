@@ -14,8 +14,8 @@ import { AccessibilityInfo, ActivityIndicator, Pressable, Text } from 'react-nat
 import { Checkbox } from '../components/sign-in/checkbox';
 import { errorMessage } from '../components/sign-in/error-message';
 import { markTermsUpdateShown } from '../components/terms-banner';
-import { Button, Card } from '../components/ui';
-import { ErrorText, Page, styles } from './sign-in-screen';
+import { Button, Card, Heading } from '../components/ui';
+import { ErrorText, Page, PAGE_HEADING_INSET, styles } from './sign-in-screen';
 
 export interface TermsUpdateScreenProps {
   /** Accepted, "Not now", or nothing to accept. */
@@ -107,9 +107,9 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
           </>
         }
       >
-        <Text accessibilityRole="header" style={styles.h1}>
+        <Heading style={styles.h1} inset={PAGE_HEADING_INSET}>
           {t('termsUpdate.title')}
-        </Text>
+        </Heading>
         <ErrorText error={t('termsUpdate.unavailable')} />
       </Page>
     );
@@ -174,18 +174,16 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
         </>
       }
     >
-      <Text accessibilityRole="header" style={styles.h1}>
+      <Heading style={styles.h1} inset={PAGE_HEADING_INSET}>
         {t('termsUpdate.title')}
-      </Text>
+      </Heading>
       {shown ? (
         <Text style={styles.muted} testID="terms-update-version">
           {t('termsUpdate.version', shown)}
         </Text>
       ) : null}
       <Card variant="flat">
-        <Text accessibilityRole="header" style={styles.strong}>
-          {t('termsUpdate.whatsChanged')}
-        </Text>
+        <Heading style={styles.strong}>{t('termsUpdate.whatsChanged')}</Heading>
         {/* NEEDS REVIEW (lawyer): the per-version summary of changes is legal text and comes
             from the lawyer with BEAV-182; until then a marked draft. The bookings and refusal
             lines are DRAFT legal sentences too (BEAV-39). */}
