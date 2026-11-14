@@ -226,3 +226,69 @@
   font-size: var(--tb-font-body-size);
   line-height: var(--tb-font-body-line);
 }
+
+/* Mockup 6a (BEAV-210): the booking at the top of the summary card. */
+.booking {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-sm);
+  padding-bottom: var(--tb-space-md);
+  border-bottom: var(--tb-border-thin) solid var(--tb-color-line);
+}
+
+.bookingTop {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-space-md);
+}
+
+.bookingText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-xs);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.iconRow {
+  display: flex;
+  align-items: center;
+  gap: var(--tb-space-xs);
+}
+
+.iconRow svg {
+  flex: none;
+}
+
+/*
+ * The order button bar. It sticks to the bottom of the screen while the page scrolls, and sits
+ * at the end of the page once reached. On a short viewport (large text, landscape phones) it
+ * stays in the flow, so it never covers the consent boxes.
+ */
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-sm);
+  margin: 0 calc(-1 * var(--tb-space-lg)) calc(-1 * var(--tb-space-lg));
+  padding: var(--tb-space-md) var(--tb-space-lg) var(--tb-space-lg);
+  border-top: var(--tb-border-thin) solid var(--tb-color-line);
+  background: var(--tb-color-off-white);
+}
+
+@media (min-height: 600px) {
+  .foot {
+    position: sticky;
+    bottom: 0;
+  }
+}
+
+/* Mockup 6g: the demo card in a dashed orange frame. */
+.demoBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-sm);
+  padding: var(--tb-space-lg);
+  border: var(--tb-border-focus) dashed var(--tb-color-orange);
+  border-radius: var(--tb-radius-lg);
+  background: var(--tb-color-white);
+}

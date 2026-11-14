@@ -13,7 +13,7 @@ import { formatMoney, type Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
 import { TraderIdentity, type TraderFields } from '../offers/trader-identity';
-import { Badge, Button, Card, Sheet } from '../ui';
+import { Avatar, Badge, Button, Card, LockIcon, Sheet } from '../ui';
 import styles from './checkout.module.css';
 
 export type Policy = NonNullable<CheckoutPolicyQuery['currentLegalDocument']>;
@@ -24,7 +24,10 @@ export function Summary({
   credit = 0,
   total,
   locale,
+  header,
 }: {
+  /** What is being booked, above the amounts (mockup 6a): the task and the helper. */
+  header?: ReactNode;
   price: number;
   fee: number;
   /** The poster's TaskBeavo credit taken off the fee (BEAV-123): its own line. */
@@ -37,6 +40,7 @@ export function Summary({
   const money = (cents: number) => formatMoney(cents, locale);
   return (
     <Card data-testid="checkout-summary">
+      {header}
       <dl className={styles.summary}>
         <div className={styles.line}>
           <dt>{t('price')}</dt>
@@ -107,21 +111,29 @@ export function OfferCheckoutForm(props: OfferCheckoutFormProps) {
   const consent = consentTexts(policy, props.helperIsTrader);
   return (
     <>
-      <Card>
-        {props.taskTitle ? <p className={styles.label}>{props.taskTitle}</p> : null}
-        <Badge tone={props.helperIsTrader ? 'green' : 'grey'}>
-          {tAll(props.helperIsTrader ? 'offers.trader.business' : 'offers.trader.private')}
-        </Badge>
-        <TraderIdentity offer={{ ...props.trader, helperIsTrader: props.helperIsTrader }} />
-      </Card>
       <Summary
+        header={
+          <div className={styles.booking}>
+            <div className={styles.bookingTop}>
+              <Avatar size="sm" />
+              <div className={styles.bookingText}>
+                {props.taskTitle ? <p className={styles.label}>{props.taskTitle}</p> : null}
+                <Badge tone={props.helperIsTrader ? 'green' : 'grey'}>
+                  {tAll(props.helperIsTrader ? 'offers.trader.business' : 'offers.trader.private')}
+                </Badge>
+              </div>
+            </div>
+            {/* Rule e: a trader helper's business name, OIB and address, before the amounts. */}
+            <TraderIdentity offer={{ ...props.trader, helperIsTrader: props.helperIsTrader }} />
+          </div>
+        }
         price={props.priceCents}
         fee={props.feeCents}
         credit={props.creditCents}
         total={props.totalCents}
         locale={props.locale}
       />
-      <p className={`${styles.small} ${styles.green}`}>{t('secure')}</p>
+      <SecureLine />
       <Card variant="flat">
         <h2 className={styles.label}>{t('how.title')}</h2>
         <ol className={styles.steps}>
@@ -202,19 +214,37 @@ export function OfferCheckoutForm(props: OfferCheckoutFormProps) {
           {tAll(props.error)}
         </p>
       ) : null}
-      <FeeNotice {...props} />
-      {/* The one order button of the flow (user decision after the fee-consent opinions):
-          the statutory wording, and in hr, de and fr no amount on it. */}
-      <Button
-        fullWidth
-        disabled={!canPay(policy, ticks) || props.busy}
-        aria-busy={props.busy}
-        onClick={props.onPay}
-        data-testid="checkout-pay"
-      >
-        {t('pay', { amount: formatMoney(props.totalCents, props.locale) })}
-      </Button>
+      {/* Pinned to the bottom of the screen (mockup 6a): the fee notice, the amount due and the
+          one order button stay together, so nothing comes between them. */}
+      <div className={styles.foot} data-testid="checkout-foot">
+        <FeeNotice {...props} />
+        {/* The one order button of the flow (user decision after the fee-consent opinions):
+            the statutory wording, and in hr, de and fr no amount on it. */}
+        <Button
+          fullWidth
+          disabled={!canPay(policy, ticks) || props.busy}
+          aria-busy={props.busy}
+          onClick={props.onPay}
+          data-testid="checkout-pay"
+        >
+          {t('pay', { amount: formatMoney(props.totalCents, props.locale) })}
+        </Button>
+      </div>
     </>
+  );
+}
+
+/** "Payment protected · held via Stripe": the money is held by Stripe, never by TaskBeavo. */
+export function SecureLine() {
+  const t = useTranslations('checkout');
+  return (
+    <p
+      className={`${styles.small} ${styles.green} ${styles.iconRow}`}
+      data-testid="checkout-secure"
+    >
+      <LockIcon />
+      <span>{t('secure')}</span>
+    </p>
   );
 }
 

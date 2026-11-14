@@ -182,6 +182,13 @@ test('pays only with both boxes ticked, with the policy version shown', async ({
     'Task price €30.00 (paid to the helper) + TaskBeavo service fee €3.60 (12%, min. €2.50) = total €33.60',
   );
   await expect(page.getByTestId('checkout-total-due')).toHaveText('Total to pay: €33.60');
+  // Mockup 6a (BEAV-210): the booking summary names the task and the helper type, the money is
+  // held via Stripe, and the order button bar stays on screen before scrolling.
+  await expect(page.getByTestId('checkout-summary')).toContainText('Private individual');
+  await expect(page.getByTestId('checkout-secure')).toHaveText(
+    'Payment protected · held via Stripe',
+  );
+  await expect(pay).toBeInViewport();
 
   await page.getByTestId('policy-open').click();
   await expect(page.getByRole('dialog')).toContainText('the full cancellation policy');

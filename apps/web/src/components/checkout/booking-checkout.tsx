@@ -24,7 +24,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from '../../i18n/navigation';
 import { Button } from '../ui';
-import { BookingOutcome, DeclineNote, Summary } from './checkout-parts';
+import { BookingOutcome, DeclineNote, SecureLine, Summary } from './checkout-parts';
 import styles from './checkout.module.css';
 import { takeSecret } from './secret-handoff';
 
@@ -170,6 +170,7 @@ export function BookingCheckout({ bookingId, locale }: { bookingId: string; loca
         total={current.totalCents}
         locale={locale}
       />
+      <SecureLine />
       {seconds !== null ? (
         <p className={`${styles.small} ${styles.muted}`} data-testid="checkout-expiry">
           {t('expiresIn', { minutes: Math.max(1, Math.ceil(seconds / 60)) })}
@@ -317,19 +318,21 @@ function PayForm({
     >
       {decline ? <DeclineNote decline={decline} /> : null}
       <PaymentElement options={PAYMENT_ELEMENT_OPTIONS} />
-      <Button
-        type="submit"
-        fullWidth
-        disabled={!stripeJs || busy}
-        aria-busy={busy}
-        data-testid="checkout-pay"
-      >
-        {retry || decline
-          ? t('declined.tryAgain')
-          : // Not the order button: the booking was placed with acceptOffer; this only
-            // confirms the card payment (the bank may ask for 3-D Secure).
-            t('cardPay', { amount: formatMoney(totalCents, locale) })}
-      </Button>
+      <div className={styles.foot} data-testid="checkout-foot">
+        <Button
+          type="submit"
+          fullWidth
+          disabled={!stripeJs || busy}
+          aria-busy={busy}
+          data-testid="checkout-pay"
+        >
+          {retry || decline
+            ? t('declined.tryAgain')
+            : // Not the order button: the booking was placed with acceptOffer; this only
+              // confirms the card payment (the bank may ask for 3-D Secure).
+              t('cardPay', { amount: formatMoney(totalCents, locale) })}
+        </Button>
+      </div>
     </form>
   );
 }
@@ -379,35 +382,40 @@ export function DemoPayForm({
       data-testid="checkout-demo-form"
     >
       {decline ? <DeclineNote decline={decline} /> : null}
-      <p className={styles.demoLabel} data-testid="checkout-demo-label">
-        {t('demo.label')}
-      </p>
-      <p className={`${styles.small} ${styles.muted}`}>{t('demo.note')}</p>
-      <fieldset className={styles.demoCards}>
-        <legend className={styles.body}>{t('demo.card')}</legend>
-        {(['pays', 'declines'] as const).map((choice) => (
-          <label key={choice} className={styles.demoCard}>
-            <input
-              type="radio"
-              name="demo-card"
-              value={choice}
-              checked={card === choice}
-              onChange={() => setCard(choice)}
-            />
-            {t(`demo.${choice}`)}
-          </label>
-        ))}
-      </fieldset>
+      {/* Mockup 6g: the demo card in its own dashed card, so it never passes for a real form. */}
+      <div className={styles.demoBox} data-testid="checkout-demo-card">
+        <p className={styles.demoLabel} data-testid="checkout-demo-label">
+          {t('demo.label')}
+        </p>
+        <p className={`${styles.small} ${styles.muted}`}>{t('demo.note')}</p>
+        <fieldset className={styles.demoCards}>
+          <legend className={styles.label}>{t('demo.card')}</legend>
+          {(['pays', 'declines'] as const).map((choice) => (
+            <label key={choice} className={styles.demoCard}>
+              <input
+                type="radio"
+                name="demo-card"
+                value={choice}
+                checked={card === choice}
+                onChange={() => setCard(choice)}
+              />
+              {t(`demo.${choice}`)}
+            </label>
+          ))}
+        </fieldset>
+      </div>
       {failed ? (
         <p role="alert" className={`${styles.body} ${styles.error}`}>
           {t('demo.failed')}
         </p>
       ) : null}
-      <Button type="submit" fullWidth disabled={busy} aria-busy={busy} data-testid="checkout-pay">
-        {retry || decline
-          ? t('declined.tryAgain')
-          : t('cardPay', { amount: formatMoney(totalCents, locale) })}
-      </Button>
+      <div className={styles.foot} data-testid="checkout-foot">
+        <Button type="submit" fullWidth disabled={busy} aria-busy={busy} data-testid="checkout-pay">
+          {retry || decline
+            ? t('declined.tryAgain')
+            : t('cardPay', { amount: formatMoney(totalCents, locale) })}
+        </Button>
+      </div>
     </form>
   );
 }
