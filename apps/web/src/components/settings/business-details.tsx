@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from '../../i18n/navigation';
 import { errorMessage } from '../sign-in/error-message';
 import styles from './settings.module.css';
-import { Button, Card, Input, Sheet } from '../ui';
+import { Button, Card, CheckIcon, Input, Note, Sheet } from '../ui';
 
 const KINDS: PosterBusinessKind[] = ['OBRT', 'COMPANY'];
 
@@ -123,9 +123,9 @@ function BusinessSummary({
     <section className={styles.section} data-testid="business-details">
       <h2 className={styles.heading}>{t('businessDetails.title')}</h2>
       {notice ? (
-        <p className={styles.note} role="status" data-testid="business-notice">
+        <Note icon={<CheckIcon size={18} />} role="status" data-testid="business-notice">
           {notice}
-        </p>
+        </Note>
       ) : null}
       <p className={styles.muted}>{t('businessDetails.intro')}</p>
       {business ? (
