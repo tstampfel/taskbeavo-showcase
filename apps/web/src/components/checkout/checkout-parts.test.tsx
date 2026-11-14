@@ -205,6 +205,56 @@ describe('OfferCheckoutForm', () => {
     );
   });
 
+  it('opens with one booking summary card: avatar, task, helper type, then the amounts', () => {
+    const markup = form('en');
+    const summary = markup.split('data-testid="checkout-summary"')[1]!;
+
+    expect(markup.match(/data-testid="checkout-summary"/g)).toHaveLength(1);
+    expect(summary.indexOf('data-testid="helper-avatar"')).toBeGreaterThan(-1);
+    expect(summary.indexOf('Mow lawn for Mama')).toBeLessThan(
+      summary.indexOf('Private individual'),
+    );
+    expect(summary.indexOf('Private individual')).toBeLessThan(summary.indexOf('Agreed price'));
+  });
+
+  it('keeps a trader helper’s business details inside the summary card', () => {
+    const markup = form('en', {
+      helperIsTrader: true,
+      trader: {
+        helperBusinessName: 'Vrtlarski obrt Horvat',
+        helperBusinessOib: '00000000698',
+        helperBusinessAddress: 'Obala Stjepana Radića 12, 20000 Dubrovnik, HR',
+      },
+    });
+    const summary = markup.split('data-testid="checkout-summary"')[1]!;
+
+    expect(summary.indexOf('Vrtlarski obrt Horvat · OIB 00000000698')).toBeLessThan(
+      summary.indexOf('Agreed price'),
+    );
+  });
+
+  it.each(locales)(
+    'says the payment is held via Stripe, right under the summary, in %s',
+    (locale) => {
+      const markup = form(locale);
+      const secure = markup.indexOf('data-testid="checkout-secure"');
+
+      expect(secure).toBeGreaterThan(markup.indexOf('data-testid="checkout-summary"'));
+      expect(markup.slice(secure).split('</p>')[0]).toContain(catalogues[locale].checkout.secure);
+      expect(catalogues[locale].checkout.secure).toContain('Stripe');
+    },
+  );
+
+  it('pins the fee notice, the amount due and the order button in one footer bar', () => {
+    const markup = form('en');
+    const foot = markup.split('data-testid="checkout-foot"')[1]!;
+
+    expect(foot).toContain('data-testid="checkout-fee-notice"');
+    expect(foot).toContain('data-testid="checkout-pay"');
+    // The consent boxes stay above it, in the page.
+    expect(foot).not.toContain('checkout-consent');
+  });
+
   it('shows the server’s error code in words', () => {
     expect(form('en', { error: 'errors.OFFER_CHANGED' })).toContain(
       catalogues.en.errors.OFFER_CHANGED.replace(/'/g, '&#x27;'),
@@ -262,6 +312,12 @@ describe('DeclineNote', () => {
 });
 
 describe('checkout copy', () => {
+  it.each(locales)('never says TaskBeavo holds the money in %s', (locale) => {
+    expect(JSON.stringify(catalogues[locale].checkout).toLowerCase()).not.toMatch(
+      /held by taskbeavo|taskbeavo holds|hält taskbeavo|von taskbeavo (gehalten|verwahrt)|détenu par taskbeavo|taskbeavo drži|drži taskbeavo/,
+    );
+  });
+
   it.each(locales)('never calls the held money "escrow" in %s', (locale) => {
     expect(JSON.stringify(catalogues[locale].checkout).toLowerCase()).not.toMatch(
       /escrow|treuhand|séquestre|sequestre/,

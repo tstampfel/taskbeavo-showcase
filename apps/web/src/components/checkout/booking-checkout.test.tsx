@@ -33,4 +33,15 @@ describe('DemoPayForm', () => {
     expect(markup).toContain('4000 0000 0000 0002');
     expect(markup).toContain('data-testid="checkout-pay"');
   });
+
+  it('frames the demo card in its own card and pins the pay button (mockup 6g)', () => {
+    const markup = demoForm('en');
+    const demo = markup.split('data-testid="checkout-demo-card"')[1]!;
+    const foot = markup.split('data-testid="checkout-foot"')[1]!;
+
+    expect(demo).toContain(catalogues.en.checkout.demo.label);
+    expect(demo).toContain('4242 4242 4242 4242');
+    expect(foot).toContain('data-testid="checkout-pay"');
+    expect(foot).not.toContain('4242');
+  });
 });

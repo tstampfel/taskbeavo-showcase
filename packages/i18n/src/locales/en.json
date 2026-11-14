@@ -65,6 +65,7 @@
     },
     "obligations": "TaskBeavo handles payment and support; the helper is responsible for doing the task.",
     "newHelper": "New helper · no reviews yet",
+    "sent": "Sent {ago}",
     "expires": "Open until {date}",
     "needsUpdate": "You changed the task. The helper needs to confirm this offer before you can accept it.",
     "accept": "Accept",

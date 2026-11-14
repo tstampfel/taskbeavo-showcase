@@ -127,9 +127,10 @@ interface Stub {
 async function stubApi(
   stubGraphql: (answers: Answers) => Promise<GraphqlStub>,
   bookingNow = () => booking(),
+  offerNow: Record<string, unknown> = offer,
 ): Promise<Stub> {
   const answers: Answers = {
-    TaskOffers: () => ({ data: { taskOffers: [offer] } }),
+    TaskOffers: () => ({ data: { taskOffers: [offerNow] } }),
     Task: () => ({ data: { task } }),
     CheckoutPolicy: (variables) => ({
       data: { currentLegalDocument: policy(String(variables.language ?? 'EN')) },
@@ -182,6 +183,13 @@ test('pays only with both boxes ticked, with the policy version shown', async ({
     'Task price €30.00 (paid to the helper) + TaskBeavo service fee €3.60 (12%, min. €2.50) = total €33.60',
   );
   await expect(page.getByTestId('checkout-total-due')).toHaveText('Total to pay: €33.60');
+  // Mockup 6a (BEAV-210): the booking summary names the task and the helper type, the money is
+  // held via Stripe, and the order button bar stays on screen before scrolling.
+  await expect(page.getByTestId('checkout-summary')).toContainText('Private individual');
+  await expect(page.getByTestId('checkout-secure')).toHaveText(
+    'Payment protected · held via Stripe',
+  );
+  await expect(pay).toBeInViewport();
 
   await page.getByTestId('policy-open').click();
   await expect(page.getByRole('dialog')).toContainText('the full cancellation policy');
@@ -328,4 +336,72 @@ test('the booking subscription connects to the stub, never a local API', async (
   await expect.poll(() => stub.graphql.subscriptions).toContain('BookingUpdated');
   expect(stub.graphql.calls).toContainEqual({ name: 'WebSocketToken', variables: {} });
   expect(stub.graphql.socketInits[0]).toMatchObject({ authToken: WS_TOKEN });
+});
+
+/** True when the two boxes overlap on screen. */
+function overlaps(a: { y: number; height: number }, b: { y: number; height: number }) {
+  return a.y < b.y + b.height && b.y < a.y + a.height;
+}
+
+const traderOffer = {
+  ...offer,
+  helperIsTrader: true,
+  helperBusinessName: 'Obrt Stjepan Popravci',
+  helperBusinessOib: '00000000698',
+  helperBusinessAddress: 'Obala Stjepana Radića 12, 20000 Dubrovnik, HR',
+};
+
+// The order bar is pinned only while it fits (review R1-1): with 200% text it must never cover
+// the trader details or a focused consent box, in any language, on a 375px phone
+// (WCAG 2.2 2.4.11 Focus Not Obscured).
+for (const height of [812, 667]) {
+  test(`with 200% text at 375×${height}, the order bar never covers the boxes or trader details`, async ({
+    page,
+    stubGraphql,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'a phone-width check');
+    await stubApi(stubGraphql, () => booking(), traderOffer);
+    await page.setViewportSize({ width: 375, height });
+    // The browser's default font size, as the text-size setting changes it: 16px → 32px.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Page.setFontSizes', { fontSizes: { standard: 32, fixed: 26 } });
+
+    for (const locale of ['hr', 'en', 'de', 'fr'] as const) {
+      await page.goto(`/${locale}/tasks/task-1/offers/marko/checkout`);
+      const foot = page.getByTestId('checkout-foot');
+      await expect(page.getByTestId('checkout-consent')).toBeVisible();
+      // Too tall to pin with this text size: it stays at the end of the page.
+      await expect(foot).toHaveAttribute('data-pinned', 'false');
+
+      const trader = page.getByTestId('trader-identity');
+      await trader.scrollIntoViewIfNeeded();
+      expect(overlaps((await trader.boundingBox())!, (await foot.boundingBox())!), locale).toBe(
+        false,
+      );
+      for (const box of ['consent-cancellation-policy', 'consent-early-start']) {
+        await page.getByTestId(box).focus();
+        const boxRect = (await page.getByTestId(box).boundingBox())!;
+        expect(overlaps(boxRect, (await foot.boundingBox())!), `${locale} ${box}`).toBe(false);
+      }
+      expect(await noHorizontalScroll(page)).toBe(true);
+    }
+  });
+}
+
+test('at the default text size the order bar is pinned and a focused box scrolls clear of it', async ({
+  page,
+  stubGraphql,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'a phone-width check');
+  await stubApi(stubGraphql);
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.goto('/en/tasks/task-1/offers/marko/checkout');
+  const foot = page.getByTestId('checkout-foot');
+  await expect(foot).toHaveAttribute('data-pinned', 'true');
+  await expect(page.getByTestId('checkout-pay')).toBeInViewport();
+  for (const box of ['consent-cancellation-policy', 'consent-early-start']) {
+    await page.getByTestId(box).focus();
+    const boxRect = (await page.getByTestId(box).boundingBox())!;
+    expect(overlaps(boxRect, (await foot.boundingBox())!), box).toBe(false);
+  }
 });

@@ -180,3 +180,51 @@
   font-weight: inherit;
   text-align: start;
 }
+
+/* Mockup 4a: the compact task summary and the card's parts (BEAV-210). */
+.task {
+  gap: var(--tb-space-xs);
+  padding: var(--tb-space-md);
+}
+
+.iconRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tb-space-xs);
+}
+
+.iconLink {
+  gap: var(--tb-space-xs);
+  margin-top: calc(-1 * var(--tb-space-sm));
+  text-decoration: none;
+}
+
+.offer {
+  gap: var(--tb-space-md);
+}
+
+.traderBox:not(:empty) {
+  padding: var(--tb-space-sm) var(--tb-space-md);
+  border-radius: var(--tb-radius-md);
+  background: var(--tb-color-off-white);
+}
+
+.cardFoot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--tb-space-xs) var(--tb-space-md);
+}
+
+/* The price column stays narrow so the helper's column keeps room; its notes wrap. */
+.offer .priceBox {
+  flex: none;
+  max-width: 9.5rem;
+}
+
+/* A long helper-type label (de, fr, large text) wraps as a rounded label, not a squashed pill. */
+.typeBadge {
+  border-radius: var(--tb-radius-sm);
+  padding-block: 2px;
+}

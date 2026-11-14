@@ -65,6 +65,7 @@
     },
     "obligations": "TaskBeavo kümmert sich um Zahlung und Support; der Helfer ist für die Ausführung des Auftrags verantwortlich.",
     "newHelper": "Neuer Helfer · noch keine Bewertungen",
+    "sent": "Gesendet {ago}",
     "expires": "Gültig bis {date}",
     "needsUpdate": "Sie haben die Aufgabe geändert. Der Helfer muss dieses Angebot bestätigen, bevor Sie es annehmen können.",
     "accept": "Annehmen",
