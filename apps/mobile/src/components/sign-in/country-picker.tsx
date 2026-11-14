@@ -29,7 +29,7 @@ import {
 import { Text } from '../ui/text';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Heading } from '../ui';
-import { lineEm } from '../ui/heading';
+import { CARD_HEADING_INSET, lineEm, wordFitFontScale } from '../ui/heading';
 import { TextScaleScope } from '../ui/text-scale-scope';
 import { textStyle } from '../ui/text-style';
 
@@ -51,9 +51,10 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
   const locale = i18n.language as Locale;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  // The Done button shares the header line; its width grows with the text size.
-  const [doneWidth, setDoneWidth] = useState<number>(minTapTarget);
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
+  // The Done button shares the header line; its width grows with the text size. It's estimated
+  // before layout, not measured, so the first frame already has the final header (review R4-1).
+  const doneWidth = doneButtonWidth(t('signIn.countryDone'), fontScale, width);
   // Once Done grows past a third of the line at large text, the title goes under it on a line
   // of its own, instead of being squeezed into what's left (BEAV-223).
   const titleBelow = doneWidth > (width - 2 * spacing.lg) / 3;
@@ -90,23 +91,21 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
             <SafeAreaView style={styles.sheet}>
               <View style={titleBelow ? styles.headerStacked : styles.header}>
                 <Heading
-                  style={[
-                    textStyle('h2'),
-                    styles.value,
-                    styles.title,
-                    titleBelow && styles.titleStacked,
-                  ]}
+                  // A new text view when the layout flips, so no line breaks carry over.
+                  key={titleBelow ? 'below' : 'beside'}
+                  style={[textStyle('h2'), styles.value, styles.title]}
                   inset={2 * spacing.lg + (titleBelow ? 0 : doneWidth)}
                 >
                   {label}
                 </Heading>
-                <Button
-                  label={t('signIn.countryDone')}
-                  variant="ghost"
-                  size="sm"
-                  onPress={() => setOpen(false)}
-                  onLayout={(event) => setDoneWidth(event.nativeEvent.layout.width)}
-                />
+                <View style={titleBelow && styles.doneRow}>
+                  <Button
+                    label={t('signIn.countryDone')}
+                    variant="ghost"
+                    size="sm"
+                    onPress={() => setOpen(false)}
+                  />
+                </View>
               </View>
               <TextInput
                 accessibilityLabel={t('signIn.countrySearch')}
@@ -165,6 +164,19 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
   );
 }
 
+/**
+ * The estimated width of the header's small ghost Done button at `fontScale`: its label on one
+ * line at the scale Button allows it (capped where its longest word fits), plus its padding and
+ * border, and never under a tap target. Never narrower than it renders, like `lineEm`.
+ */
+export function doneButtonWidth(label: string, fontScale: number, screenWidth: number): number {
+  const fontSize = typography.small.fontSize;
+  const chrome = 2 * (spacing.lg + borderWidth.control);
+  const cap = wordFitFontScale(label, fontSize, screenWidth - CARD_HEADING_INSET - chrome);
+  const scale = Math.max(1, Math.min(fontScale, cap));
+  return Math.max(minTapTarget, lineEm(label) * fontSize * scale + chrome);
+}
+
 /** The width beside a country's name: the sheet's and the option's padding, the code and gap. */
 export const OPTION_INSET = 2 * spacing.lg + 2 * spacing.md + CODE_WIDTH + spacing.md;
 
@@ -188,9 +200,12 @@ const styles = StyleSheet.create({
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   // Done first, on the right, then the title on the whole line under it.
-  headerStacked: { flexDirection: 'column-reverse', alignItems: 'flex-end', gap: spacing.sm },
-  titleStacked: { alignSelf: 'stretch' },
-  title: { flexShrink: 1 },
+  headerStacked: { flexDirection: 'column-reverse', gap: spacing.sm },
+  doneRow: { flexDirection: 'row', justifyContent: 'flex-end' },
+  // The font's own line height, not h2's fixed one: in this modal, iOS drew a title with a fixed
+  // line height on fewer lines than it measured, so "Država u / kojoj živite" ran past the
+  // right edge at AX5 on a 390pt phone, above an empty line (review R4-1).
+  title: { flexShrink: 1, lineHeight: undefined },
   search: {
     minHeight: controlHeight.md,
     paddingHorizontal: spacing.lg,

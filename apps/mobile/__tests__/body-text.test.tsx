@@ -464,6 +464,22 @@ describe('review round 3 (BEAV-223)', () => {
     expect(body.props.maxFontSizeMultiplier).toBeGreaterThanOrEqual(2);
   });
 
+  // R4-1: iOS drew a modal title with a fixed line height on fewer lines than it measured.
+  it('sets a sheet title in the font’s own line height', async () => {
+    atSize(390, AX5);
+    const title = 'Unternehmensdaten entfernen?';
+    await render(
+      <SafeAreaProvider initialMetrics={metrics}>
+        <Sheet visible onClose={jest.fn()} title={title} closeLabel="Schließen">
+          <Text>x</Text>
+        </Sheet>
+      </SafeAreaProvider>,
+    );
+    const style = StyleSheet.flatten(screen.getByRole('header', { name: title }).props.style);
+    expect(style.fontSize).toBe(typography.h2.fontSize);
+    expect(style.lineHeight).toBeUndefined();
+  });
+
   it.each([
     [375, 'Unternehmensdaten'],
     [402, 'Unternehmensdaten'],
