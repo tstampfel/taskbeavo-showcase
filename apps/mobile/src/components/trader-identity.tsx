@@ -2,7 +2,8 @@ import type { OfferFieldsFragment } from '@taskbeavo/graphql';
 import { colors, spacing } from '@taskbeavo/ui-tokens';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from './ui/text';
 import { textStyle } from './ui/text-style';
 
 export type TraderFields = Pick<

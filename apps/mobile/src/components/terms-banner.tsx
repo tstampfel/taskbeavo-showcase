@@ -5,7 +5,8 @@ import { colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from './ui/text';
 import { fonts } from '../fonts';
 import { textStyle } from './ui/text-style';
 

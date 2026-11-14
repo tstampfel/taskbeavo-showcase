@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Heading } from './heading';
+import { TextScaleScope } from './text-scale-scope';
 import { textStyle } from './text-style';
 
 /**
@@ -21,7 +22,7 @@ import { textStyle } from './text-style';
 export const TOP_TITLE_MAX_FONT_SCALE = 1.6;
 
 /** The width beside the top bar title: the bar's padding, the two buttons and their gaps. */
-const TOP_TITLE_INSET = 2 * spacing.lg + 2 * minTapTarget + 2 * spacing.sm;
+export const TOP_TITLE_INSET = 2 * spacing.lg + 2 * minTapTarget + 2 * spacing.sm;
 
 /**
  * From this text scale on, the footer scrolls with the body instead of staying pinned: at the
@@ -51,7 +52,9 @@ export interface ScreenProps {
  * centred title), the scrolling body (`.body`) and the actions pinned at the bottom (`.foot`).
  * The SafeAreaView keeps the bar clear of the status bar and notch (BEAV-201) and the footer
  * clear of the home indicator. On iOS the footer rides above the keyboard, and a tap on a
- * button works while the keyboard is up (the sign-in forms, BEAV-215).
+ * button works while the keyboard is up (the sign-in forms, BEAV-215). The body is one
+ * `TextScaleScope`: its text grows no bigger than its headings (BEAV-223); the top bar title,
+ * capped for its narrow bar, is left out.
  */
 export function Screen({ title, onBack, backLabel, footer, children, testID }: ScreenProps) {
   const inline = useWindowDimensions().fontScale >= INLINE_FOOTER_FONT_SCALE;
@@ -76,8 +79,10 @@ export function Screen({ title, onBack, backLabel, footer, children, testID }: S
           keyboardShouldPersistTaps="handled"
           testID={testID ? `${testID}-body` : undefined}
         >
-          {children}
-          {inline ? foot : null}
+          <TextScaleScope>
+            {children}
+            {inline ? foot : null}
+          </TextScaleScope>
         </ScrollView>
         {inline ? null : foot}
       </KeyboardAvoidingView>

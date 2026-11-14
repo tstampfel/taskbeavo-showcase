@@ -10,7 +10,7 @@ import {
 import type { PressableProps } from 'react-native';
 import { Pressable, StyleSheet, Text, useWindowDimensions } from 'react-native';
 import { CARD_HEADING_INSET, wordFitFontScale } from './heading';
-import { textStyle } from './text-style';
+import { textStyle, withTextBoxRounding } from './text-style';
 
 export interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
   /** Visible label, already translated; also the accessibility label unless one is given. */
@@ -60,7 +60,7 @@ export function Button({
       {...props}
     >
       <Text
-        style={[text, styles.label, { color: set.foreground }]}
+        style={withTextBoxRounding([text, styles.label, { color: set.foreground }])}
         maxFontSizeMultiplier={wordFitFontScale(label, text.fontSize ?? 0, labelWidth)}
       >
         {label}

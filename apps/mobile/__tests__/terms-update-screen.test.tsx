@@ -391,7 +391,15 @@ describe('TermsUpdateScreen design', () => {
       await renderScreen([status(true), terms('2026-12')], {});
       await screen.findByTestId('terms-update-changes');
       const [tick] = screen.getAllByTestId('terms-update-tick', { includeHiddenElements: true });
-      expect(StyleSheet.flatten(tick!.props.style).height).toBe(typography.small.lineHeight * 3);
+      // The line's text grows only as far as its longest word fits (BEAV-223): the tick follows
+      // the size the text renders at, not the raw font scale.
+      const row = tick!.parent!;
+      const line = row.children.find((child) => typeof child !== 'string' && child !== tick);
+      const rendered = Math.min(3, (line as typeof tick)!.props.maxFontSizeMultiplier as number);
+      expect(rendered).toBeGreaterThanOrEqual(1);
+      expect(StyleSheet.flatten(tick!.props.style).height).toBe(
+        typography.small.lineHeight * rendered,
+      );
     } finally {
       dimensions.mockRestore();
     }

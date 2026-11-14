@@ -10,7 +10,8 @@ import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui
 import type { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../components/ui/text';
 import { errorMessage } from '../components/sign-in/error-message';
 import { Button, Card, Input, Note, Sheet } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
@@ -287,7 +288,9 @@ function BusinessForm({
               testID={`business-kind-${option}`}
             >
               <View style={[styles.dot, selected && styles.dotOn]} />
-              <Text style={styles.kindLabel}>{t(`businessDetails.kind.${option}`)}</Text>
+              <Text style={styles.kindLabel} inset={KIND_LABEL_INSET}>
+                {t(`businessDetails.kind.${option}`)}
+              </Text>
             </Pressable>
           );
         })}
@@ -342,6 +345,11 @@ function BusinessForm({
   );
 }
 
+const RADIO_DOT = 24;
+/** The width beside a kind's label: the screen and card padding, borders, the radio and its gap. */
+const KIND_LABEL_INSET =
+  2 * spacing.lg + 2 * spacing.lg + 2 * borderWidth.focus + RADIO_DOT + spacing.md;
+
 const styles = StyleSheet.create({
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   name: { ...textStyle('body'), fontFamily: fonts.bold, color: colors.ink },
@@ -364,8 +372,8 @@ const styles = StyleSheet.create({
   kindLabel: { ...textStyle('body'), fontFamily: fonts.bold, color: colors.ink, flex: 1 },
   // The mockups' `.radio`, as on the cancel screen.
   dot: {
-    width: 24,
-    height: 24,
+    width: RADIO_DOT,
+    height: RADIO_DOT,
     flexShrink: 0,
     borderRadius: radii.pill,
     borderWidth: 2,

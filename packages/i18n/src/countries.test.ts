@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   countryCodes,
   countryFlag,
   countryName,
+  countryNamesCldrVersion,
+  countryMatches,
   defaultCountry,
   featuredCountryCodes,
   phonePrefix,
@@ -16,10 +18,49 @@ describe('countries', () => {
     for (const code of featuredCountryCodes) expect(countryCodes).toContain(code);
   });
 
+  it('records which CLDR version the bundled names come from (BEAV-223 review R1-4)', () => {
+    expect(countryNamesCldrVersion).toMatch(/^\d+(\.\d+)*$/);
+  });
+
   it('names countries in the app language', () => {
     expect(countryName('DE', 'de')).toBe('Deutschland');
     expect(countryName('DE', 'hr')).toBe('Njemačka');
     expect(countryName('HR', 'fr')).toBe('Croatie');
+  });
+
+  describe('without Intl.DisplayNames, as on Hermes (BEAV-223)', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('still names every country in hr, en, de and fr, never by its code', () => {
+      vi.stubGlobal('Intl', { ...Intl, DisplayNames: undefined });
+      expect(countryName('DE', 'de')).toBe('Deutschland');
+      expect(countryName('AT', 'hr')).toBe('Austrija');
+      expect(countryName('CH', 'fr')).toBe('Suisse');
+      for (const locale of ['hr', 'en', 'de', 'fr'] as const) {
+        for (const { code, name } of sortedCountries(locale)) {
+          expect({ code, locale, named: name !== code && name.length > 2 }).toEqual({
+            code,
+            locale,
+            named: true,
+          });
+        }
+      }
+    });
+  });
+
+  it('finds a country by its name without accents, or by its code (BEAV-223 review R1-5)', () => {
+    const named = (code: string, locale: 'hr' | 'en' | 'de' | 'fr') => ({
+      code,
+      name: countryName(code, locale),
+    });
+    expect(countryMatches(named('AT', 'de'), 'osterreich', 'de')).toBe(true);
+    expect(countryMatches(named('AT', 'de'), 'Österr', 'de')).toBe(true);
+    expect(countryMatches(named('CZ', 'hr'), 'cesk', 'hr')).toBe(true);
+    expect(countryMatches(named('TR', 'fr'), 'turquie', 'fr')).toBe(true);
+    expect(countryMatches(named('CW', 'en'), 'curacao', 'en')).toBe(true);
+    expect(countryMatches(named('HR', 'en'), 'hr', 'en')).toBe(true);
+    expect(countryMatches(named('HR', 'en'), 'germ', 'en')).toBe(false);
+    expect(countryMatches(named('HR', 'en'), '', 'en')).toBe(true);
   });
 
   it('puts the featured countries first, then the rest by name', () => {

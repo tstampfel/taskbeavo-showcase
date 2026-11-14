@@ -1,6 +1,8 @@
 import { colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { CARD_HEADING_INSET } from '../ui/heading';
+import { Text } from '../ui/text';
 import { textStyle } from '../ui/text-style';
 
 export interface CheckboxProps {
@@ -28,20 +30,38 @@ export function Checkbox({ checked, onChange, label, accessibilityLabel, testID 
         style={[styles.box, checked && styles.checked]}
         testID={testID ? `${testID}-box` : undefined}
       >
-        {checked ? <Text style={styles.tick}>✓</Text> : null}
+        {/* Drawn at one size: a growing tick would overflow its 24pt box. */}
+        {checked ? (
+          <Text style={styles.tick} allowFontScaling={false}>
+            ✓
+          </Text>
+        ) : null}
       </View>
       <View style={styles.label}>
-        {typeof label === 'string' ? <Text style={styles.text}>{label}</Text> : label}
+        {typeof label === 'string' ? (
+          <Text style={styles.text} inset={CHECKBOX_LABEL_INSET}>
+            {label}
+          </Text>
+        ) : (
+          label
+        )}
       </View>
     </Pressable>
   );
 }
 
+const BOX = 24;
+/**
+ * The width beside the label: a card's and the screen's padding (the most a checkbox sits in),
+ * the box and its gap.
+ */
+export const CHECKBOX_LABEL_INSET = CARD_HEADING_INSET + BOX + spacing.md;
+
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md, minHeight: minTapTarget },
   box: {
-    width: 24,
-    height: 24,
+    width: BOX,
+    height: BOX,
     borderWidth: 2,
     // The mockups' `.check` outline: muted ink, 3:1 or better against white and off-white.
     borderColor: colors.inkMuted,

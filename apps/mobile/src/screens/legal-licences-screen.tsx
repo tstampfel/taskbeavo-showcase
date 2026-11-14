@@ -2,11 +2,12 @@ import { LEGAL_PAGE_KINDS, LEGAL_PAGES, type LegalPage } from '@taskbeavo/app-li
 import { geoliteAttributionOrder, type Locale } from '@taskbeavo/i18n';
 import { minTapTarget, spacing } from '@taskbeavo/ui-tokens';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../components/ui/text';
 import { ListCard, ListRow } from '../components/ui';
 import { SectionLabel } from './settings-screen';
 import { Page, styles as pageStyles } from './sign-in-screen';
-import { Rich } from './terms-update-screen';
+import { richParts } from './terms-update-screen';
 
 export const MAXMIND_URL = 'https://www.maxmind.com';
 
@@ -35,14 +36,15 @@ export function LegalLicencesScreen({ onBack, openLegal, openUrl }: LegalLicence
       testID={`${testID}-row`}
     >
       <Text style={styles.licence} accessibilityLanguage={lang} testID={testID}>
-        <Rich
-          locale={lang}
-          messageKey={key}
-          values={{}}
-          tag="link"
-          onPress={openMaxMind}
-          testID={`${testID}-link`}
-        />
+        {richParts({
+          i18n,
+          locale: lang,
+          messageKey: key,
+          values: {},
+          tag: 'link',
+          onPress: openMaxMind,
+          testID: `${testID}-link`,
+        })}
       </Text>
     </Pressable>
   );

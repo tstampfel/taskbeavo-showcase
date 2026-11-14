@@ -7,7 +7,8 @@ import { Dimensions, Linking, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Observable, type Subscriber } from 'rxjs';
 import { i18n } from '../src/i18n';
-import { BookingDetailScreen } from '../src/screens/booking-detail-screen';
+import { wordsFit } from '../src/components/ui/heading';
+import { BookingDetailScreen, stepsStacked } from '../src/screens/booking-detail-screen';
 import { topSafeAreaEdge } from '../src/testing/safe-area';
 
 const metrics = {
@@ -310,4 +311,52 @@ it('keeps the title below the status bar', async () => {
   await renderDetail(booking('user-1'));
   const title = screen.getByRole('header', { name: 'Grocery run for Mama' });
   expect(topSafeAreaEdge(title)).toBe('additive');
+});
+
+describe('at large text (BEAV-223)', () => {
+  function atFontScale(fontScale: number) {
+    return jest
+      .spyOn(Dimensions, 'get')
+      .mockReturnValue({ width: 402, height: 874, scale: 3, fontScale });
+  }
+  afterEach(async () => {
+    jest.restoreAllMocks();
+    await i18n.changeLanguage('en');
+  });
+
+  it('wraps a step label beside its dot instead of running past the edge, in French', async () => {
+    await i18n.changeLanguage('fr');
+    atFontScale(53 / 17);
+    await renderDetail(booking('helper-9', { status: 'FUNDS_HELD' }));
+    const label = screen.getByTestId('booking-step-label-held');
+    expect(StyleSheet.flatten(label.props.style)).toMatchObject({ flexShrink: 1 });
+    // Its longest word ("Paiement") fits the line beside the dot at the size it renders.
+    const fontSize = StyleSheet.flatten(label.props.style).fontSize as number;
+    const scale = Math.min(53 / 17, label.props.maxFontSizeMultiplier as number);
+    expect(wordsFit(label.props.children as string, fontSize * scale, 402 - 2 * 16 - 20 - 8)).toBe(
+      true,
+    );
+  });
+
+  it('lists the steps once a label’s word no longer fits its column', () => {
+    const fr = catalogues.fr.bookingDetail.steps;
+    const labels = [fr.accepted, fr.held, fr.requested, fr.released];
+    expect(stepsStacked(labels, 402, 1)).toBe(false);
+    expect(stepsStacked(labels, 402, 1.3)).toBe(true);
+    // A narrow phone at a modest size: "Paiement" no longer fits a quarter of the line.
+    const column = (320 - 2 * 16) / 4;
+    expect(stepsStacked(labels, 320, 1.25)).toBe(
+      !labels.every((label) => wordsFit(label, 12 * 1.25, column)),
+    );
+  });
+
+  it.each([
+    [1, 'row'],
+    [2, 'column'],
+  ])('at text scale %s puts the status badge in a %s with the start time', async (scale, dir) => {
+    atFontScale(scale);
+    await renderDetail(booking('helper-9', { status: 'FUNDS_HELD' }));
+    const style = StyleSheet.flatten(screen.getByTestId('booking-starts').props.style);
+    expect(style.flexDirection ?? 'column').toBe(dir);
+  });
 });

@@ -7,6 +7,7 @@ import {
 } from '@taskbeavo/graphql';
 import { CLOSE_ACCOUNT_PAGE } from '@taskbeavo/app-links';
 import { formatDate, toApiLocale, type Locale } from '@taskbeavo/i18n';
+import type { i18n as I18n } from 'i18next';
 import { IntlMessageFormat } from 'intl-messageformat';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,14 +17,14 @@ import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
-import { Checkbox } from '../components/sign-in/checkbox';
+import { Text, useTextScaleCap } from '../components/ui/text';
+import { CHECKBOX_LABEL_INSET, Checkbox } from '../components/sign-in/checkbox';
 import { errorMessage } from '../components/sign-in/error-message';
 import { markTermsUpdateShown } from '../components/terms-banner';
-import { Button, Card, Heading } from '../components/ui';
+import { Button, CARD_HEADING_INSET, Card, Heading } from '../components/ui';
 import { SectionLabel } from './settings-screen';
 import { ErrorText, Page, PAGE_HEADING_INSET, styles } from './sign-in-screen';
 
@@ -215,14 +216,15 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
         <Text style={styles.link}>{t('termsUpdate.readFull', { kind })}</Text>
       </Pressable>
       <Text style={styles.small} testID="terms-update-refuse">
-        <Rich
-          locale={locale}
-          messageKey="termsUpdate.refuse"
-          values={{}}
-          tag="close"
-          onPress={openClose}
-          testID="terms-update-close"
-        />
+        {richParts({
+          i18n,
+          locale,
+          messageKey: 'termsUpdate.refuse',
+          values: {},
+          tag: 'close',
+          onPress: openClose,
+          testID: 'terms-update-close',
+        })}
       </Text>
       {/* Only once the document is loaded: the line names its version and date (R1-1). */}
       {shown ? (
@@ -231,15 +233,16 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
           onChange={setAgreed}
           accessibilityLabel={t('termsUpdate.agree', shown).replace(/<\/?terms>/g, '')}
           label={
-            <Text style={styles.small}>
-              <Rich
-                locale={locale}
-                messageKey="termsUpdate.agree"
-                values={shown}
-                tag="terms"
-                onPress={() => openLegal(page, locale)}
-                testID="terms-update-agree-link"
-              />
+            <Text style={styles.small} inset={CHECKBOX_LABEL_INSET}>
+              {richParts({
+                i18n,
+                locale,
+                messageKey: 'termsUpdate.agree',
+                values: shown,
+                tag: 'terms',
+                onPress: () => openLegal(page, locale),
+                testID: 'terms-update-agree-link',
+              })}
             </Text>
           }
           testID="terms-update-agree"
@@ -251,19 +254,23 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
 
 /** A line of the "What's changed" card, after a green tick (21b). */
 function Ticked({ children, testID }: { children: string; testID?: string }) {
-  // As tall as the first line of the text at the user's text size, so the tick stays on it.
+  // As tall as the first line of the text at the size it renders, so the tick stays on it.
   const { fontScale } = useWindowDimensions();
+  const scale = Math.min(
+    fontScale,
+    useTextScaleCap(children, styles.small, { inset: TICKED_INSET }),
+  );
   return (
     <View style={tickStyles.row}>
       <View
-        style={[tickStyles.box, { height: typography.small.lineHeight * fontScale }]}
+        style={[tickStyles.box, { height: typography.small.lineHeight * scale }]}
         importantForAccessibility="no-hide-descendants"
         accessibilityElementsHidden
         testID="terms-update-tick"
       >
         <View style={tickStyles.tick} />
       </View>
-      <Text style={[styles.small, tickStyles.text]} testID={testID}>
+      <Text style={[styles.small, tickStyles.text]} inset={TICKED_INSET} testID={testID}>
         {children}
       </Text>
     </View>
@@ -271,6 +278,8 @@ function Ticked({ children, testID }: { children: string; testID?: string }) {
 }
 
 const TICK_WIDTH = 12;
+/** The width beside a ticked line: the screen and card padding, the tick's box and its gap. */
+const TICKED_INSET = CARD_HEADING_INSET + spacing.lg + spacing.sm;
 const TICK_STROKE = 2;
 
 const tickStyles = StyleSheet.create({
@@ -294,8 +303,12 @@ const tickStyles = StyleSheet.create({
   text: { flex: 1 },
 });
 
-/** A catalogue message with one tag rendered as an inline link. */
-export function Rich({
+/**
+ * A catalogue message with one tag rendered as an inline link: the pieces to put inside a
+ * `Text`. Pieces, not a component, so the `Text` sees the words it must fit (BEAV-223).
+ */
+export function richParts({
+  i18n,
   locale,
   messageKey,
   values,
@@ -303,16 +316,16 @@ export function Rich({
   onPress,
   testID,
 }: {
+  i18n: Pick<I18n, 'getResource'>;
   locale: Locale;
   messageKey: string;
   values: Record<string, string>;
   tag: string;
   onPress(): void;
   testID: string;
-}) {
-  const { i18n } = useTranslation();
+}): ReactNode {
   const message = String(i18n.getResource(locale, 'translation', messageKey) ?? '');
-  const parts = new IntlMessageFormat(message, locale).format<ReactNode>({
+  return new IntlMessageFormat(message, locale).format<ReactNode>({
     ...values,
     [tag]: (chunks: ReactNode[]) => (
       <Text
@@ -326,5 +339,4 @@ export function Rich({
       </Text>
     ),
   });
-  return <>{parts}</>;
 }

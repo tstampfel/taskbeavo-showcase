@@ -12,6 +12,7 @@ import {
   textOf,
   unbreakableRuns,
   wordFitFontScale,
+  textScaleFloor,
 } from '../src/components/ui/heading';
 
 const IPHONE_SE_WIDTH = 375;
@@ -118,18 +119,26 @@ describe('wordFitFontScale', () => {
 });
 
 describe('Heading', () => {
-  it('is a header whose text scale is capped where its longest word fits', async () => {
+  it('is a header whose text scale is capped where its longest word fits, even below the floor', async () => {
     await render(
       <Heading style={{ fontSize: typography.h2.fontSize }}>Widerrufsbelehrung gelesen</Heading>,
     );
     const heading = screen.getByRole('header', { name: 'Widerrufsbelehrung gelesen' });
-    expect(heading.props.maxFontSizeMultiplier).toBe(
-      wordFitFontScale(
-        'Widerrufsbelehrung gelesen',
-        typography.h2.fontSize,
-        402 - CARD_HEADING_INSET,
-      ),
+    const fit = wordFitFontScale(
+      'Widerrufsbelehrung gelesen',
+      typography.h2.fontSize,
+      402 - CARD_HEADING_INSET,
     );
+    // A heading never breaks a word (BEAV-219, review R3-1): the floor only goes to its scope.
+    expect(heading.props.maxFontSizeMultiplier).toBe(fit);
+  });
+
+  it('floors a heading at body text points: 2x for body size, less for bigger headings', () => {
+    expect(textScaleFloor(3.1, typography.body.fontSize)).toBe(2);
+    expect(textScaleFloor(3.1, typography.h2.fontSize)).toBeCloseTo(1.6);
+    expect(textScaleFloor(3.1, typography.caption.fontSize)).toBe(2);
+    expect(textScaleFloor(1.3, typography.body.fontSize)).toBe(1.3);
+    expect(textScaleFloor(1, typography.h1.fontSize)).toBe(1);
   });
 
   it('uses its inset and the nested text', async () => {

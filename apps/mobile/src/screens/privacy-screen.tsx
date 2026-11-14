@@ -4,7 +4,8 @@ import { defaultLocale, isLocale, toApiLocale, type Locale } from '@taskbeavo/i1
 import { colors } from '@taskbeavo/ui-tokens';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Switch, Text } from 'react-native';
+import { ActivityIndicator, Switch } from 'react-native';
+import { Text } from '../components/ui/text';
 import { errorMessage } from '../components/sign-in/error-message';
 import { ListCard, ListRow } from '../components/ui';
 import { ErrorText, Page, styles as pageStyles } from './sign-in-screen';

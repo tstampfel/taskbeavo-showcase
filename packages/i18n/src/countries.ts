@@ -1,9 +1,10 @@
+import countryNameTable from './country-names.json';
 import type { Locale } from './index';
 
 /**
  * Countries for "Country you live in" (sign-up) and the phone number's prefix. Posters live
- * anywhere, so every ISO 3166-1 alpha-2 country is offered; the names come from `Intl` in the
- * app's language, so they need no catalogue keys.
+ * anywhere, so every ISO 3166-1 alpha-2 country is offered. The names are CLDR's, in
+ * `country-names.json` (scripts/generate-country-names.mjs), so they need no catalogue keys.
  */
 export const countryCodes: readonly string[] = (
   'AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ ' +
@@ -96,11 +97,19 @@ export function countryFlag(country: string): string {
   return String.fromCodePoint(...[...country].map((letter) => 0x1f1e6 + letter.charCodeAt(0) - 65));
 }
 
+const countryNames: Record<Locale, Record<string, string | undefined>> = countryNameTable.names;
+
+/** The Unicode CLDR version the bundled country names come from (Unicode License v3). */
+export const countryNamesCldrVersion: string = countryNameTable.cldr;
+
 /**
- * The country's name in `locale` ("Deutschland"). Falls back to the code where the runtime
- * has no `Intl.DisplayNames` (older Hermes), so the list still works.
+ * The country's name in `locale` ("Deutschland"), from the bundled CLDR table: Hermes, the
+ * app's JavaScript engine, has no `Intl.DisplayNames`, and the list showed bare codes
+ * (BEAV-223). A code missing from the table falls back to `Intl`, then to the code itself.
  */
 export function countryName(country: string, locale: Locale): string {
+  const named = countryNames[locale][country];
+  if (named) return named;
   try {
     return new Intl.DisplayNames([locale], { type: 'region' }).of(country) ?? country;
   } catch {
@@ -128,4 +137,23 @@ export function defaultCountry(languageTags: readonly string[]): string {
     if (region && countryCodes.includes(region)) return region;
   }
   return 'HR';
+}
+
+/** `text` lower-cased in `locale` without its accents: "Österreich" → "osterreich". */
+function searchKey(text: string, locale: Locale): string {
+  return text.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase(locale);
+}
+
+/**
+ * Whether a typed search finds `country`: part of its name, with or without accents
+ * ("osterreich", "cesk", "curacao"), or its exact code ("HR"). An empty search finds all.
+ */
+export function countryMatches(
+  country: { code: string; name: string },
+  query: string,
+  locale: Locale,
+): boolean {
+  const needle = searchKey(query.trim(), locale);
+  if (!needle) return true;
+  return searchKey(country.name, locale).includes(needle) || country.code === needle.toUpperCase();
 }

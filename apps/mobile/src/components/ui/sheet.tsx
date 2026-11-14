@@ -8,13 +8,15 @@ import {
   surfaces,
 } from '@taskbeavo/ui-tokens';
 import type { ReactNode } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from './text';
+import { TextScaleScope } from './text-scale-scope';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Heading } from './heading';
 import { textStyle } from './text-style';
 
 /** The width beside the sheet title: the panel's padding, the close button and the gap. */
-const SHEET_TITLE_INSET = 2 * spacing.lg + minTapTarget + spacing.sm;
+export const SHEET_TITLE_INSET = 2 * spacing.lg + minTapTarget + spacing.sm;
 
 export interface SheetProps {
   visible: boolean;
@@ -63,27 +65,30 @@ export function Sheet({ visible, onClose, title, closeLabel, children, testID }:
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
           />
-          <View style={styles.header}>
-            <Heading style={[textStyle('h2'), styles.title]} inset={SHEET_TITLE_INSET}>
-              {title}
-            </Heading>
-            <Pressable
-              onPress={onClose}
-              accessibilityRole="button"
-              accessibilityLabel={closeLabel}
-              style={styles.close}
-              testID={testID ? `${testID}-close` : undefined}
-            >
-              <Text
-                style={[textStyle('h2'), styles.closeGlyph]}
-                importantForAccessibility="no"
-                accessibilityElementsHidden
+          {/* The sheet's own text: its title, not the screen's, sets how far its text grows. */}
+          <TextScaleScope>
+            <View style={styles.header}>
+              <Heading style={[textStyle('h2'), styles.title]} inset={SHEET_TITLE_INSET}>
+                {title}
+              </Heading>
+              <Pressable
+                onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel={closeLabel}
+                style={styles.close}
+                testID={testID ? `${testID}-close` : undefined}
               >
-                ×
-              </Text>
-            </Pressable>
-          </View>
-          <ScrollView contentContainerStyle={styles.body}>{children}</ScrollView>
+                <Text
+                  style={[textStyle('h2'), styles.closeGlyph]}
+                  importantForAccessibility="no"
+                  accessibilityElementsHidden
+                >
+                  ×
+                </Text>
+              </Pressable>
+            </View>
+            <ScrollView contentContainerStyle={styles.body}>{children}</ScrollView>
+          </TextScaleScope>
         </View>
       </View>
     </Modal>

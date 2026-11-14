@@ -32,12 +32,21 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
+import { Text } from '../components/ui/text';
 import { Checkbox } from '../components/sign-in/checkbox';
 import { TraderIdentity } from '../components/trader-identity';
-import { Badge, Button, Card, Heading, Screen, Sheet } from '../components/ui';
+import {
+  AmountRow,
+  AmountRowGroup,
+  Badge,
+  Button,
+  Card,
+  Heading,
+  Screen,
+  Sheet,
+} from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 import { fonts } from '../fonts';
 import type { PaymentSheet } from '../payments/stripe-config';
@@ -319,24 +328,27 @@ function Summary({
   return (
     <Card testID="checkout-summary" style={styles.summary}>
       {children}
-      <Line label={t('checkout.summary.price')} value={money(price)} />
-      <Line label={t('checkout.summary.fee')} value={money(fee)} />
-      {credit > 0 ? (
-        <Line label={t('checkout.summary.credit')} value={`−${money(credit)}`} />
-      ) : null}
-      <View style={styles.rule} />
-      <Line label={t('checkout.summary.total')} value={money(total)} strong />
+      {/* One block: its rows are all on one line or all stacked (review R1-3). */}
+      <AmountRowGroup>
+        <Line label={t('checkout.summary.price')} value={money(price)} />
+        <Line label={t('checkout.summary.fee')} value={money(fee)} />
+        {credit > 0 ? (
+          <Line label={t('checkout.summary.credit')} value={`−${money(credit)}`} />
+        ) : null}
+        <View style={styles.rule} />
+        <Line label={t('checkout.summary.total')} value={money(total)} strong />
+      </AmountRowGroup>
     </Card>
   );
 }
 
 function Line({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
-  const style = [textStyle(strong ? 'label' : 'body'), styles.ink];
   return (
-    <View style={styles.line} accessible accessibilityLabel={`${label}: ${value}`}>
-      <Text style={[style, styles.grow]}>{label}</Text>
-      <Text style={style}>{value}</Text>
-    </View>
+    <AmountRow
+      label={label}
+      value={value}
+      style={[textStyle(strong ? 'label' : 'body'), styles.ink]}
+    />
   );
 }
 
@@ -738,7 +750,6 @@ const styles = StyleSheet.create({
   green: { color: colors.green },
   error: { color: colors.error },
   grow: { flex: 1 },
-  line: { flexDirection: 'row', gap: spacing.md },
   rule: { height: 1, backgroundColor: colors.line },
   declined: { borderColor: colors.error, borderWidth: 2 },
   link: { minHeight: 44, justifyContent: 'center' },

@@ -8,7 +8,8 @@ import {
 import { phonePrefix } from '@taskbeavo/i18n';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Text } from 'react-native';
+import { ActivityIndicator } from 'react-native';
+import { Text } from '../components/ui/text';
 import { errorMessage } from '../components/sign-in/error-message';
 import { Button, Heading, Input } from '../components/ui';
 import { CodeStep, ErrorText, Page, PAGE_HEADING_INSET, styles } from './sign-in-screen';

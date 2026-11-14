@@ -28,8 +28,19 @@ import { defaultLocale, formatDate, formatMoney, isLocale, type Locale } from '@
 import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Card, Heading, Input, Note, Screen } from '../components/ui';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../components/ui/text';
+import {
+  AmountRow,
+  AmountRowGroup,
+  Button,
+  CARD_HEADING_INSET,
+  Card,
+  Heading,
+  Input,
+  Note,
+  Screen,
+} from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 
 export interface CancelScreenProps {
@@ -380,7 +391,9 @@ function Reasons<K extends string>({
           style={[styles.dot, checked && styles.dotChecked]}
           testID={`cancel-reason-dot-${reason.key}`}
         />
-        <Text style={[textStyle('body'), styles.ink, styles.flex]}>{label}</Text>
+        <Text style={[textStyle('body'), styles.ink, styles.flex]} inset={REASON_LABEL_INSET}>
+          {label}
+        </Text>
       </Pressable>
     );
   };
@@ -490,18 +503,21 @@ function Preview({ preview, money }: { preview: CancelPreview; money: (cents: nu
         {preview.full ? t('cancel.preview.full') : t('cancel.preview.title')}
       </Heading>
       <Text style={[textStyle('small'), styles.muted]}>{t(`cancel.cases.${preview.case}`)}</Text>
-      <Row label={t('cancel.preview.youGetBack')} value={money(preview.refundCents)} strong />
-      {preview.helperCompensationCents > 0 && (
-        <>
-          <Row
-            label={t('cancel.preview.helperKeeps')}
-            value={money(preview.helperCompensationCents)}
-          />
-          <Row label={t('cancel.preview.keptFee')} value={money(preview.keptFeeCents)} />
-        </>
-      )}
-      <View style={styles.rule} />
-      <Row label={t('cancel.preview.youPaid')} value={money(preview.chargeCents)} muted />
+      {/* One block: its rows are all on one line or all stacked (review R1-3). */}
+      <AmountRowGroup>
+        <Row label={t('cancel.preview.youGetBack')} value={money(preview.refundCents)} strong />
+        {preview.helperCompensationCents > 0 && (
+          <>
+            <Row
+              label={t('cancel.preview.helperKeeps')}
+              value={money(preview.helperCompensationCents)}
+            />
+            <Row label={t('cancel.preview.keptFee')} value={money(preview.keptFeeCents)} />
+          </>
+        )}
+        <View style={styles.rule} />
+        <Row label={t('cancel.preview.youPaid')} value={money(preview.chargeCents)} muted />
+      </AmountRowGroup>
       {preview.creditBackCents > 0 && (
         <Text style={[textStyle('body'), styles.ink]} testID="cancel-preview-credit-back">
           {t('cancel.preview.creditBack', { amount: money(preview.creditBackCents) })}
@@ -523,12 +539,13 @@ function Row({
   strong?: boolean;
   muted?: boolean;
 }) {
-  const tone = [textStyle(strong ? 'label' : 'small'), muted ? styles.muted : styles.ink];
   return (
-    <View style={styles.row} accessible accessibilityLabel={`${label}: ${value}`}>
-      <Text style={[...tone, styles.flex]}>{label}</Text>
-      <Text style={[...tone, strong && styles.amount]}>{value}</Text>
-    </View>
+    <AmountRow
+      label={label}
+      value={value}
+      style={[textStyle(strong ? 'label' : 'small'), muted ? styles.muted : styles.ink]}
+      valueStyle={strong && styles.amount}
+    />
   );
 }
 
@@ -634,6 +651,10 @@ function lastDay(endsAt: string, locale: Locale): string {
   return formatDate(new Date(new Date(endsAt).getTime() - 1), locale, 'long');
 }
 
+const RADIO_DOT = 24;
+/** The width beside a reason's label: the screen and card padding, the radio and its gap. */
+const REASON_LABEL_INSET = CARD_HEADING_INSET + RADIO_DOT + spacing.md;
+
 const styles = StyleSheet.create({
   ink: { color: colors.ink },
   muted: { color: colors.inkMuted },
@@ -656,8 +677,8 @@ const styles = StyleSheet.create({
   reasonRule: { borderTopWidth: borderWidth.thin, borderTopColor: colors.line },
   // The mockups' `.radio`: an outlined circle, filled by a thick green ring when picked.
   dot: {
-    width: 24,
-    height: 24,
+    width: RADIO_DOT,
+    height: RADIO_DOT,
     // A wrapping label at large text must not squeeze the circle.
     flexShrink: 0,
     borderRadius: radii.pill,
@@ -666,5 +687,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   dotChecked: { borderWidth: 7, borderColor: colors.green },
-  row: { flexDirection: 'row', gap: spacing.md },
 });

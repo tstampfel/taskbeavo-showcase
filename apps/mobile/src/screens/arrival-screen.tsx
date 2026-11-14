@@ -32,7 +32,8 @@ import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui
 import type { TFunction } from 'i18next';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '../components/ui/text';
 import { Button, Card, Heading, Note, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 

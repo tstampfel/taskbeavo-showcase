@@ -19,10 +19,10 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
+import { Text } from '../components/ui/text';
 import { TraderIdentity, traderSummary } from '../components/trader-identity';
 import { Badge, Button, Card, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
@@ -313,7 +313,12 @@ function Compare({
         <Card style={styles.table}>
           {rows.map(([label, value], index) => (
             <View key={label} style={styles.tableRow}>
-              <Text style={[textStyle('small'), styles.muted, styles.rowLabel]}>{label}</Text>
+              <Text
+                style={[textStyle('small'), styles.muted, styles.rowLabel]}
+                lineWidth={LABEL_WIDTH}
+              >
+                {label}
+              </Text>
               {offers.map((offer) => (
                 <Text
                   key={offer.id}
@@ -328,6 +333,7 @@ function Compare({
                         })
                   }
                   style={[textStyle('label'), styles.ink, styles.cell]}
+                  lineWidth={CELL_WIDTH}
                 >
                   {value(offer)}
                 </Text>
@@ -356,6 +362,7 @@ function Compare({
 }
 
 const CELL_WIDTH = 96;
+const LABEL_WIDTH = CELL_WIDTH * 0.8;
 // Past the expiry instant, so the re-render sees the offer as expired.
 const EXPIRY_MARGIN_MS = 50;
 
@@ -398,6 +405,6 @@ const styles = StyleSheet.create({
   compare: { gap: spacing.md },
   table: { gap: spacing.sm, padding: spacing.sm },
   tableRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  rowLabel: { width: CELL_WIDTH * 0.8 },
+  rowLabel: { width: LABEL_WIDTH },
   cell: { width: CELL_WIDTH, textAlign: 'center' },
 });
