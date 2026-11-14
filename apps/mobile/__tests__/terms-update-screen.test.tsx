@@ -8,7 +8,7 @@ import {
 import { catalogues } from '@taskbeavo/i18n';
 import { minTapTarget, typography } from '@taskbeavo/ui-tokens';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import { GraphQLError } from 'graphql';
 import {
   markTermsUpdateShown,
@@ -377,5 +377,19 @@ describe('TermsUpdateScreen design', () => {
     expect(Number(StyleSheet.flatten(notNow.props.style).minHeight)).toBeGreaterThanOrEqual(
       minTapTarget,
     );
+  });
+
+  it('keeps each tick on the first line of its text at large text sizes', async () => {
+    const dimensions = jest
+      .spyOn(Dimensions, 'get')
+      .mockReturnValue({ width: 402, height: 874, scale: 3, fontScale: 3 });
+    try {
+      await renderScreen([status(true), terms('2026-12')], {});
+      await screen.findByTestId('terms-update-changes');
+      const [tick] = screen.getAllByTestId('terms-update-tick', { includeHiddenElements: true });
+      expect(StyleSheet.flatten(tick!.props.style).height).toBe(typography.small.lineHeight * 3);
+    } finally {
+      dimensions.mockRestore();
+    }
   });
 });

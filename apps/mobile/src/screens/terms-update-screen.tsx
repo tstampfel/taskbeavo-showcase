@@ -18,6 +18,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { Checkbox } from '../components/sign-in/checkbox';
 import { errorMessage } from '../components/sign-in/error-message';
@@ -250,10 +251,12 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
 
 /** A line of the "What's changed" card, after a green tick (21b). */
 function Ticked({ children, testID }: { children: string; testID?: string }) {
+  // As tall as the first line of the text at the user's text size, so the tick stays on it.
+  const { fontScale } = useWindowDimensions();
   return (
     <View style={tickStyles.row}>
       <View
-        style={tickStyles.box}
+        style={[tickStyles.box, { height: typography.small.lineHeight * fontScale }]}
         importantForAccessibility="no-hide-descendants"
         accessibilityElementsHidden
         testID="terms-update-tick"
@@ -272,10 +275,9 @@ const TICK_STROKE = 2;
 
 const tickStyles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  // As tall as a line of small text, so the tick sits on the first line when the text wraps.
   box: {
     width: spacing.lg,
-    height: typography.small.lineHeight,
+
     alignItems: 'center',
     justifyContent: 'center',
   },
