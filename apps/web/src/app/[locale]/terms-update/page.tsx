@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import styles from '../../../components/sign-in/sign-in.module.css';
 import { TermsUpdate } from '../../../components/terms-update/terms-update';
+import styles from '../../../components/terms-update/terms-update.module.css';
 import { routing } from '../../../i18n/routing';
 import { AppShell } from '../../../components/shell/app-shell';
 

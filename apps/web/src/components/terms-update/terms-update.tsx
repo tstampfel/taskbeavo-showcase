@@ -14,10 +14,9 @@ import { useEffect, useState } from 'react';
 import { safeNextPath } from '../../auth/auth-client';
 import { useRouter } from '../../i18n/navigation';
 import { errorMessage } from '../sign-in/error-message';
-import styles from '../sign-in/sign-in.module.css';
-import { Button } from '../ui';
+import { Button, Card, CheckIcon, PinnedFoot } from '../ui';
 import { markTermsUpdateShown } from './shown';
-import own from './terms-update.module.css';
+import styles from './terms-update.module.css';
 
 /**
  * "We've updated our terms" (mockup 21b). Shown while `viewer.mustAcceptTerms`: the account is
@@ -25,7 +24,9 @@ import own from './terms-update.module.css';
  * unticked box that names its version and effective date: what the API records (BEAV-188).
  * The API checks the version (TERMS_NOT_ACCEPTED if it changed meanwhile); "Not now" leaves
  * the account limited. Checkout never counts as accepting (user decision 2026-11-05). A
- * HELPER_TERMS document is named and linked as the Helper terms.
+ * HELPER_TERMS document is named and linked as the Helper terms. Laid out as mockup 21b, as on
+ * mobile (BEAV-215): the "What's changed" card with ticked lines, the full-terms link, the
+ * refusal line and the tick box, then Accept with a small "Not now" in a pinned button bar.
  */
 export function TermsUpdate({ next }: { next: string | null }) {
   const t = useTranslations();
@@ -79,11 +80,11 @@ export function TermsUpdate({ next }: { next: string | null }) {
   if (!status.data && status.error && !status.loading) {
     // Offline or a server error: say so, with a way to try again or carry on limited.
     return (
-      <div className={styles.panel} data-testid="terms-update-load-error">
+      <div className={styles.page} data-testid="terms-update-load-error">
         <p className={styles.error} role="alert">
           {t('termsUpdate.unavailable')}
         </p>
-        <div className={styles.actions}>
+        <PinnedFoot testId="terms-update-foot">
           <Button
             fullWidth
             onClick={() => void status.refetch().catch(() => undefined)}
@@ -92,14 +93,15 @@ export function TermsUpdate({ next }: { next: string | null }) {
             {t('termsUpdate.retry')}
           </Button>
           <Button
-            variant="secondary"
+            variant="ghost"
+            size="sm"
             fullWidth
             onClick={() => router.replace(target)}
             data-testid="terms-update-not-now"
           >
             {t('termsUpdate.notNow')}
           </Button>
-        </div>
+        </PinnedFoot>
       </div>
     );
   }
@@ -121,7 +123,7 @@ export function TermsUpdate({ next }: { next: string | null }) {
 
   return (
     <form
-      className={styles.panel}
+      className={styles.page}
       data-testid="terms-update"
       onSubmit={(event) => {
         event.preventDefault();
@@ -133,37 +135,22 @@ export function TermsUpdate({ next }: { next: string | null }) {
           {t('termsUpdate.version', shown)}
         </p>
       ) : null}
-      <section aria-labelledby="terms-update-changes">
-        <ul className={own.list}>
-          <li>
-            <h2 id="terms-update-changes" className={own.heading}>
-              {t('termsUpdate.whatsChanged')}
-            </h2>
-          </li>
+      <Card className={styles.changes}>
+        <h2 id="terms-update-changes" className={styles.caps}>
+          {t('termsUpdate.whatsChanged')}
+        </h2>
+        <ul className={styles.ticks}>
           {/* NEEDS REVIEW (lawyer): the per-version summary of changes is legal text and
               comes from the lawyer with BEAV-182; until then a marked draft. The bookings
               and refusal lines are DRAFT legal sentences too (BEAV-39). */}
-          <li className={styles.text}>
-            {t('termsUpdate.summaryDraft', { kind: shown?.kind ?? 'TERMS' })}
-          </li>
+          <Ticked>{t('termsUpdate.summaryDraft', { kind: shown?.kind ?? 'TERMS' })}</Ticked>
           {shown ? (
-            <li className={styles.text} data-testid="terms-update-bookings">
-              {t('termsUpdate.bookingsKeep', shown)}
-            </li>
+            <Ticked testId="terms-update-bookings">{t('termsUpdate.bookingsKeep', shown)}</Ticked>
           ) : null}
         </ul>
-      </section>
-      <p className={styles.text} data-testid="terms-update-refuse">
-        {t.rich('termsUpdate.refuse', {
-          close: (chunks) => (
-            <a href={closeHref} target="_blank" rel="noopener" data-testid="terms-update-close">
-              {chunks}
-            </a>
-          ),
-        })}
-      </p>
+      </Card>
       <a
-        className={own.link}
+        className={styles.link}
         href={termsHref}
         target="_blank"
         rel="noopener"
@@ -171,6 +158,21 @@ export function TermsUpdate({ next }: { next: string | null }) {
       >
         {t('termsUpdate.readFull', { kind: shown?.kind ?? 'TERMS' })}
       </a>
+      <p className={styles.text} data-testid="terms-update-refuse">
+        {t.rich('termsUpdate.refuse', {
+          close: (chunks) => (
+            <a
+              className={styles.inlineLink}
+              href={closeHref}
+              target="_blank"
+              rel="noopener"
+              data-testid="terms-update-close"
+            >
+              {chunks}
+            </a>
+          ),
+        })}
+      </p>
       {/* Only once the document is loaded: the line names its version and date (R1-1). */}
       {shown ? (
         <label className={styles.checkRow}>
@@ -185,7 +187,7 @@ export function TermsUpdate({ next }: { next: string | null }) {
             {t.rich('termsUpdate.agree', {
               ...shown,
               terms: (chunks) => (
-                <a href={termsHref} target="_blank" rel="noopener">
+                <a className={styles.inlineLink} href={termsHref} target="_blank" rel="noopener">
                   {chunks}
                 </a>
               ),
@@ -193,12 +195,12 @@ export function TermsUpdate({ next }: { next: string | null }) {
           </span>
         </label>
       ) : null}
-      {error ? (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : null}
-      <div className={styles.actions}>
+      <PinnedFoot testId="terms-update-foot">
+        {error ? (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        ) : null}
         <Button
           type="submit"
           fullWidth
@@ -209,7 +211,7 @@ export function TermsUpdate({ next }: { next: string | null }) {
         </Button>
         {unavailable ? (
           <>
-            <p className={styles.muted} role="status">
+            <p className={`${styles.muted} ${styles.center}`} role="status">
               {t('termsUpdate.unavailable')}
             </p>
             <Button
@@ -223,20 +225,31 @@ export function TermsUpdate({ next }: { next: string | null }) {
             </Button>
           </>
         ) : !agreed ? (
-          <p className={styles.muted} style={{ textAlign: 'center' }}>
-            {t('termsUpdate.tickToAccept')}
-          </p>
+          <p className={`${styles.muted} ${styles.center}`}>{t('termsUpdate.tickToAccept')}</p>
         ) : null}
         <Button
           type="button"
-          variant="secondary"
+          variant="ghost"
+          size="sm"
           fullWidth
           onClick={() => router.replace(target)}
           data-testid="terms-update-not-now"
         >
           {t('termsUpdate.notNow')}
         </Button>
-      </div>
+      </PinnedFoot>
     </form>
+  );
+}
+
+/** A line of the "What's changed" card, after a green tick (21b). */
+function Ticked({ children, testId }: { children: string; testId?: string }) {
+  return (
+    <li className={styles.tick} data-testid={testId}>
+      <span className={styles.tickIcon}>
+        <CheckIcon size={18} />
+      </span>
+      <span>{children}</span>
+    </li>
   );
 }
