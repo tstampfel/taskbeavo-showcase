@@ -3,6 +3,8 @@ import {
   countryCodes,
   countryFlag,
   countryName,
+  countryNamesCldrVersion,
+  countryMatches,
   defaultCountry,
   featuredCountryCodes,
   phonePrefix,
@@ -14,6 +16,10 @@ describe('countries', () => {
     expect(new Set(countryCodes).size).toBe(countryCodes.length);
     expect(countryCodes.length).toBeGreaterThan(240);
     for (const code of featuredCountryCodes) expect(countryCodes).toContain(code);
+  });
+
+  it('records which CLDR version the bundled names come from (BEAV-223 review R1-4)', () => {
+    expect(countryNamesCldrVersion).toMatch(/^\d+(\.\d+)*$/);
   });
 
   it('names countries in the app language', () => {
@@ -40,6 +46,21 @@ describe('countries', () => {
         }
       }
     });
+  });
+
+  it('finds a country by its name without accents, or by its code (BEAV-223 review R1-5)', () => {
+    const named = (code: string, locale: 'hr' | 'en' | 'de' | 'fr') => ({
+      code,
+      name: countryName(code, locale),
+    });
+    expect(countryMatches(named('AT', 'de'), 'osterreich', 'de')).toBe(true);
+    expect(countryMatches(named('AT', 'de'), 'Österr', 'de')).toBe(true);
+    expect(countryMatches(named('CZ', 'hr'), 'cesk', 'hr')).toBe(true);
+    expect(countryMatches(named('TR', 'fr'), 'turquie', 'fr')).toBe(true);
+    expect(countryMatches(named('CW', 'en'), 'curacao', 'en')).toBe(true);
+    expect(countryMatches(named('HR', 'en'), 'hr', 'en')).toBe(true);
+    expect(countryMatches(named('HR', 'en'), 'germ', 'en')).toBe(false);
+    expect(countryMatches(named('HR', 'en'), '', 'en')).toBe(true);
   });
 
   it('puts the featured countries first, then the rest by name', () => {

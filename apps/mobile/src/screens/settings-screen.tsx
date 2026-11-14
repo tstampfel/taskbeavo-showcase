@@ -2,7 +2,7 @@ import { colors, typography } from '@taskbeavo/ui-tokens';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, useWindowDimensions } from 'react-native';
 import { Heading, ListCard, ListRow } from '../components/ui';
-import { CARD_HEADING_INSET, wordFitFontScale } from '../components/ui/heading';
+import { CARD_HEADING_INSET, textScaleFloor, wordFitFontScale } from '../components/ui/heading';
 import { textStyle } from '../components/ui/text-style';
 import { Page, PAGE_HEADING_INSET } from './sign-in-screen';
 
@@ -43,11 +43,15 @@ export function SettingsScreen({
  * (21d, 19c); `inCard` is the label inside a card, in ink (21b).
  */
 export function SectionLabel({ children, inCard = false }: { children: string; inCard?: boolean }) {
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
   const inset = inCard ? CARD_HEADING_INSET : PAGE_HEADING_INSET;
   // Unlike page titles, a small label has no fixed cap: it grows as far as its words fit. They
-  // are drawn in capitals, which are wider, so they are measured that way.
-  const fit = wordFitFontScale(children.toUpperCase(), CAPTION_SIZE, width - inset);
+  // are drawn in capitals, which are wider, so they are measured that way; never below the
+  // floor body text has, so the text under it isn't held small (BEAV-223).
+  const fit = Math.max(
+    wordFitFontScale(children.toUpperCase(), CAPTION_SIZE, width - inset),
+    textScaleFloor(fontScale, CAPTION_SIZE),
+  );
   return (
     <Heading style={[styles.section, inCard && styles.inCard]} inset={inset} maxScale={fit}>
       {children}

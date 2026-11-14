@@ -90,6 +90,9 @@ describe('CountryPicker', () => {
       expect(screen.queryByTestId('country-HR')).toBeNull();
       await fireEvent.changeText(screen.getByTestId('country-search'), 'at');
       expect(screen.getByTestId('country-AT')).toBeTruthy();
+      // Without accents (review R1-5).
+      await fireEvent.changeText(screen.getByTestId('country-search'), 'algerie');
+      expect(screen.getByTestId('country-DZ')).toBeTruthy();
     });
 
     it('gives the modal its own safe area, so Done stays below the status bar', async () => {

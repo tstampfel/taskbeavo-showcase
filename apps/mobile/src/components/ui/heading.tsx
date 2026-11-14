@@ -1,4 +1,4 @@
-import { spacing } from '@taskbeavo/ui-tokens';
+import { spacing, typography } from '@taskbeavo/ui-tokens';
 import type { ReactNode } from 'react';
 import { Children, isValidElement } from 'react';
 import type { TextProps } from 'react-native';
@@ -103,6 +103,28 @@ export function fitsOnOneLine(
  * capping below it would shrink text for everyone. `maxScale` keeps a stricter cap a layout
  * already has, such as the narrow top bar.
  */
+/** The text scale body text always reaches when the user's is at least this large (R1-2). */
+export const FLOOR_FONT_SCALE = 2;
+
+/**
+ * The smallest scale text of `fontSize` is capped at: the user's own scale up to 2x, as WCAG
+ * 1.4.4 asks for 200%. Text bigger than body text by design gets the same size in points as
+ * body text at that scale, so a heading stays at least as large as the body beside it. Above
+ * it, a word too long for the line may break rather than hold the whole text small (BEAV-223).
+ */
+export function textScaleFloor(fontScale: number, fontSize: number): number {
+  const bodyScale = Math.min(fontScale, FLOOR_FONT_SCALE);
+  return Math.max(1, bodyScale * Math.min(1, typography.body.fontSize / fontSize));
+}
+
+/**
+ * `text` without email addresses and web addresses: they aren't words, the platforms wrap them
+ * anywhere, and one of them must not hold a whole sentence small.
+ */
+export function withoutAddresses(text: string): string {
+  return text.replace(/\S*(?:@|:\/\/|www\.)\S*/g, ' ');
+}
+
 export function wordFitFontScale(
   text: string,
   fontSize: number,
@@ -161,9 +183,15 @@ export function Heading({
   children,
   ...props
 }: HeadingProps) {
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
   const fontSize = StyleSheet.flatten(style)?.fontSize ?? DEFAULT_FONT_SIZE;
-  const scale = wordFitFontScale(textOf(children), fontSize, width - inset, maxScale);
+  // As far as its words fit, but never below the floor, so body text beside it, which has the
+  // same floor, never outgrows it. `maxScale` is a layout's hard cap and wins over the floor.
+  const fit = wordFitFontScale(textOf(children), fontSize, width - inset);
+  const scale = Math.max(
+    1,
+    Math.min(Math.max(fit, textScaleFloor(fontScale, fontSize)), maxScale ?? Infinity),
+  );
   useRegisterHeading(scale, fontSize);
   return (
     <Text accessibilityRole="header" maxFontSizeMultiplier={scale} style={style} {...props}>

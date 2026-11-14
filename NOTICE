@@ -10,3 +10,7 @@ copyright holder. Viewing and forking on GitHub are allowed only to the extent t
 GitHub Terms of Service require.
 
 Third-party dependencies are covered by their own licences.
+
+The country names in packages/i18n/src/country-names.json are Unicode CLDR data,
+Copyright © 2016-2025 Unicode, Inc., used under the Unicode License v3; its full
+notice is in packages/i18n/src/country-names.LICENSE.

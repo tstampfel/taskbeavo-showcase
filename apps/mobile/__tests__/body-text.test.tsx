@@ -195,6 +195,92 @@ describe('AmountRow', () => {
   });
 });
 
+describe('review round 1 (BEAV-223)', () => {
+  beforeEach(() => atFontScale(AX5));
+
+  it('gives a link inside a sentence no cap of its own: it takes the sentence’s size (R1-1)', async () => {
+    await render(
+      <Text style={{ fontSize: 14 }} testID="sentence">
+        J’accepte les{' '}
+        <Text onPress={jest.fn()} testID="link">
+          Conditions générales
+        </Text>{' '}
+        et j’ai lu la{' '}
+        <Text onPress={jest.fn()} testID="link-2">
+          Politique de confidentialité
+        </Text>
+        <Text testID="star"> *</Text>
+      </Text>,
+    );
+    expect(screen.getByTestId('sentence').props.maxFontSizeMultiplier).toEqual(expect.any(Number));
+    for (const id of ['link', 'link-2', 'star']) {
+      expect(screen.getByTestId(id).props.maxFontSizeMultiplier).toBeUndefined();
+    }
+  });
+
+  it('lets a sentence with a long email address still reach 2x (R1-2)', async () => {
+    const email = 'maria.ana.horvat-primjer.long@demo.example.com';
+    expect(email.length).toBeGreaterThanOrEqual(40);
+    const sentence = `Wir haben ihn an ${email} gesendet`;
+    await render(<Text style={{ fontSize: typography.small.fontSize }}>{sentence}</Text>);
+    expect(screen.getByText(sentence).props.maxFontSizeMultiplier).toBeGreaterThanOrEqual(2);
+  });
+
+  it('never caps body text below 2x for one long word (R1-2)', async () => {
+    const warning =
+      'Eine Stornierung wirkt sich auf Ihre Zuverlässigkeitsbewertung aus. Der Auftraggeber erhält die volle Erstattung von 30,00 €.';
+    await render(<Text style={{ fontSize: typography.body.fontSize }}>{warning}</Text>);
+    expect(screen.getByText(warning).props.maxFontSizeMultiplier).toBeGreaterThanOrEqual(2);
+  });
+
+  it('below 2x the floor is the user’s own size: nothing is capped', async () => {
+    atFontScale(1.5);
+    const text = 'Zuverlässigkeitsbewertung';
+    await render(<Text style={{ fontSize: typography.body.fontSize }}>{text}</Text>);
+    expect(screen.getByText(text).props.maxFontSizeMultiplier).toBeGreaterThanOrEqual(1.5);
+  });
+
+  it('keeps a heading with a long word at least as large as the floored body text', async () => {
+    const legend = 'Stornierungsbedingungen';
+    const body = 'Ja';
+    await render(
+      <TextScaleScope>
+        <Heading style={{ fontSize: typography.h2.fontSize }}>{legend}</Heading>
+        <Text style={{ fontSize: typography.body.fontSize }}>{body}</Text>
+      </TextScaleScope>,
+    );
+    const heading = screen.getByRole('header', { name: legend });
+    const text = screen.getByText(body);
+    expect(renderedSize(text)).toBeGreaterThanOrEqual(typography.body.fontSize * 2 - 1e-9);
+    expect(renderedSize(heading)).toBeGreaterThanOrEqual(renderedSize(text) - 1e-9);
+  });
+
+  it('sizes a money row’s label and amount alike, and lays it out at that size (R1-3)', async () => {
+    const label = 'Einbehaltene Servicegebühr';
+    const amount = '0,60\u00a0€';
+    await render(<AmountRow label={label} value={amount} style={{ fontSize: 14 }} />);
+    const labelScale = screen.getByText(label).props.maxFontSizeMultiplier;
+    expect(screen.getByText(amount).props.maxFontSizeMultiplier).toBe(labelScale);
+  });
+
+  it('keeps a money row on one line when it fits at the size it renders (R1-3)', async () => {
+    // Inside a scope whose heading stops at 1.2x, the row renders at 1.2x and fits.
+    atFontScale(2);
+    const label = 'Sie haben bezahlt';
+    const amount = '17,50\u00a0€';
+    await render(
+      <TextScaleScope>
+        <Heading style={{ fontSize: 14 }} maxScale={1.2}>
+          ZUSAMMENFASSUNG
+        </Heading>
+        <AmountRow label={label} value={amount} style={{ fontSize: 14 }} />
+      </TextScaleScope>,
+    );
+    const row = screen.getByLabelText(`${label}: ${amount}`);
+    expect(StyleSheet.flatten(row.props.style)).toMatchObject({ flexDirection: 'row' });
+  });
+});
+
 /**
  * Every component file outside the text components themselves takes `Text` from
  * `components/ui/text`: React Native's own Text has no word-fit cap and no heading cap.

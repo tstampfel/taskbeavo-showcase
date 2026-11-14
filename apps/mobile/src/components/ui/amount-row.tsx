@@ -2,7 +2,7 @@ import { spacing } from '@taskbeavo/ui-tokens';
 import type { StyleProp, TextStyle } from 'react-native';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { CARD_HEADING_INSET, fitsOnOneLine } from './heading';
-import { Text } from './text';
+import { Text, useTextScaleCap } from './text';
 
 /** React Native's default font size, for a row whose style sets none. */
 const DEFAULT_FONT_SIZE = 14;
@@ -38,6 +38,11 @@ export function AmountRow({
 }: AmountRowProps) {
   const { width, fontScale } = useWindowDimensions();
   const fontSize = StyleSheet.flatten(style)?.fontSize ?? DEFAULT_FONT_SIZE;
+  // One size for both sides, the smaller of their caps, and the layout decided at that size.
+  const cap = Math.min(
+    useTextScaleCap(label, style, { inset }),
+    useTextScaleCap(value, [style, valueStyle], { inset }),
+  );
   const row = fitsOnOneLine(
     [
       { text: label, fontSize },
@@ -45,7 +50,7 @@ export function AmountRow({
     ],
     spacing.md,
     width - inset,
-    fontScale,
+    Math.min(fontScale, cap),
   );
   return (
     <View
@@ -54,10 +59,14 @@ export function AmountRow({
       accessibilityLabel={`${label}: ${value}`}
       testID={testID}
     >
-      <Text style={[style, row && styles.label]} inset={inset}>
+      <Text style={[style, row && styles.label]} inset={inset} maxFontSizeMultiplier={cap}>
         {label}
       </Text>
-      <Text style={[style, valueStyle, !row && styles.valueUnder]} inset={inset}>
+      <Text
+        style={[style, valueStyle, !row && styles.valueUnder]}
+        inset={inset}
+        maxFontSizeMultiplier={cap}
+      >
         {value}
       </Text>
     </View>

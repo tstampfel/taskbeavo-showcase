@@ -1,5 +1,6 @@
 // Writes src/country-names.json: every country's name in hr, en, de and fr, from the CLDR data
-// in Node's ICU (Intl.DisplayNames). The app needs the table because Hermes has no
+// in Node's ICU (Intl.DisplayNames), with the CLDR version that produced it. The data is under
+// the Unicode License v3, whose notice is in src/country-names.LICENSE. The app needs the table because Hermes has no
 // Intl.DisplayNames, and without it the country list shows bare codes (BEAV-223).
 // Run with Node built with full ICU (the default): node scripts/generate-country-names.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -24,5 +25,9 @@ for (const locale of ['hr', 'en', 'de', 'fr']) {
   }
 }
 const out = new URL('../src/country-names.json', import.meta.url);
-writeFileSync(out, `${JSON.stringify(names, null, 2)}\n`);
-console.log(`wrote ${codes.length} countries in ${Object.keys(names).length} languages`);
+const cldr = process.versions.cldr;
+if (!cldr) throw new Error('This Node has no CLDR version: build it with full ICU');
+writeFileSync(out, `${JSON.stringify({ cldr, names }, null, 2)}\n`);
+console.log(
+  `wrote ${codes.length} countries in ${Object.keys(names).length} languages, CLDR ${cldr}`,
+);

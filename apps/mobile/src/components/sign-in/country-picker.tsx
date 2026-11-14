@@ -1,4 +1,10 @@
-import { countryFlag, countryName, sortedCountries, type Locale } from '@taskbeavo/i18n';
+import {
+  countryFlag,
+  countryMatches,
+  countryName,
+  sortedCountries,
+  type Locale,
+} from '@taskbeavo/i18n';
 import {
   borderWidth,
   colors,
@@ -23,7 +29,7 @@ import {
 import { Text } from '../ui/text';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Heading } from '../ui';
-import { lineEm, wordFitFontScale } from '../ui/heading';
+import { lineEm, textScaleFloor, wordFitFontScale } from '../ui/heading';
 import { TextScaleScope } from '../ui/text-scale-scope';
 import { textStyle } from '../ui/text-style';
 
@@ -47,35 +53,33 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
   const [query, setQuery] = useState('');
   // The Done button shares the header line; its width grows with the text size.
   const [doneWidth, setDoneWidth] = useState<number>(minTapTarget);
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
   // Once Done grows past a third of the line at large text, the title goes under it on a line
   // of its own, instead of being squeezed into what's left (BEAV-223).
   const titleBelow = doneWidth > (width - 2 * spacing.lg) / 3;
   const countries = useMemo(() => sortedCountries(locale), [locale]);
   // One size for the whole list, so the rows don't jump in size from one name to the next: as
-  // large as the longest word of any name still fits its line.
+  // large as the longest word of any name still fits its line, and never below the body floor.
   const listScale = useMemo(
     () =>
-      Math.min(
-        ...countries.map(({ code, name }) =>
-          wordFitFontScale(
-            `${countryFlag(code)} ${name}`,
-            typography.body.fontSize,
-            width - OPTION_INSET,
+      Math.max(
+        textScaleFloor(fontScale, typography.body.fontSize),
+        Math.min(
+          ...countries.map(({ code, name }) =>
+            wordFitFontScale(
+              `${countryFlag(code)} ${name}`,
+              typography.body.fontSize,
+              width - OPTION_INSET,
+            ),
           ),
         ),
       ),
-    [countries, width],
+    [countries, width, fontScale],
   );
-  const shown = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase(locale);
-    return needle
-      ? countries.filter(
-          (c) =>
-            c.name.toLocaleLowerCase(locale).includes(needle) || c.code === needle.toUpperCase(),
-        )
-      : countries;
-  }, [countries, query, locale]);
+  const shown = useMemo(
+    () => countries.filter((country) => countryMatches(country, query, locale)),
+    [countries, query, locale],
+  );
   const name = countryName(value, locale);
 
   return (
