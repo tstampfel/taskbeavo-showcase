@@ -1,7 +1,10 @@
 import { MockedProvider } from '@apollo/client/testing/react';
 import { ConsentsDocument, SetConsentDocument } from '@taskbeavo/graphql';
 import { catalogues } from '@taskbeavo/i18n';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { colors } from '@taskbeavo/ui-tokens';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { fonts } from '../src/fonts';
 import { GraphQLError } from 'graphql';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { i18n } from '../src/i18n';
@@ -97,5 +100,30 @@ describe('Settings → Privacy and data', () => {
 
     expect(await screen.findByText(en.errors.CONSENT_UNAVAILABLE)).toBeOnTheScreen();
     expect(screen.getByTestId('privacy-ANALYTICS')).toHaveProp('value', false);
+  });
+});
+
+// BEAV-215: the switches sit in one list card (mockup 19a).
+describe('Privacy and data design', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en');
+  });
+  afterAll(async () => {
+    await i18n.changeLanguage('hr');
+  });
+
+  it('draws the three switches in one card, bold labels and muted descriptions', async () => {
+    await renderScreen([allOff]);
+    const list = await screen.findByTestId('privacy-consents');
+    expect(within(list).getAllByRole('switch')).toHaveLength(3);
+    expect(
+      StyleSheet.flatten(screen.getByText(en.privacySettings.analytics).props.style),
+    ).toMatchObject({
+      color: colors.ink,
+      fontFamily: fonts.bold,
+    });
+    expect(
+      StyleSheet.flatten(screen.getByText(en.privacySettings.analyticsApp).props.style).color,
+    ).toBe(colors.inkMuted);
   });
 });

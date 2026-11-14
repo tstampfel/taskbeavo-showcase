@@ -1,8 +1,13 @@
+import { LEGAL_PAGES } from '@taskbeavo/app-links';
 import { catalogues } from '@taskbeavo/i18n';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { colors } from '@taskbeavo/ui-tokens';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { i18n } from '../src/i18n';
 import { LegalLicencesScreen, MAXMIND_URL } from '../src/screens/legal-licences-screen';
 import { SettingsScreen } from '../src/screens/settings-screen';
+
+const en = catalogues.en;
 
 const ENGLISH =
   'This product includes GeoLite Data created by MaxMind, available from https://www.maxmind.com.';
@@ -89,5 +94,43 @@ describe('Settings → Legal and licences', () => {
     ).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('legal-licences-imprint'));
     expect(props.openLegal).toHaveBeenCalledWith('imprint', 'de');
+  });
+});
+
+// BEAV-215: Settings and Legal draw their rows as the mockups' list card (21d).
+describe('Settings and Legal design', () => {
+  afterAll(async () => {
+    await i18n.changeLanguage('hr');
+  });
+
+  it('lists the settings in one card, split by hairlines', async () => {
+    await i18n.changeLanguage('en');
+    await render(
+      <SettingsScreen
+        onBack={jest.fn()}
+        onBusiness={jest.fn()}
+        onPrivacy={jest.fn()}
+        onLegal={jest.fn()}
+      />,
+    );
+    const list = screen.getByTestId('settings-list');
+    expect(within(list).getAllByRole('button')).toHaveLength(3);
+    expect(screen.queryByText('›', { includeHiddenElements: true })).toBeNull();
+    expect(StyleSheet.flatten(screen.getByTestId('settings-legal').props.style)).toMatchObject({
+      borderTopColor: colors.line,
+    });
+  });
+
+  it('lists the legal documents in one card, with a muted section label', async () => {
+    await i18n.changeLanguage('en');
+    await renderScreen();
+    const list = screen.getByTestId('legal-licences-documents');
+    expect(within(list).getAllByRole('link')).toHaveLength(LEGAL_PAGES.length);
+    const label = screen.getByRole('header', { name: en.settings.documents });
+    expect(StyleSheet.flatten(label.props.style)).toMatchObject({
+      color: colors.inkMuted,
+      textTransform: 'uppercase',
+    });
+    expect(screen.getByText(en.settings.languagesNote)).toBeOnTheScreen();
   });
 });
