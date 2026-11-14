@@ -13,9 +13,8 @@ import { formatMoney, type Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
 import { TraderIdentity, type TraderFields } from '../offers/trader-identity';
-import { Avatar, Badge, Button, Card, LockIcon, Sheet } from '../ui';
+import { Avatar, Badge, Button, Card, LockIcon, PinnedFoot, Sheet } from '../ui';
 import styles from './checkout.module.css';
-import { PinnedFoot } from './pinned-foot';
 
 export type Policy = NonNullable<CheckoutPolicyQuery['currentLegalDocument']>;
 
@@ -217,7 +216,7 @@ export function OfferCheckoutForm(props: OfferCheckoutFormProps) {
       ) : null}
       {/* Pinned to the bottom of the screen while it fits (mockup 6a): the fee notice, the amount
           due and the one order button stay together, so nothing comes between them. */}
-      <PinnedFoot>
+      <PinnedFoot testId="checkout-foot">
         <FeeNotice {...props} />
         {/* The one order button of the flow (user decision after the fee-consent opinions):
             the statutory wording, and in hr, de and fr no amount on it. */}

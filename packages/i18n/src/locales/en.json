@@ -561,6 +561,11 @@
     },
     "confirm": "Cancel booking",
     "cancelling": "Cancelling…",
+    "seeRefund": "See refund",
+    "refundTitle": "Your refund",
+    "stepBack": "Back",
+    "final": "Cancelling now is final.",
+    "finalNoFault": "Cancelling now is final. For a no-fault reason, go back and pick it: your helper is asked to agree instead.",
     "policyLink": "Cancellation policy",
     "withdrawal": {
       "title": "Withdraw from the contract",

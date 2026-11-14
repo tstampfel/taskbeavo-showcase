@@ -5,3 +5,4 @@ export { Input, type InputProps } from './input';
 export { Sheet, type SheetProps } from './sheet';
 export { Avatar } from './avatar';
 export { CalendarIcon, InfoIcon, LockIcon, PersonIcon } from './icons';
+export { PinnedFoot, fitsPinned, MAX_PINNED_SHARE } from './pinned-foot';

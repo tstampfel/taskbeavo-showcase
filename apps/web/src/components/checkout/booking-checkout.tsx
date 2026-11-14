@@ -23,10 +23,9 @@ import { colors, fontFamily } from '@taskbeavo/ui-tokens';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from '../../i18n/navigation';
-import { Button } from '../ui';
+import { Button, PinnedFoot } from '../ui';
 import { BookingOutcome, DeclineNote, SecureLine, Summary } from './checkout-parts';
 import styles from './checkout.module.css';
-import { PinnedFoot } from './pinned-foot';
 import { takeSecret } from './secret-handoff';
 
 // While confirming, the booking is also refetched in case the live event is missed.
@@ -319,7 +318,7 @@ function PayForm({
     >
       {decline ? <DeclineNote decline={decline} /> : null}
       <PaymentElement options={PAYMENT_ELEMENT_OPTIONS} />
-      <PinnedFoot>
+      <PinnedFoot testId="checkout-foot">
         <Button
           type="submit"
           fullWidth
@@ -410,7 +409,7 @@ export function DemoPayForm({
           {t('demo.failed')}
         </p>
       ) : null}
-      <PinnedFoot>
+      <PinnedFoot testId="checkout-foot">
         <Button type="submit" fullWidth disabled={busy} aria-busy={busy} data-testid="checkout-pay">
           {retry || decline
             ? t('declined.tryAgain')

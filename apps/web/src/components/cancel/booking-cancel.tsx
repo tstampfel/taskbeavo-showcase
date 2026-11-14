@@ -21,6 +21,7 @@ import {
   noFaultDecision,
   type CancelPreview,
   type CancelRole,
+  type CancelView,
   type HelperCancelReason,
   type NoFaultPending,
   type PickedReason,
@@ -29,9 +30,9 @@ import {
 } from '@taskbeavo/graphql';
 import { formatDate, formatMoney, type Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from '../../i18n/navigation';
-import { Button, Card, Input } from '../ui';
+import { Button, Card, Input, PinnedFoot } from '../ui';
 import styles from './cancel.module.css';
 
 /**
@@ -87,6 +88,22 @@ export function BookingCancel({ bookingId, locale }: { bookingId: string; locale
   const refresh = () => void booking.refetch().catch(() => undefined);
   const onNoFault = (key: PickedReason & { kind: 'noFault' }) =>
     void requestNoFault({ variables: { id: bookingId, reason: key.key } }).catch(refresh);
+
+  // The trader's withdrawal button (ZZP čl. 81.a): on the reason step while the ordinary
+  // cancel is open, alone once the work has started. Its wording is the published one.
+  const withdrawal = (offer: WithdrawalOffer, started: boolean) => (
+    <Withdrawal
+      offer={offer}
+      started={started}
+      bookingId={bookingId}
+      defaultName={viewer ? `${viewer.firstName} ${viewer.lastName}`.trim() : ''}
+      defaultEmail={viewer?.email ?? ''}
+      locale={locale}
+      busy={busy}
+      sending={withdrawing.loading}
+      onWithdraw={onWithdraw}
+    />
+  );
 
   if (view.kind === 'unknownViewer') {
     // Never show one side's screen to someone whose side isn't known (R1-11).
@@ -221,42 +238,25 @@ export function BookingCancel({ bookingId, locale }: { bookingId: string; locale
       )}
 
       {view.kind === 'cancel' && (
-        <>
-          <Reasons
-            legend={t('reasonsLegend')}
-            ordinary={POSTER_CANCEL_REASONS}
-            ordinaryLabel={(key) => t(`reasons.${key}`)}
-            noFault={view.noFault}
-            picked={reason}
-            onPick={setReason}
-          />
-          {view.noFault && <p className={`${styles.small} ${styles.muted}`}>{t('noFault')}</p>}
-          {reason?.kind === 'noFault' ? (
-            <NoFaultSend role={role} busy={busy} onSend={() => onNoFault(reason)} />
-          ) : (
-            <>
-              <Preview preview={view.preview} money={money} />
-              <Button
-                variant="danger"
-                fullWidth
-                disabled={reason === null || busy}
-                onClick={() => {
-                  if (reason?.kind !== 'ordinary') return;
-                  const key = reason.key as PosterCancelReason;
-                  const expectedRefundCents = view.preview.refundCents;
-                  void cancel({
-                    variables: { id: bookingId, reason: key, expectedRefundCents },
-                  }).catch((e: unknown) => {
-                    // A deadline passed while the screen was open: show the new preview.
-                    if (apiErrorCode(e) === 'CANCELLATION_CHANGED') refresh();
-                  });
-                }}
-              >
-                {cancelling.loading ? t('cancelling') : t('confirm')}
-              </Button>
-            </>
-          )}
-        </>
+        <PosterCancel
+          view={view}
+          reason={reason}
+          onPick={setReason}
+          money={money}
+          busy={busy}
+          cancelling={cancelling.loading}
+          onNoFault={onNoFault}
+          withdrawal={view.withdrawal && withdrawal(view.withdrawal, false)}
+          onCancel={(key) => {
+            const expectedRefundCents = view.preview.refundCents;
+            void cancel({
+              variables: { id: bookingId, reason: key, expectedRefundCents },
+            }).catch((e: unknown) => {
+              // A deadline passed while the screen was open: show the new preview.
+              if (apiErrorCode(e) === 'CANCELLATION_CHANGED') refresh();
+            });
+          }}
+        />
       )}
 
       {(view.kind === 'refused' || view.kind === 'withdrawOnly') && (
@@ -271,19 +271,7 @@ export function BookingCancel({ bookingId, locale }: { bookingId: string; locale
 
       {view.kind === 'unavailable' && <p className={styles.body}>{t('unavailable')}</p>}
 
-      {(view.kind === 'cancel' || view.kind === 'withdrawOnly') && view.withdrawal && (
-        <Withdrawal
-          offer={view.withdrawal}
-          started={view.kind === 'withdrawOnly'}
-          bookingId={bookingId}
-          defaultName={viewer ? `${viewer.firstName} ${viewer.lastName}`.trim() : ''}
-          defaultEmail={viewer?.email ?? ''}
-          locale={locale}
-          busy={busy}
-          sending={withdrawing.loading}
-          onWithdraw={onWithdraw}
-        />
-      )}
+      {view.kind === 'withdrawOnly' && withdrawal(view.withdrawal, true)}
 
       {errorCode && (
         <p className={`${styles.body} ${styles.error}`} role="alert">
@@ -301,6 +289,125 @@ export function BookingCancel({ bookingId, locale }: { bookingId: string; locale
   );
 }
 
+/**
+ * The poster's cancel in two steps (mockup 13b, 13c): the reason, then "Your refund" with the
+ * server's preview and the final button. A no-fault reason asks the helper on step 2 instead.
+ * The trader's withdrawal stays on the reason step; Back keeps the picked reason.
+ */
+export function PosterCancel({
+  view,
+  reason,
+  onPick,
+  money,
+  busy,
+  cancelling,
+  withdrawal,
+  onNoFault,
+  onCancel,
+}: {
+  view: CancelView & { kind: 'cancel' };
+  reason: PickedReason | null;
+  onPick(reason: PickedReason): void;
+  money: (cents: number) => string;
+  busy: boolean;
+  cancelling: boolean;
+  withdrawal: ReactNode;
+  onNoFault(reason: PickedReason & { kind: 'noFault' }): void;
+  onCancel(reason: PosterCancelReason): void;
+}) {
+  const t = useTranslations('cancel');
+  const [step, setStep] = useState<'reason' | 'refund'>('reason');
+  const heading = useRef<HTMLHeadingElement>(null);
+  const firstStep = useRef<HTMLDivElement>(null);
+  const moved = useRef(false);
+  // Move focus to the new step, so a screen reader hears where it landed (not on first load).
+  useEffect(() => {
+    if (!moved.current) return;
+    if (step === 'refund') heading.current?.focus();
+    else firstStep.current?.querySelector<HTMLInputElement>('input:checked')?.focus();
+  }, [step]);
+  const go = (next: 'reason' | 'refund') => {
+    moved.current = true;
+    setStep(next);
+  };
+
+  if (step === 'reason' || reason === null) {
+    return (
+      <div className={styles.step} ref={firstStep} data-testid="cancel-step-reason">
+        <Reasons
+          legend={t('reasonsLegend')}
+          ordinary={POSTER_CANCEL_REASONS}
+          ordinaryLabel={(key) => t(`reasons.${key}`)}
+          noFault={view.noFault}
+          picked={reason}
+          onPick={onPick}
+          noFaultNote={t('noFault')}
+        />
+        {withdrawal}
+        <PinnedFoot testId="cancel-foot" className={styles.foot}>
+          <Button
+            fullWidth
+            disabled={reason === null}
+            onClick={() => go('refund')}
+            data-testid="cancel-see-refund"
+          >
+            {t('seeRefund')}
+          </Button>
+        </PinnedFoot>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.step} data-testid="cancel-step-refund">
+      <h2 className={styles.h2} ref={heading} tabIndex={-1}>
+        {t('refundTitle')}
+      </h2>
+      {reason.kind === 'noFault' ? (
+        <Card className={styles.section}>
+          <h3 className={styles.caps}>{t('noFaultLegend')}</h3>
+          <p className={styles.body}>{t(`noFaultReasons.${reason.key}`)}</p>
+          <p className={styles.body}>{t('noFaultRequest.poster')}</p>
+        </Card>
+      ) : (
+        <>
+          <Preview preview={view.preview} money={money} />
+          <p className={`${styles.small} ${styles.muted}`}>{t('preview.toCard')}</p>
+        </>
+      )}
+      <PinnedFoot testId="cancel-foot" className={styles.foot}>
+        {reason.kind === 'noFault' ? (
+          <NoFaultSend role="poster" busy={busy} explain={false} onSend={() => onNoFault(reason)} />
+        ) : (
+          <>
+            <Button
+              variant="danger"
+              fullWidth
+              disabled={busy}
+              onClick={() => onCancel(reason.key as PosterCancelReason)}
+              data-testid="cancel-confirm"
+            >
+              {cancelling ? t('cancelling') : t('confirm')}
+            </Button>
+            <p className={`${styles.small} ${styles.muted} ${styles.center}`}>
+              {view.noFault ? t('finalNoFault') : t('final')}
+            </p>
+          </>
+        )}
+        <Button
+          variant="ghost"
+          fullWidth
+          disabled={busy}
+          onClick={() => go('reason')}
+          data-testid="cancel-step-back"
+        >
+          {t('stepBack')}
+        </Button>
+      </PinnedFoot>
+    </div>
+  );
+}
+
 /** The ordinary reasons and, when allowed, the no-fault ones: one radio group (13c, 13g). */
 function Reasons<K extends string>({
   legend,
@@ -309,6 +416,7 @@ function Reasons<K extends string>({
   noFault,
   picked,
   onPick,
+  noFaultNote,
 }: {
   legend: string;
   ordinary: readonly K[];
@@ -316,6 +424,8 @@ function Reasons<K extends string>({
   noFault: boolean;
   picked: PickedReason | null;
   onPick(reason: PickedReason): void;
+  /** Said just before the no-fault reasons ("Pick it below"). */
+  noFaultNote?: string;
 }) {
   const t = useTranslations('cancel');
   const radio = (reason: PickedReason, label: string) => (
@@ -335,30 +445,46 @@ function Reasons<K extends string>({
     <>
       <fieldset className={styles.reasons}>
         <legend className={styles.h2}>{legend}</legend>
-        {ordinary.map((key) =>
-          radio(
-            { kind: 'ordinary', key: key as PickedReason['key'] } as PickedReason,
-            ordinaryLabel(key),
-          ),
-        )}
+        <Card className={styles.reasonCard}>
+          {ordinary.map((key) =>
+            radio(
+              { kind: 'ordinary', key: key as PickedReason['key'] } as PickedReason,
+              ordinaryLabel(key),
+            ),
+          )}
+        </Card>
       </fieldset>
+      {noFault && noFaultNote && <p className={`${styles.small} ${styles.muted}`}>{noFaultNote}</p>}
       {noFault && (
         <fieldset className={styles.reasons}>
-          <legend className={styles.h2}>{t('noFaultLegend')}</legend>
-          {NO_FAULT_REASONS.map((key) =>
-            radio({ kind: 'noFault', key }, t(`noFaultReasons.${key}`)),
-          )}
+          <legend className={styles.label}>{t('noFaultLegend')}</legend>
+          <Card className={styles.reasonCard}>
+            {NO_FAULT_REASONS.map((key) =>
+              radio({ kind: 'noFault', key }, t(`noFaultReasons.${key}`)),
+            )}
+          </Card>
         </fieldset>
       )}
     </>
   );
 }
 
-function NoFaultSend({ role, busy, onSend }: { role: CancelRole; busy: boolean; onSend(): void }) {
+function NoFaultSend({
+  role,
+  busy,
+  onSend,
+  explain = true,
+}: {
+  role: CancelRole;
+  busy: boolean;
+  onSend(): void;
+  /** Says what happens next; off where the step already says it. */
+  explain?: boolean;
+}) {
   const t = useTranslations('cancel');
   return (
     <>
-      <p className={styles.body}>{t(`noFaultRequest.${role}`)}</p>
+      {explain && <p className={styles.body}>{t(`noFaultRequest.${role}`)}</p>}
       <Button
         variant="danger"
         fullWidth
@@ -444,12 +570,12 @@ function Pending({
 function Preview({ preview, money }: { preview: CancelPreview; money: (cents: number) => string }) {
   const t = useTranslations('cancel');
   return (
-    <Card className={styles.section}>
-      <h2 className={styles.h2}>{preview.full ? t('preview.full') : t('preview.title')}</h2>
+    <Card selected className={styles.section}>
+      <h3 className={styles.caps}>{preview.full ? t('preview.full') : t('preview.title')}</h3>
       <p className={styles.body}>{t(`cases.${preview.case}`)}</p>
-      <dl className={styles.rows}>
+      <dl className={styles.rows} data-testid="cancel-refund-rows">
         <dt className={styles.strong}>{t('preview.youGetBack')}</dt>
-        <dd className={styles.strong}>{money(preview.refundCents)}</dd>
+        <dd className={`${styles.strong} ${styles.ok}`}>{money(preview.refundCents)}</dd>
         {preview.helperCompensationCents > 0 && (
           <>
             <dt>{t('preview.helperKeeps')}</dt>
@@ -458,15 +584,14 @@ function Preview({ preview, money }: { preview: CancelPreview; money: (cents: nu
             <dd>{money(preview.keptFeeCents)}</dd>
           </>
         )}
-        <dt className={styles.muted}>{t('preview.youPaid')}</dt>
-        <dd className={styles.muted}>{money(preview.chargeCents)}</dd>
+        <dt className={`${styles.muted} ${styles.total}`}>{t('preview.youPaid')}</dt>
+        <dd className={`${styles.muted} ${styles.total}`}>{money(preview.chargeCents)}</dd>
       </dl>
       {preview.creditBackCents > 0 && (
         <p className={styles.body} data-testid="cancel-preview-credit-back">
           {t('preview.creditBack', { amount: money(preview.creditBackCents) })}
         </p>
       )}
-      <p className={`${styles.small} ${styles.muted}`}>{t('preview.toCard')}</p>
     </Card>
   );
 }
@@ -504,7 +629,7 @@ function Withdrawal({
     setConfirming(true);
   };
   return (
-    <Card className={styles.section}>
+    <Card className={styles.section} data-testid="cancel-withdrawal">
       <h2 className={styles.h2}>{t('withdrawal.title')}</h2>
       {offer.endsAt && (
         <p className={styles.small}>

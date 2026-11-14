@@ -835,3 +835,10 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check.
 
 - `offers.sent`: the footer of each offer card ("Sent 2 days ago"). `{ago}` is the browser's own relative time in the page language (`Intl.RelativeTimeFormat`, "vor 2 Tagen", "il y a 2 jours", "prije 2 dana"), so only the verb is ours. Display only; the offers are still ordered by Newest or Lowest price alone.
+
+## Cancel in two steps (BEAV-211)
+
+DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check. The web cancel page is now two steps (mockup 13b, 13c): the reason, then "Your refund".
+
+- `cancel.seeRefund`: the reason step's button. `cancel.refundTitle`: the second step's heading. `cancel.stepBack`: back to the reason step.
+- ⚖ `cancel.final` and `cancel.finalNoFault`: under the final Cancel button. They restate the cancellation policy (cancelling is final; a no-fault reason asks the other side instead), so they follow the lawyer's final CANCELLATION wording. No withdrawal wording changed.
