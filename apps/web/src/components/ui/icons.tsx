@@ -109,3 +109,19 @@ export function NavIcon({ size }: { size?: number }) {
     </Icon>
   );
 }
+
+export function ChevronIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <path d="M9 5l7 7-7 7" />
+    </Icon>
+  );
+}
+
+export function CheckIcon({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </Icon>
+  );
+}

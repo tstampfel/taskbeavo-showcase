@@ -9,6 +9,8 @@ export {
   AlertIcon,
   BellIcon,
   CalendarIcon,
+  CheckIcon,
+  ChevronIcon,
   ClockIcon,
   DoorIcon,
   InfoIcon,
@@ -17,4 +19,5 @@ export {
   PersonIcon,
   PhoneIcon,
 } from './icons';
+export { LinkRow, ListCard, ListRow, SwitchRow } from './list-card';
 export { PinnedFoot, fitsPinned, MAX_PINNED_SHARE } from './pinned-foot';

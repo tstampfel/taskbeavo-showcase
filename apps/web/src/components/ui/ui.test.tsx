@@ -4,7 +4,18 @@ import { cssVariables } from '@taskbeavo/ui-tokens';
 import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { Badge, Button, Card, InfoIcon, Input, Note, Sheet } from './index';
+import {
+  Badge,
+  Button,
+  Card,
+  InfoIcon,
+  Input,
+  LinkRow,
+  ListCard,
+  Note,
+  Sheet,
+  SwitchRow,
+} from './index';
 
 const html = (node: ReactElement) => renderToStaticMarkup(node);
 
@@ -93,6 +104,55 @@ describe('Sheet', () => {
   });
 });
 
+describe('ListCard', () => {
+  it('is a list of rows with dividers (mockups 19a, 21d)', () => {
+    const markup = html(
+      <ListCard data-testid="list">
+        <LinkRow href="/hr/privacy" title="Obavijest o privatnosti" testId="row-privacy" />
+      </ListCard>,
+    );
+    expect(markup).toMatch(/^<ul[^>]*data-testid="list"[^>]*><li[^>]*>/);
+    expect(markup).toMatch(/<a[^>]*href="\/hr\/privacy"[^>]*data-testid="row-privacy"/);
+    expect(markup).toContain('Obavijest o privatnosti');
+    // The chevron is decoration; the link's text names it.
+    expect(markup).toMatch(/<svg[^>]*aria-hidden="true"/);
+  });
+
+  it('labels a switch row by its title and describes it by its subtitle', () => {
+    const markup = html(
+      <ListCard>
+        <SwitchRow
+          title="Analytik"
+          subtitle="Aus, bis Sie zustimmen."
+          checked={false}
+          disabled={false}
+          onChange={() => {}}
+          testId="switch"
+        />
+      </ListCard>,
+    );
+    const input = /<input[^>]*>/.exec(markup)?.[0] ?? '';
+    expect(input).toContain('type="checkbox"');
+    expect(input).toContain('role="switch"');
+    expect(input).toContain('data-testid="switch"');
+    expect(input).not.toContain('checked=""');
+    const id = /id="([^"]+)"/.exec(input)?.[1];
+    const describedBy = /aria-describedby="([^"]+)"/.exec(input)?.[1];
+    // The whole row is the switch's label, so the row is the tap target.
+    expect(markup).toMatch(new RegExp(`<label[^>]*for="${id}"[^>]*>`));
+    expect(markup).toMatch(new RegExp(`id="${describedBy}"[^>]*>Aus, bis Sie zustimmen.<`));
+  });
+
+  it('shows a switch as on', () => {
+    const markup = html(
+      <SwitchRow title="E-mail" checked disabled onChange={() => {}} testId="switch" />,
+    );
+    expect(markup).toContain('checked=""');
+    expect(markup).toContain('disabled=""');
+    expect(markup).not.toContain('aria-describedby');
+  });
+});
+
 describe('component styles', () => {
   const dir = import.meta.dirname;
   const sheets = readdirSync(dir).filter((file) => file.endsWith('.module.css'));
@@ -105,6 +165,7 @@ describe('component styles', () => {
       'button.module.css',
       'card.module.css',
       'input.module.css',
+      'list-card.module.css',
       'note.module.css',
       'pinned-foot.module.css',
       'sheet.module.css',
