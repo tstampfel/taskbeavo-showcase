@@ -99,27 +99,29 @@ mutation {
 
 Mara now sees Petra's offer at `/en/tasks/<task id>/offers`. The seeded open task (Klaus's, link printed by the seed) already has two: one from a private helper and one from a registered business, which shows its business name, OIB and address as a trader must. Offers are sorted newest first or by price, never by anything that steers work to particular helpers.
 
-<img src="web/01-offers.png" width="300" alt="Two offers on Klaus's task, one from a registered business with its name, OIB and address">
+<img src="web/01-offers.png" width="260" alt="Two offers on Klaus's task, one from a registered business with its name, OIB and address">
 
 ### 4. Pay with the demo card
 
 Accept an offer. Checkout shows the price, the 12% service fee and the two consent boxes the cancellation policy asks for (the seed publishes draft texts, marked as such). After "Book and pay", the demo card form stands in for Stripe's card form: it says plainly that it's a demo payment with no real money, and offers a card that pays and one that is declined.
 
-<img src="web/02-checkout.png" width="300" alt="Checkout with the price, the service fee and the consent boxes"> <img src="web/03-demo-card.png" width="300" alt="The demo card form: Demo payment, no real money">
+<img src="web/02-checkout.png" width="260" alt="Checkout with the price and the service fee"> <img src="web/02b-checkout-consent.png" width="260" alt="The consent boxes ticked and the Book and pay button"> <img src="web/03-demo-card.png" width="260" alt="The demo card form: Demo payment, no real money">
 
 "Confirming payment…" stays until the server says the money is held, which happens only when the payment_intent.succeeded event has gone through the webhook handler. The booking page then shows the exact address and access note to the poster and the accepted helper only.
 
-<img src="web/04-funds-held.png" width="300" alt="Payment held, the helper has been notified"> <img src="web/05-booking.png" width="300" alt="Booking page with the payment held">
+<img src="web/04-funds-held.png" width="260" alt="Payment held, the helper has been notified"> <img src="web/05-booking.png" width="260" alt="Booking page with the payment held">
 
 The same flow on the iOS app (a development build in the simulator, started with `EXPO_PUBLIC_DEMO_PAYMENTS=1`): the offers, checkout, the demo card dialog and the payment held. The booking itself, the day of the job and cancelling follow in steps 5 and 7.
 
-<img src="mobile/01-offers.png" width="200" alt="Offers on the phone"> <img src="mobile/02-checkout.png" width="200" alt="Checkout on the phone"> <img src="mobile/03-demo-card.png" width="200" alt="The demo card dialog: Demo payment, no real money"> <img src="mobile/04-funds-held.png" width="200" alt="Payment held on the phone">
+<img src="mobile/01-offers.png" width="200" alt="Offers on the phone"> <img src="mobile/02-checkout.png" width="200" alt="Checkout on the phone"> <img src="mobile/02b-checkout-consent.png" width="200" alt="The consent boxes ticked on the phone">
+
+<img src="mobile/03-demo-card.png" width="200" alt="The demo card dialog: Demo payment, no real money"> <img src="mobile/04-funds-held.png" width="200" alt="Payment held on the phone">
 
 ### 5. On my way, arrived
 
 Sign in as Ivo and open the seeded **on-my-way** booking's "Day of the job" page (`/bookings/<id>/arrival`). Its job starts 2 hours after the seed, inside the 6 hours before the start when these buttons open. Pick an arrival time and tap **On my way**; Mara sees it live.
 
-<img src="web/06-helper-day-of-job.png" width="300" alt="The helper's day-of-the-job panel"> <img src="web/07-helper-on-my-way.png" width="300" alt="The helper is on the way"> <img src="web/08-poster-sees-on-the-way.png" width="300" alt="The poster sees the helper is on the way">
+<img src="web/06-helper-day-of-job.png" width="260" alt="The helper's day-of-the-job panel"> <img src="web/07-helper-on-my-way.png" width="260" alt="The helper is on the way"> <img src="web/08-poster-sees-on-the-way.png" width="260" alt="The poster sees the helper is on the way">
 
 On the iOS app, Ivo opens the booking, then "Day of the job", picks an arrival time and taps **On my way**:
 
@@ -129,13 +131,13 @@ On the iOS app, Ivo opens the booking, then "Day of the job", picks an arrival t
 
 The **Request payment** and **Release payment** buttons arrive with BEAV-116 to BEAV-118. Until then the seed moves two bookings there through the booking state machine, as the helper and then the poster: **payment-requested** (Klaus, sign in as him) and **released** (Mara). The "Release payment" button on the first leads to a placeholder page.
 
-<img src="web/09-payment-requested.png" width="300" alt="A booking with payment requested"> <img src="web/10-released.png" width="300" alt="A booking with the payment released">
+<img src="web/09-payment-requested.png" width="260" alt="A booking with payment requested"> <img src="web/10-released.png" width="260" alt="A booking with the payment released">
 
 ### 7. Cancel
 
 Open "Cancel or withdraw" on a held booking and pick a reason: the page shows what happens to the money before you confirm. The seeded **late-cancel** booking (Klaus) starts under 24 hours away, so the helper keeps 25% of the price (€5 minimum) and TaskBeavo 12% of that. The **funds-held** booking (Claire) is 3 days away: a full refund, and since its helper is a registered business, the 14-day withdrawal right as well. The **cancelled** booking was cancelled by the seed and refunded through the stand-in's charge.refunded event.
 
-<img src="web/11-late-cancel-preview.png" width="300" alt="Late cancel: the helper keeps €5"> <img src="web/12-free-cancel-preview.png" width="300" alt="Free cancel: a full refund">
+<img src="web/11-late-cancel-preview.png" width="260" alt="Late cancel: the helper keeps €5"> <img src="web/12-free-cancel-preview.png" width="260" alt="Free cancel: a full refund">
 
 The same late cancel on the iOS app, signed in as Klaus: the reasons, then what happens to the money before he confirms.
 
@@ -145,7 +147,7 @@ The same late cancel on the iOS app, signed in as Klaus: the reasons, then what 
 
 In the seeded **no-show-contested** booking, the job started 2 hours ago, Klaus reported that Petra didn't come, and Petra answered that she was there. Nothing happens automatically: the booking waits for support.
 
-<img src="web/13-no-show-contested.png" width="300" alt="The helper says they were there; support is checking">
+<img src="web/13-no-show-contested.png" width="260" alt="The helper says they were there; support is checking">
 
 ## Demo payments: a demo stub
 
@@ -171,4 +173,11 @@ When a ticket builds a screen this walkthrough marks as GraphiQL or seeded, it u
 - the task feed and task detail (BEAV-88 to BEAV-91) replace step 2;
 - request and release payment (BEAV-116 to BEAV-118) replace step 6, and the seed then requests and releases through those services instead of the state machine (the `TODO(BEAV-116)` and `TODO(BEAV-117)` in `backend/bookings/demo_seed.py`).
 
-Screenshots: sign in through the real form, at 400 × 860 CSS pixels (2× scale), from a fresh `seed_demo --reset`, with fake demo data only. Check every image for personal data (browser chrome, bookmarks, avatars, local paths, usernames, notifications) before committing it.
+Screenshots: sign in through the real form, from a fresh `seed_demo --reset`, with fake demo data only. Every image in a set has the same size, so the rows on this page and in the root README line up:
+
+- **Web** (`web/`): one browser viewport of 400 × 860 CSS pixels at 2× scale, so every file is **800 × 1720**. No full-page captures. Hide the Next.js dev indicator and dismiss the cookie banner first.
+- **Mobile** (`mobile/`): one simulator screen from an iPhone 17 Pro (or 16 Pro) at half scale, so every file is **603 × 1311**, with the status bar set to 09:41, full signal and a full battery (`xcrun simctl status_bar <udid> override --time 09:41 …`). No dev menu or dev tools button in the shot.
+- Where one screen can't show a step, take two images (scroll and capture again), as checkout does with `02-checkout.png` and `02b-checkout-consent.png`. Never stitch or crop.
+- Lay images out in rows of one set only: web images at `width="260"` (at most 3 per row), mobile images at `width="200"` (at most 3 per row). The root README shows one row of each, 4 images at `width="180"`. Never mix web and mobile in one row, because their aspect ratios differ.
+
+Check every image for personal data (browser chrome, bookmarks, avatars, local paths, usernames, notifications) and metadata before committing it; the files should hold only the `IHDR`, `IDAT` and `IEND` PNG chunks. `python3 scripts/check_demo_screenshots.py` checks the sizes and the chunks (its tests: `python3 scripts/test_check_demo_screenshots.py`).
