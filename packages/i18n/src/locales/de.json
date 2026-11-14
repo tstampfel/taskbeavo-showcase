@@ -799,7 +799,14 @@
     "earlyStartBodyWithdrawal": "Ihr Helfer ist angekommen und fragt, ob er jetzt beginnen kann. Wenn Sie bestätigen, beginnt der Auftrag jetzt und kann nicht mehr storniert werden. Von dieser Buchung bei einem eingetragenen Unternehmen können Sie weiterhin mit der Widerrufsschaltfläche in der App zurücktreten, bis der Auftrag vollständig erledigt ist oder die 14-Tage-Frist endet, je nachdem, was zuerst eintritt.",
     "earlyStartConfirm": "Jetzt beginnen",
     "earlyStartDecline": "Gebuchte Zeit behalten",
-    "earlyStartConfirmed": "Der Auftrag hat früher begonnen."
+    "earlyStartConfirmed": "Der Auftrag hat früher begonnen.",
+    "lateHint": "Der Auftraggeber erhält eine Mitteilung. Er kann die Buchung behalten oder kostenlos stornieren; eine Verspätung kostet Sie nie etwas.",
+    "contestExplainer": "Unser Team prüft den Verlauf der Buchung, auch Ihre Angaben „Bin unterwegs“ und „Bin angekommen“. Sie zahlen nie etwas.",
+    "noShowBadge": {
+      "reported": "Wartet auf den Helfer",
+      "contested": "Unser Team prüft",
+      "settled": "Vom Helfer storniert"
+    }
   },
   "bookingDetail": {
     "metaTitle": "Buchung",
@@ -844,7 +851,8 @@
       "area": "Gebiet: {area}",
       "areaUnknown": "Das Gebiet steht noch nicht fest.",
       "afterPayment": "Die genaue Adresse sehen Sie, sobald die Zahlung bestätigt ist.",
-      "ended": "Diese Buchung ist nicht mehr aktiv, daher wird nur das Gebiet angezeigt."
+      "ended": "Diese Buchung ist nicht mehr aktiv, daher wird nur das Gebiet angezeigt.",
+      "accessTitle": "Zugangsdetails"
     },
     "helperTitle": "Ihre Hilfe",
     "checkout": {
@@ -865,6 +873,10 @@
       "noAccess": "Entscheiden, wie es weitergeht",
       "release": "Zahlung freigeben"
     },
-    "safety": "Wickeln Sie Zahlung und Chat über TaskBeavo ab, um geschützt zu bleiben."
+    "safety": "Wickeln Sie Zahlung und Chat über TaskBeavo ab, um geschützt zu bleiben.",
+    "amountLabelPoster": "Sie zahlen",
+    "amountLabelHelper": "Sie erhalten",
+    "requestedHelper": "Wartet darauf, dass der Auftraggeber {amount} freigibt.",
+    "requestedPoster": "Ihr Helfer hat die Zahlung angefordert. Geben Sie sie frei, wenn Sie mit der Arbeit zufrieden sind."
   }
 }

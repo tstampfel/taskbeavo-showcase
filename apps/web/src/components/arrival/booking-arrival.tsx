@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from '@apollo/client/react';
 import {
   BookingArrivalDocument,
+  BookingArrivalTaskDocument,
   CancelAsHelperDocument,
   ConfirmHelperArrivalDocument,
   ContestNoShowDocument,
@@ -34,6 +35,8 @@ export function BookingArrival({ bookingId, locale }: { bookingId: string; local
     fetchPolicy: 'cache-and-network',
   });
   const viewerQuery = useQuery(ViewerDocument);
+  // The task's title for the summary card; the page works without it.
+  const task = useQuery(BookingArrivalTaskDocument, { variables: { id: bookingId } });
   const [onMyWay, goingOut] = useMutation(MarkOnMyWayDocument);
   const [late, reportingLate] = useMutation(ReportRunningLateDocument);
   const [arrived, arriving] = useMutation(MarkArrivedDocument);
@@ -92,6 +95,10 @@ export function BookingArrival({ bookingId, locale }: { bookingId: string; local
         view={view}
         locale={locale}
         busy={busy}
+        summary={{
+          title: task.data?.booking.task.title ?? null,
+          slotStart: current.slotStart,
+        }}
         actions={{
           onMyWay: (etaMinutes) =>
             void onMyWay({ variables: { ...vars, etaMinutes } }).catch(refresh),

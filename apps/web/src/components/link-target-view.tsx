@@ -1,11 +1,12 @@
 import { LINK_ID } from '@taskbeavo/app-links';
 import { isLocale, type Locale } from '@taskbeavo/i18n';
-import { colors, minTapTarget } from '@taskbeavo/ui-tokens';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { use } from 'react';
+import styles from './link-target.module.css';
 import { AppShell, type AppHref } from './shell/app-shell';
+import { Card } from './ui/card';
 
 /** The pages that mirror app screens; each has its title under `linkTarget.<target>`. */
 export type LinkTarget = 'task' | 'release' | 'noAccess' | 'conversation' | 'payouts';
@@ -29,30 +30,17 @@ export async function LinkTargetView({
   back?: AppHref;
 }) {
   const t = await getTranslations({ locale });
+  // The app's centred column and card (BEAV-212); still no data and no action.
   return (
     <AppShell title={t(`linkTarget.${target}`)} back={back}>
-      <main
-        data-testid={`link-target-${target}`}
-        style={{ maxWidth: 720, margin: '0 auto', padding: '16px', boxSizing: 'border-box' }}
-      >
-        <p>{t('linkTarget.notReady')}</p>
-        <p>{t('linkTarget.safety')}</p>
-        <a
-          href={`/${locale}`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            minHeight: minTapTarget,
-            padding: '0 16px',
-            borderRadius: 8,
-            background: colors.green,
-            color: colors.offWhite,
-            fontWeight: 700,
-            textDecoration: 'none',
-          }}
-        >
-          {t('notFound.backHome')}
-        </a>
+      <main className={styles.main} data-testid={`link-target-${target}`}>
+        <Card className={styles.card}>
+          <p className={styles.body}>{t('linkTarget.notReady')}</p>
+          <p className={styles.muted}>{t('linkTarget.safety')}</p>
+          <a href={`/${locale}`} className={styles.home}>
+            {t('notFound.backHome')}
+          </a>
+        </Card>
       </main>
     </AppShell>
   );

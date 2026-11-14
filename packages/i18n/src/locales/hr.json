@@ -799,7 +799,14 @@
     "earlyStartBodyWithdrawal": "Pomagač je stigao i pita može li početi sada. Ako potvrdite, posao počinje sada i više se ne može otkazati. Od ove rezervacije s registriranim obrtom ili tvrtkom i dalje možete odustati gumbom za odustanak u aplikaciji, dok posao nije u potpunosti obavljen ili dok ne istekne rok od 14 dana, ovisno o tome što nastupi prije.",
     "earlyStartConfirm": "Počni sada",
     "earlyStartDecline": "Zadrži dogovoreno vrijeme",
-    "earlyStartConfirmed": "Posao je počeo ranije."
+    "earlyStartConfirmed": "Posao je počeo ranije.",
+    "lateHint": "Naručitelj dobiva obavijest. Može zadržati rezervaciju ili besplatno otkazati; kašnjenje vas nikad ništa ne košta.",
+    "contestExplainer": "Naš tim pregledava zapis rezervacije, uključujući vaše dodire „Na putu sam” i „Stigao/la sam”. Vi nikad ništa ne plaćate.",
+    "noShowBadge": {
+      "reported": "Čeka se pomagač",
+      "contested": "Naš tim provjerava",
+      "settled": "Otkazao pomagač"
+    }
   },
   "bookingDetail": {
     "metaTitle": "Rezervacija",
@@ -844,7 +851,8 @@
       "area": "Područje: {area}",
       "areaUnknown": "Područje još nije određeno.",
       "afterPayment": "Točnu adresu vidjet ćete kad plaćanje bude potvrđeno.",
-      "ended": "Ova rezervacija više nije aktivna pa se prikazuje samo područje."
+      "ended": "Ova rezervacija više nije aktivna pa se prikazuje samo područje.",
+      "accessTitle": "Upute za pristup"
     },
     "helperTitle": "Vaš pomagač",
     "checkout": {
@@ -865,6 +873,10 @@
       "noAccess": "Odaberite što dalje",
       "release": "Oslobodi isplatu"
     },
-    "safety": "Plaćanje i razgovor zadržite u TaskBeavu kako biste bili zaštićeni."
+    "safety": "Plaćanje i razgovor zadržite u TaskBeavu kako biste bili zaštićeni.",
+    "amountLabelPoster": "Plaćate",
+    "amountLabelHelper": "Dobivate",
+    "requestedHelper": "Čeka se da naručitelj oslobodi isplatu od {amount}.",
+    "requestedPoster": "Pomagač je zatražio isplatu. Oslobodite je kad ste zadovoljni poslom."
   }
 }

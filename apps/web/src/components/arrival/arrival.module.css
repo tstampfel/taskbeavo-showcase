@@ -26,6 +26,7 @@
 .body,
 .small {
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .body {
@@ -64,24 +65,44 @@
 .chips legend {
   width: 100%;
   margin-bottom: var(--tb-space-xs);
+  padding: 0;
 }
 
+/* The mockups' `.chip` pills; the radio stays for keyboards and screen readers. */
 .chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: var(--tb-space-xs);
+  box-sizing: border-box;
   min-height: 44px;
-  padding: 0 var(--tb-space-md);
-  border: 1px solid var(--tb-color-line);
-  border-radius: 22px;
+  padding: 0 var(--tb-space-lg);
+  border: var(--tb-border-thin) solid var(--tb-color-control);
+  border-radius: var(--tb-radius-pill);
   background: var(--tb-color-white);
-  font-size: var(--tb-font-body-size);
+  font-size: var(--tb-font-small-size);
+  font-weight: var(--tb-font-caption-weight);
+  cursor: pointer;
 }
 
 .chip input {
-  width: 20px;
-  height: 20px;
-  accent-color: var(--tb-color-green);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.chip:has(input:checked) {
+  border-color: var(--tb-color-green);
+  background: var(--tb-color-green);
+  color: var(--tb-color-white);
+}
+
+.chip:has(input:focus-visible) {
+  outline: var(--tb-border-focus) solid var(--tb-input-focus-border);
+  outline-offset: var(--tb-border-focus);
 }
 
 .link {
@@ -89,4 +110,80 @@
   min-height: 44px;
   display: inline-flex;
   align-items: center;
+}
+
+/* BEAV-212: mockup 18. */
+.summary {
+  gap: var(--tb-space-xs);
+}
+
+.caps {
+  margin: 0;
+  color: var(--tb-color-ink-muted);
+  font-size: var(--tb-font-caption-size);
+  line-height: var(--tb-font-caption-line);
+  font-weight: var(--tb-font-label-weight);
+  text-transform: uppercase;
+}
+
+.strong {
+  margin: 0;
+  font-size: var(--tb-font-body-size);
+  line-height: var(--tb-font-body-line);
+  font-weight: var(--tb-font-h2-weight);
+  overflow-wrap: anywhere;
+}
+
+.label {
+  font-size: var(--tb-font-label-size);
+  line-height: var(--tb-font-label-line);
+  font-weight: var(--tb-font-label-weight);
+}
+
+.caption {
+  margin: 0;
+  color: var(--tb-color-ink-muted);
+  font-size: var(--tb-font-caption-size);
+  line-height: var(--tb-font-caption-line);
+}
+
+.hero {
+  align-items: center;
+  text-align: center;
+}
+
+.iconRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--tb-space-sm);
+  margin: 0;
+}
+
+.orangeIcon,
+.greenIcon {
+  display: inline-flex;
+  flex: none;
+}
+
+.orangeIcon {
+  color: var(--tb-color-orange-text);
+}
+
+.greenIcon {
+  color: var(--tb-color-green);
+}
+
+/* 18h: the helper's answer window has an orange edge. */
+.alert {
+  border: var(--tb-border-focus) solid var(--tb-color-orange);
+}
+
+.flat {
+  gap: var(--tb-space-sm);
+  padding: var(--tb-space-md);
+}
+
+/* The helper's button bar (PinnedFoot): the error and the back link follow it. */
+.foot {
+  margin-bottom: 0;
 }

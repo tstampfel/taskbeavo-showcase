@@ -129,3 +129,52 @@ test('the page fits at every width in German and French', async ({ page, stubGra
     expect(await noHorizontalScroll(page)).toBe(true);
   }
 });
+
+// BEAV-212: mockups 7b and 18a.
+test('the active helper gets the contact card with a Call button, and the summary card', async ({
+  page,
+  stubGraphql,
+}) => {
+  await stubGraphql(answers(() => booking('user-1')));
+  await page.goto('/en/bookings/booking-1');
+
+  const summary = page.getByTestId('booking-summary');
+  await expect(summary).toContainText('Grocery run for Mama');
+  await expect(page.getByTestId('booking-amount')).toContainText('You get');
+  await expect(page.getByTestId('booking-amount')).toContainText('€30.00');
+  const contact = page.getByTestId('booking-contact');
+  await expect(contact).toContainText('On-site contact: Mama Kata, Gruž');
+  await expect(contact.getByTestId('booking-call')).toHaveAttribute('href', 'tel:+385912345678');
+  const call = await contact.getByTestId('booking-call').boundingBox();
+  expect(call!.height).toBeGreaterThanOrEqual(44);
+});
+
+test('"Payment requested" has its own card for the helper (7b)', async ({ page, stubGraphql }) => {
+  await stubGraphql(answers(() => booking('user-1', { status: 'PAYMENT_REQUESTED' })));
+  await page.goto('/en/bookings/booking-1');
+  await expect(page.getByTestId('booking-requested')).toContainText(
+    'Waiting for the poster to release €30.00.',
+  );
+});
+
+test('the helper page with the contact card fits in all four languages', async ({
+  page,
+  stubGraphql,
+}) => {
+  await stubGraphql(answers(() => booking('user-1', { status: 'PAYMENT_REQUESTED' })));
+  for (const locale of ['hr', 'en', 'de', 'fr'] as const) {
+    await page.goto(`/${locale}/bookings/booking-1`);
+    await expect(page.getByTestId('booking-contact')).toBeVisible();
+    expect(await noHorizontalScroll(page), locale).toBe(true);
+  }
+});
+
+test('at desktop width the page is a centred column', async ({ page, stubGraphql }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'a desktop-width check');
+  await stubGraphql(answers(() => booking('user-1')));
+  await page.goto('/en/bookings/booking-1');
+  const box = (await page.getByTestId('booking-summary').boundingBox())!;
+  expect(box.width).toBeLessThanOrEqual(560);
+  const centre = box.x + box.width / 2;
+  expect(Math.abs(centre - 640)).toBeLessThan(24);
+});
