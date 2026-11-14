@@ -1,0 +1,28 @@
+.note {
+  display: flex;
+  gap: var(--tb-space-sm);
+  align-items: flex-start;
+  box-sizing: border-box;
+  padding: var(--tb-space-md);
+  border-radius: var(--tb-radius-md);
+  font-size: var(--tb-font-small-size);
+  line-height: var(--tb-font-small-line);
+  font-weight: var(--tb-font-caption-weight);
+  overflow-wrap: anywhere;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  padding-top: 1px;
+}
+
+.info {
+  background: var(--tb-color-green-tint);
+  color: var(--tb-color-green);
+}
+
+.warn {
+  background: var(--tb-color-orange-tint);
+  color: var(--tb-color-orange-tint-text);
+}

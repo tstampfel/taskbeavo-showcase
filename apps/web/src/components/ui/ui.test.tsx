@@ -4,7 +4,7 @@ import { cssVariables } from '@taskbeavo/ui-tokens';
 import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { Badge, Button, Card, Input, Sheet } from './index';
+import { Badge, Button, Card, InfoIcon, Input, Note, Sheet } from './index';
 
 const html = (node: ReactElement) => renderToStaticMarkup(node);
 
@@ -62,6 +62,19 @@ describe('Card and Badge', () => {
   });
 });
 
+describe('Note', () => {
+  it('shows its text with a decorative icon', () => {
+    const markup = html(
+      <Note tone="warn" icon={<InfoIcon />} data-testid="n">
+        Nur wenn er wirklich nicht kam
+      </Note>,
+    );
+    expect(markup).toMatch(/^<div[^>]*data-testid="n"/);
+    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).toContain('<span>Nur wenn er wirklich nicht kam</span>');
+  });
+});
+
 describe('Sheet', () => {
   it('is a dialog named by its title, with a labelled close button', () => {
     const markup = html(
@@ -92,6 +105,7 @@ describe('component styles', () => {
       'button.module.css',
       'card.module.css',
       'input.module.css',
+      'note.module.css',
       'pinned-foot.module.css',
       'sheet.module.css',
     ]);
