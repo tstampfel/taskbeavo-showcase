@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   countryCodes,
   countryFlag,
@@ -20,6 +20,26 @@ describe('countries', () => {
     expect(countryName('DE', 'de')).toBe('Deutschland');
     expect(countryName('DE', 'hr')).toBe('Njemačka');
     expect(countryName('HR', 'fr')).toBe('Croatie');
+  });
+
+  describe('without Intl.DisplayNames, as on Hermes (BEAV-223)', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('still names every country in hr, en, de and fr, never by its code', () => {
+      vi.stubGlobal('Intl', { ...Intl, DisplayNames: undefined });
+      expect(countryName('DE', 'de')).toBe('Deutschland');
+      expect(countryName('AT', 'hr')).toBe('Austrija');
+      expect(countryName('CH', 'fr')).toBe('Suisse');
+      for (const locale of ['hr', 'en', 'de', 'fr'] as const) {
+        for (const { code, name } of sortedCountries(locale)) {
+          expect({ code, locale, named: name !== code && name.length > 2 }).toEqual({
+            code,
+            locale,
+            named: true,
+          });
+        }
+      }
+    });
   });
 
   it('puts the featured countries first, then the rest by name', () => {
