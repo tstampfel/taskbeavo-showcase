@@ -197,7 +197,7 @@ export function TermsUpdateScreen({ onDone, onSignedOut, openLegal }: TermsUpdat
         </Text>
       ) : null}
       <Card testID="terms-update-changes">
-        <SectionLabel>{t('termsUpdate.whatsChanged')}</SectionLabel>
+        <SectionLabel inCard>{t('termsUpdate.whatsChanged')}</SectionLabel>
         {/* NEEDS REVIEW (lawyer): the per-version summary of changes is legal text and comes
             from the lawyer with BEAV-182; until then a marked draft. The bookings and refusal
             lines are DRAFT legal sentences too (BEAV-39). */}

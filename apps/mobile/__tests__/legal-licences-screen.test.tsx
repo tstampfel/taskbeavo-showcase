@@ -1,12 +1,13 @@
 import { LEGAL_PAGES } from '@taskbeavo/app-links';
 import { catalogues } from '@taskbeavo/i18n';
-import { colors } from '@taskbeavo/ui-tokens';
+import { colors, typography } from '@taskbeavo/ui-tokens';
 import { fireEvent, render, screen, within } from '@testing-library/react-native';
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
+import { wordFitFontScale } from '../src/components/ui/heading';
 import { i18n } from '../src/i18n';
 import { LegalLicencesScreen, MAXMIND_URL } from '../src/screens/legal-licences-screen';
 import { SettingsScreen } from '../src/screens/settings-screen';
-import { TITLE_MAX_FONT_SCALE } from '../src/screens/sign-in-screen';
+import { PAGE_HEADING_INSET, TITLE_MAX_FONT_SCALE } from '../src/screens/sign-in-screen';
 
 const en = catalogues.en;
 
@@ -140,5 +141,16 @@ describe('Settings and Legal design', () => {
     await renderScreen();
     const label = screen.getByRole('header', { name: en.settings.licences });
     expect(label.props.maxFontSizeMultiplier).toBeGreaterThan(TITLE_MAX_FONT_SCALE);
+  });
+
+  it('fits the section label to its longest word as drawn, in capitals', async () => {
+    await i18n.changeLanguage('de');
+    await renderScreen();
+    const text = catalogues.de.settings.documents;
+    const label = screen.getByRole('header', { name: text });
+    const width = Dimensions.get('window').width - PAGE_HEADING_INSET;
+    expect(label.props.maxFontSizeMultiplier).toBe(
+      wordFitFontScale(text.toUpperCase(), typography.caption.fontSize, width),
+    );
   });
 });

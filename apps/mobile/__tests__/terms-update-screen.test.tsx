@@ -6,7 +6,7 @@ import {
   ViewerDocument,
 } from '@taskbeavo/graphql';
 import { catalogues } from '@taskbeavo/i18n';
-import { minTapTarget, typography } from '@taskbeavo/ui-tokens';
+import { colors, minTapTarget, typography } from '@taskbeavo/ui-tokens';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { Dimensions, StyleSheet } from 'react-native';
 import { GraphQLError } from 'graphql';
@@ -361,7 +361,11 @@ describe('TermsUpdateScreen design', () => {
     // Raised (a soft shadow), not outlined.
     expect(StyleSheet.flatten(card.props.style).borderWidth).toBeUndefined();
     const label = screen.getByRole('header', { name: de.whatsChanged });
-    expect(StyleSheet.flatten(label.props.style)).toMatchObject({ textTransform: 'uppercase' });
+    // 21b draws the label inside the card in ink, not muted like a label above a card.
+    expect(StyleSheet.flatten(label.props.style)).toMatchObject({
+      textTransform: 'uppercase',
+      color: colors.ink,
+    });
     expect(
       within(card).getAllByTestId('terms-update-tick', { includeHiddenElements: true }),
     ).toHaveLength(2);

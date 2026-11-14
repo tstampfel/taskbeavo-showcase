@@ -1,7 +1,8 @@
-import { colors } from '@taskbeavo/ui-tokens';
+import { colors, typography } from '@taskbeavo/ui-tokens';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import { Heading, ListCard, ListRow } from '../components/ui';
+import { CARD_HEADING_INSET, wordFitFontScale } from '../components/ui/heading';
 import { textStyle } from '../components/ui/text-style';
 import { Page, PAGE_HEADING_INSET } from './sign-in-screen';
 
@@ -37,16 +38,26 @@ export function SettingsScreen({
   );
 }
 
-/** A section label above a list card: the mockups' small bold capitals (`.c`, 21b, 19c). */
-export function SectionLabel({ children }: { children: string }) {
+/**
+ * A section label: the mockups' small bold capitals (`.c`). Above a list card it is muted
+ * (21d, 19c); `inCard` is the label inside a card, in ink (21b).
+ */
+export function SectionLabel({ children, inCard = false }: { children: string; inCard?: boolean }) {
+  const { width } = useWindowDimensions();
+  const inset = inCard ? CARD_HEADING_INSET : PAGE_HEADING_INSET;
+  // Unlike page titles, a small label has no fixed cap: it grows as far as its words fit. They
+  // are drawn in capitals, which are wider, so they are measured that way.
+  const fit = wordFitFontScale(children.toUpperCase(), CAPTION_SIZE, width - inset);
   return (
-    // Unlike page titles, a small label has no fixed cap: it grows as far as its words fit.
-    <Heading style={styles.section} inset={PAGE_HEADING_INSET}>
+    <Heading style={[styles.section, inCard && styles.inCard]} inset={inset} maxScale={fit}>
       {children}
     </Heading>
   );
 }
 
+const CAPTION_SIZE = typography.caption.fontSize;
+
 const styles = StyleSheet.create({
   section: { ...textStyle('caption'), color: colors.inkMuted, textTransform: 'uppercase' },
+  inCard: { color: colors.ink },
 });
