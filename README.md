@@ -158,14 +158,22 @@ Sign in at `localhost:3000/en/sign-in` as a demo poster or helper (the seed prin
 - Step 7: cancel, free or late
 - Step 8: a contested no-show (seeded, waits for support)
 
+The web app at phone width:
+
 <p>
-<img src="docs/demo/web/01-offers.png" width="200" alt="Offers on a task">
-<img src="docs/demo/web/03-demo-card.png" width="200" alt="The demo card form: demo payment, no real money">
-<img src="docs/demo/web/07-helper-on-my-way.png" width="200" alt="The helper is on the way">
-<img src="docs/demo/web/11-late-cancel-preview.png" width="200" alt="A late cancel: the helper keeps €5">
-<img src="docs/demo/mobile/03-demo-card.png" width="200" alt="The demo card dialog on the iOS app">
-<img src="docs/demo/mobile/07-on-my-way.png" width="200" alt="The helper is on the way, on the iOS app">
-<img src="docs/demo/mobile/09-late-cancel-preview.png" width="200" alt="A late cancel on the iOS app: the helper keeps €5">
+<img src="docs/demo/web/01-offers.png" width="180" alt="Offers on a task">
+<img src="docs/demo/web/03-demo-card.png" width="180" alt="The demo card form: demo payment, no real money">
+<img src="docs/demo/web/07-helper-on-my-way.png" width="180" alt="The helper is on the way">
+<img src="docs/demo/web/11-late-cancel-preview.png" width="180" alt="A late cancel: the helper keeps €5">
+</p>
+
+The iOS app:
+
+<p>
+<img src="docs/demo/mobile/01-offers.png" width="180" alt="Offers on a task, on the iOS app">
+<img src="docs/demo/mobile/03-demo-card.png" width="180" alt="The demo card dialog on the iOS app">
+<img src="docs/demo/mobile/07-on-my-way.png" width="180" alt="The helper is on the way, on the iOS app">
+<img src="docs/demo/mobile/09-late-cancel-preview.png" width="180" alt="A late cancel on the iOS app: the helper keeps €5">
 </p>
 
 Payments in the demo go through a demo stub, `DEMO_PAYMENTS=1`: an in-process stand-in for Stripe behind the real gateway. Bookings still become paid only through the real webhook handler. Settings refuse it in production and next to a live key.
