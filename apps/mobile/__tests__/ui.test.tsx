@@ -11,6 +11,7 @@ import type { ReactElement } from 'react';
 import { Dimensions, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Badge, Button, Card, Input, Note, Screen, Sheet } from '../src/components/ui';
+import { wordFitFontScale } from '../src/components/ui/heading';
 import { topSafeAreaEdge } from '../src/testing/safe-area';
 import { fonts } from '../src/fonts';
 
@@ -35,6 +36,32 @@ describe('Button', () => {
       expect(style.minHeight).toBeGreaterThanOrEqual(minTapTarget);
       expect(style.minWidth).toBeGreaterThanOrEqual(minTapTarget);
       expect(style.height).toBeUndefined();
+    }
+  });
+
+  it('stays a pill at one line and a rounded rectangle when its label wraps', async () => {
+    for (const size of ['md', 'sm'] as const) {
+      await renderUi(<Button label="Stornieren oder widerrufen" size={size} />);
+      const style = flat(screen.getByRole('button'));
+      // Half the minimum height: a button grown taller by wrapped lines keeps straight sides.
+      expect(style.borderRadius).toBe(Number(style.minHeight) / 2);
+    }
+  });
+
+  it('caps the label scale where its longest word fits, so it never breaks mid-word', async () => {
+    jest
+      .spyOn(Dimensions, 'get')
+      .mockReturnValue({ width: 402, height: 874, scale: 3, fontScale: 53 / 17 });
+    try {
+      await renderUi(<Button label="Einstellungen" />);
+      const label = screen.getByText('Einstellungen');
+      // 402pt wide, less the default inset (64), padding (2 × 24) and border (2 × 1.5).
+      expect(label.props.maxFontSizeMultiplier).toBe(
+        wordFitFontScale('Einstellungen', flat(label).fontSize as number, 402 - 64 - 48 - 3),
+      );
+      expect(label.props.maxFontSizeMultiplier).toBeLessThan(53 / 17);
+    } finally {
+      jest.restoreAllMocks();
     }
   });
 
