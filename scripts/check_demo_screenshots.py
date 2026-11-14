@@ -27,10 +27,17 @@ def png_chunks(data: bytes) -> list[tuple[bytes, bytes]]:
     chunks = []
     offset = len(PNG_SIGNATURE)
     while offset < len(data):
+        if len(data) - offset < 12:  # length, type and CRC
+            raise ValueError("truncated PNG: a chunk header runs past the end of the file")
         (length,) = struct.unpack(">I", data[offset : offset + 4])
         kind = data[offset + 4 : offset + 8]
+        end = offset + 12 + length  # length, type, body, CRC
+        if end > len(data):
+            raise ValueError(f"truncated PNG: the {kind.decode('latin-1')} chunk runs past the end")
         chunks.append((kind, data[offset + 8 : offset + 8 + length]))
-        offset += 12 + length  # length, type, body, CRC
+        offset = end
+    if not chunks or chunks[0][0] != b"IHDR" or len(chunks[0][1]) < 8:
+        raise ValueError("first chunk is not IHDR")
     return chunks
 
 

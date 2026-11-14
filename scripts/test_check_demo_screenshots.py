@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import struct
 import sys
 import tempfile
@@ -45,6 +47,12 @@ class CheckDemoScreenshotsTest(unittest.TestCase):
     def run_check(self) -> int:
         return check.main(["check", str(self.root)])
 
+    def run_check_output(self) -> tuple[int, str]:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = self.run_check()
+        return code, out.getvalue()
+
     def test_passes_when_every_set_has_its_size(self) -> None:
         self.write("web/01.png", png(800, 1720))
         self.write("mobile/01.png", png(603, 1311))
@@ -70,6 +78,26 @@ class CheckDemoScreenshotsTest(unittest.TestCase):
         self.write("web/01.png", b"not a png")
         self.write("mobile/01.png", png(603, 1311))
         self.assertEqual(self.run_check(), 1)
+
+    def test_reports_a_truncated_png_as_a_failure_not_a_crash(self) -> None:
+        self.write("web/01.png", png(800, 1720)[:40])
+        self.write("mobile/01.png", png(603, 1311))
+        code, out = self.run_check_output()
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL web/01.png: truncated PNG", out)
+
+    def test_reports_a_png_whose_first_chunk_is_not_ihdr(self) -> None:
+        data = png(800, 1720)
+        ihdr_end = len(check.PNG_SIGNATURE) + 12 + 13
+        self.write("web/01.png", check.PNG_SIGNATURE + data[ihdr_end:])
+        self.write("mobile/01.png", png(603, 1311))
+        code, out = self.run_check_output()
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL web/01.png: first chunk is not IHDR", out)
+
+    def test_png_chunks_raises_value_error_on_a_truncated_body(self) -> None:
+        with self.assertRaises(ValueError):
+            check.png_chunks(png(800, 1720)[:-20])
 
     def test_fails_when_a_set_is_empty(self) -> None:
         self.write("web/01.png", png(800, 1720))
