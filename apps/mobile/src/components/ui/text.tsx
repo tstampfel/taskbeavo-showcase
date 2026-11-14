@@ -3,6 +3,7 @@ import type { TextProps as NativeTextProps } from 'react-native';
 import { Text as NativeText, StyleSheet, useWindowDimensions } from 'react-native';
 import {
   CARD_HEADING_INSET,
+  isRunningText,
   textOf,
   textScaleFloor,
   withoutAddresses,
@@ -13,10 +14,12 @@ import { useHeadingCap } from './text-scale-scope';
 /*
  * Body text at the largest text sizes (BEAV-223). Like headings (BEAV-219), a paragraph, a
  * money row or a step label should not break a word in the middle, so each text grows with the
- * user's text size until its longest word would no longer fit on a line. It never stops below
- * the user's own size up to 2x (`textScaleFloor`): past that floor a word too long for the line
- * may break rather than hold the whole text small, and email and web addresses never set the
- * cap. It never grows past the headings on its screen (`TextScaleScope`).
+ * user's text size until its longest word would no longer fit on a line. Running text never
+ * stops below the user's own size up to 2x (`textScaleFloor`): past that floor a word too long
+ * for the line may break rather than hold a whole sentence small, and email and web addresses
+ * never set the cap. A label (fewer than `RUNNING_TEXT_MIN_WORDS` words, or `keepWords`) has no
+ * floor and keeps its words whole (review R2-1). It never grows past the headings on its screen
+ * (`TextScaleScope`).
  */
 
 /** React Native's default font size, for text whose style sets none. */
@@ -36,6 +39,27 @@ export interface TextProps extends NativeTextProps {
    * fixed cell can't take a word at any size, so its text has no floor.
    */
   lineWidth?: number;
+  /**
+   * Keep every word whole: no 2x floor, even for a long text. Labels of fewer than
+   * `RUNNING_TEXT_MIN_WORDS` words keep their words without it.
+   */
+  keepWords?: boolean;
+}
+
+/**
+ * The text scale cap for `text` at `fontSize` on a line `width` wide, at the user's `fontScale`,
+ * under the `headings` cap of its scope. `floored` is false for fixed cells and `keepWords`.
+ */
+export function textScaleCap(
+  text: string,
+  fontSize: number,
+  width: number,
+  fontScale: number,
+  { headings = Infinity, floored = true }: { headings?: number; floored?: boolean } = {},
+): number {
+  const fit = wordFitFontScale(withoutAddresses(text), fontSize, width);
+  const floor = floored && isRunningText(text) ? textScaleFloor(fontScale, fontSize) : 1;
+  return Math.max(1, Math.min(Math.max(fit, floor), headings));
 }
 
 /**
@@ -46,14 +70,19 @@ export interface TextProps extends NativeTextProps {
 export function useTextScaleCap(
   text: string,
   style: TextProps['style'],
-  { inset = CARD_HEADING_INSET, lineWidth }: Pick<TextProps, 'inset' | 'lineWidth'> = {},
+  {
+    inset = CARD_HEADING_INSET,
+    lineWidth,
+    keepWords = false,
+  }: Pick<TextProps, 'inset' | 'lineWidth' | 'keepWords'> = {},
 ): number {
   const { width, fontScale } = useWindowDimensions();
   const fontSize = StyleSheet.flatten(style)?.fontSize ?? DEFAULT_FONT_SIZE;
   const headings = useHeadingCap(fontSize);
-  const fit = wordFitFontScale(withoutAddresses(text), fontSize, lineWidth ?? width - inset);
-  const floor = lineWidth === undefined ? textScaleFloor(fontScale, fontSize) : 1;
-  return Math.max(1, Math.min(Math.max(fit, floor), headings));
+  return textScaleCap(text, fontSize, lineWidth ?? width - inset, fontScale, {
+    headings,
+    floored: lineWidth === undefined && !keepWords,
+  });
 }
 
 /**
@@ -65,12 +94,13 @@ export function useTextScaleCap(
 export function Text({
   inset = CARD_HEADING_INSET,
   lineWidth,
+  keepWords,
   maxFontSizeMultiplier,
   children,
   ...props
 }: TextProps) {
   const nested = useContext(NestedText);
-  const cap = useTextScaleCap(textOf(children), props.style, { inset, lineWidth });
+  const cap = useTextScaleCap(textOf(children), props.style, { inset, lineWidth, keepWords });
   if (nested) {
     return (
       <NativeText maxFontSizeMultiplier={maxFontSizeMultiplier} {...props}>

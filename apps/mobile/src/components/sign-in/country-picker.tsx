@@ -29,7 +29,7 @@ import {
 import { Text } from '../ui/text';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Heading } from '../ui';
-import { lineEm, textScaleFloor, wordFitFontScale } from '../ui/heading';
+import { lineEm } from '../ui/heading';
 import { TextScaleScope } from '../ui/text-scale-scope';
 import { textStyle } from '../ui/text-style';
 
@@ -53,29 +53,11 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
   const [query, setQuery] = useState('');
   // The Done button shares the header line; its width grows with the text size.
   const [doneWidth, setDoneWidth] = useState<number>(minTapTarget);
-  const { width, fontScale } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   // Once Done grows past a third of the line at large text, the title goes under it on a line
   // of its own, instead of being squeezed into what's left (BEAV-223).
   const titleBelow = doneWidth > (width - 2 * spacing.lg) / 3;
   const countries = useMemo(() => sortedCountries(locale), [locale]);
-  // One size for the whole list, so the rows don't jump in size from one name to the next: as
-  // large as the longest word of any name still fits its line, and never below the body floor.
-  const listScale = useMemo(
-    () =>
-      Math.max(
-        textScaleFloor(fontScale, typography.body.fontSize),
-        Math.min(
-          ...countries.map(({ code, name }) =>
-            wordFitFontScale(
-              `${countryFlag(code)} ${name}`,
-              typography.body.fontSize,
-              width - OPTION_INSET,
-            ),
-          ),
-        ),
-      ),
-    [countries, width, fontScale],
-  );
   const shown = useMemo(
     () => countries.filter((country) => countryMatches(country, query, locale)),
     [countries, query, locale],
@@ -156,10 +138,12 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
                     style={[styles.option, item.code === value && styles.selected]}
                     testID={`${testID}-${item.code}`}
                   >
+                    {/* Each name as large as its longest word fits, whole (review R2-1): one size
+                        for the list would hold every name to "Sonderverwaltungsregion"'s. */}
                     <Text
                       style={[textStyle('body'), styles.value, styles.name]}
                       inset={OPTION_INSET}
-                      maxFontSizeMultiplier={listScale}
+                      keepWords
                     >
                       {`${countryFlag(item.code)} ${item.name}`}
                     </Text>
@@ -182,7 +166,7 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
 }
 
 /** The width beside a country's name: the sheet's and the option's padding, the code and gap. */
-const OPTION_INSET = 2 * spacing.lg + 2 * spacing.md + CODE_WIDTH + spacing.md;
+export const OPTION_INSET = 2 * spacing.lg + 2 * spacing.md + CODE_WIDTH + spacing.md;
 
 const styles = StyleSheet.create({
   field: { gap: spacing.sm },

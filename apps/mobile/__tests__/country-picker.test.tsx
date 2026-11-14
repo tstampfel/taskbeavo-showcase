@@ -2,7 +2,7 @@ import { spacing, typography } from '@taskbeavo/ui-tokens';
 import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import { Dimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { CountryPicker } from '../src/components/sign-in/country-picker';
+import { CountryPicker, OPTION_INSET } from '../src/components/sign-in/country-picker';
 import { wordFitFontScale } from '../src/components/ui/heading';
 import { i18n } from '../src/i18n';
 
@@ -81,6 +81,20 @@ describe('CountryPicker', () => {
       expect(option.props.accessibilityLabel).toBe(germany);
       expect(within(option).getByText(`🇩🇪 ${germany}`)).toBeTruthy();
       expect(within(option).getByText('DE')).toBeTruthy();
+    });
+
+    it('keeps each name whole, so one long name doesn’t hold the list small (R2-1)', async () => {
+      await open('de');
+      await fireEvent.changeText(screen.getByTestId('country-search'), 'hongkong');
+      const long = within(screen.getByTestId('country-HK')).getByText(/Hongkong/);
+      const text = long.props.children as string;
+      const width = 402 - OPTION_INSET;
+      expect(long.props.maxFontSizeMultiplier).toBeLessThanOrEqual(
+        wordFitFontScale(text, typography.body.fontSize, width) + 1e-9,
+      );
+      await fireEvent.changeText(screen.getByTestId('country-search'), '');
+      const germany = within(screen.getByTestId('country-DE')).getByText('🇩🇪 Deutschland');
+      expect(germany.props.maxFontSizeMultiplier).toBeGreaterThan(2);
     });
 
     it('finds a country by its name or by its code', async () => {

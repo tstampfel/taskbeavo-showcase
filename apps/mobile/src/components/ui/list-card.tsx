@@ -55,10 +55,11 @@ export function ListRow({
   testID,
 }: ListRowProps) {
   // At the largest text sizes a long word such as "information" would break mid-word; the
-  // texts grow only as far as their longest word still fits beside the chevron or control.
+  // title grows only as far as its longest word still fits beside the chevron or control, with
+  // no 2x floor (review R2-1). A long subtitle is running text and keeps the floor.
   const text = (
     <View style={styles.text}>
-      <Text style={styles.title} inset={TITLE_INSET}>
+      <Text style={styles.title} inset={TITLE_INSET} keepWords>
         {title}
       </Text>
       {subtitle ? (
@@ -104,7 +105,7 @@ const CHEVRON_SIZE = 9;
 /** The widest trailing control, a native switch (51pt on iOS). */
 const TRAILING_WIDTH = 52;
 /** The width beside a row's title: page and card padding on both sides, the gap, the trailing control. */
-const TITLE_INSET = 4 * spacing.lg + spacing.md + TRAILING_WIDTH;
+export const TITLE_INSET = 4 * spacing.lg + spacing.md + TRAILING_WIDTH;
 const CHEVRON_STROKE = 2;
 
 const styles = StyleSheet.create({

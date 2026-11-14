@@ -97,12 +97,6 @@ export function fitsOnOneLine(
   return needed <= width * SAFETY;
 }
 
-/**
- * The largest text scale at which every word of `text`, set at `fontSize`, fits in `width`, for
- * `maxFontSizeMultiplier`. Never below 1: at the design size the layouts fit their words, and
- * capping below it would shrink text for everyone. `maxScale` keeps a stricter cap a layout
- * already has, such as the narrow top bar.
- */
 /** The text scale body text always reaches when the user's is at least this large (R1-2). */
 export const FLOOR_FONT_SCALE = 2;
 
@@ -125,6 +119,25 @@ export function withoutAddresses(text: string): string {
   return text.replace(/\S*(?:@|:\/\/|www\.)\S*/g, ' ');
 }
 
+/** The fewest words, not counting addresses, that make a text running text rather than a label. */
+export const RUNNING_TEXT_MIN_WORDS = 5;
+
+/**
+ * Whether `text` is running text, a sentence that wraps over lines, rather than a label such as
+ * a row title, a button or a badge. Only running text gets the 2x floor: a label keeps its
+ * words whole, because "Datenschutzerkläru / ng" reads worse than a title a little smaller
+ * (BEAV-223 review R2-1).
+ */
+export function isRunningText(text: string): boolean {
+  return withoutAddresses(text).split(/\s+/).filter(Boolean).length >= RUNNING_TEXT_MIN_WORDS;
+}
+
+/**
+ * The largest text scale at which every word of `text`, set at `fontSize`, fits in `width`, for
+ * `maxFontSizeMultiplier`. Never below 1: at the design size the layouts fit their words, and
+ * capping below it would shrink text for everyone. `maxScale` keeps a stricter cap a layout
+ * already has, such as the narrow top bar.
+ */
 export function wordFitFontScale(
   text: string,
   fontSize: number,
@@ -167,6 +180,11 @@ export interface HeadingProps extends Omit<
   inset?: number;
   /** A stricter text scale cap the layout needs anyway, such as a narrow top bar's. */
   maxScale?: number;
+  /**
+   * A label, such as a section label: it grows only as far as its words fit, without the floor.
+   * It doesn't hold the text in its scope small: that still gets its floor.
+   */
+  keepWords?: boolean;
   children: ReactNode;
 }
 
@@ -179,6 +197,7 @@ export interface HeadingProps extends Omit<
 export function Heading({
   inset = CARD_HEADING_INSET,
   maxScale,
+  keepWords = false,
   style,
   children,
   ...props
@@ -188,11 +207,9 @@ export function Heading({
   // As far as its words fit, but never below the floor, so body text beside it, which has the
   // same floor, never outgrows it. `maxScale` is a layout's hard cap and wins over the floor.
   const fit = wordFitFontScale(textOf(children), fontSize, width - inset);
-  const scale = Math.max(
-    1,
-    Math.min(Math.max(fit, textScaleFloor(fontScale, fontSize)), maxScale ?? Infinity),
-  );
-  useRegisterHeading(scale, fontSize);
+  const floor = textScaleFloor(fontScale, fontSize);
+  const scale = Math.max(1, Math.min(keepWords ? fit : Math.max(fit, floor), maxScale ?? Infinity));
+  useRegisterHeading(keepWords ? Math.max(scale, floor) : scale, fontSize);
   return (
     <Text accessibilityRole="header" maxFontSizeMultiplier={scale} style={style} {...props}>
       {children}
