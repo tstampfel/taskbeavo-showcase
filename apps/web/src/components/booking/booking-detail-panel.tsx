@@ -80,9 +80,9 @@ export function BookingDetailPanel({
           <span className={styles.heroIcon}>
             <ClockIcon size={44} />
           </span>
-          <h3 className={styles.h2} data-testid="booking-status">
+          <h2 className={styles.h2} data-testid="booking-status">
             {t('status.PAYMENT_REQUESTED')}
-          </h3>
+          </h2>
           <p className={`${styles.small} ${styles.muted}`}>
             {poster ? t('requestedPoster') : t('requestedHelper', { amount: money })}
           </p>

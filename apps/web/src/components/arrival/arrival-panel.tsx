@@ -205,6 +205,21 @@ function HelperPart({
               {t('runningLate')}
             </Button>
           )}
+          {late && view.canMarkOnMyWay && (
+            // Review R1-1: a mistaken Running late tap must not take On my way away.
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={busy}
+              onClick={() => {
+                setEta(null);
+                setLate(false);
+              }}
+              data-testid="arrival-late-back"
+            >
+              {t('goBack')}
+            </Button>
+          )}
           {cantCome ? (
             <Card variant="flat" className={styles.flat}>
               <p className={styles.body}>{t('cantComeBody')}</p>

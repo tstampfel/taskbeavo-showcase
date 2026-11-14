@@ -222,6 +222,19 @@ describe('BookingDetailPanel', () => {
     },
   );
 
+  // Review R1-2: under the shell's h1, no h3 may come before the first h2.
+  it.each(['FUNDS_HELD', 'PAYMENT_REQUESTED'] as const)(
+    'keeps the heading order on a %s booking',
+    (status) => {
+      for (const role of ['poster', 'helper'] as const) {
+        const levels = [...render('en', booking({ status }), role).matchAll(/<h([1-6])/g)].map(
+          (m) => Number(m[1]),
+        );
+        expect(levels[0], `${status} ${role}`).toBe(2);
+      }
+    },
+  );
+
   it('puts the safety line in a note', () => {
     expect(section(render('fr', booking(), 'poster'), 'booking-safety')).toContain(
       html(catalogues.fr.bookingDetail.safety),

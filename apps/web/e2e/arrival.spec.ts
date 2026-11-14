@@ -204,6 +204,43 @@ test('the poster answers a late arrival and sees the API refund before saying No
   await expect(page.getByTestId('arrival-no-show-confirm')).toBeVisible();
 });
 
+// Review R1-1: Running late before setting off must not take On my way away for good.
+test('the helper can go back from Running late and still set off', async ({
+  page,
+  stubGraphql,
+}) => {
+  const stub = await stubGraphql(
+    answers(helper, () => booking({ canTap: true }), {
+      MarkOnMyWay: () => ({
+        data: {
+          markOnMyWay: booking({
+            canTap: true,
+            onMyWayAt: '2026-11-14T07:40:00Z',
+            etaAt: '2026-11-14T08:00:00Z',
+          }),
+        },
+      }),
+    }),
+  );
+  await page.goto('/en/bookings/booking-1/arrival');
+
+  await page.getByTestId('arrival-running-late').click();
+  await expect(page.getByTestId('arrival-send-late')).toBeVisible();
+  await expect(page.getByTestId('arrival-on-my-way')).toHaveCount(0);
+
+  await page.getByTestId('arrival-late-back').click();
+  await expect(page.getByTestId('arrival-send-late')).toHaveCount(0);
+  await expect(page.getByTestId('arrival-running-late')).toBeVisible();
+  await page.getByTestId('arrival-on-my-way').click();
+  await expect
+    .poll(() => stub.calls.find((c) => c.name === 'MarkOnMyWay')?.variables)
+    .toEqual({
+      bookingId: 'booking-1',
+      etaMinutes: null,
+    });
+  expect(stub.calls.some((c) => c.name === 'ReportRunningLate')).toBe(false);
+});
+
 test('where a reported no-show stands, for both sides (18e, 18f, 18h)', async ({
   page,
   stubGraphql,
