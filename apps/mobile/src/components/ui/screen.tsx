@@ -1,6 +1,14 @@
 import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Heading } from './heading';
 import { textStyle } from './text-style';
@@ -22,8 +30,12 @@ const TOP_TITLE_INSET = 2 * spacing.lg + 2 * minTapTarget + 2 * spacing.sm;
 export const INLINE_FOOTER_FONT_SCALE = 1.5;
 
 export interface ScreenProps {
-  /** The top bar title, already translated; it is the screen's heading for screen readers. */
-  title: string;
+  /**
+   * The top bar title, already translated; it is the screen's heading for screen readers.
+   * Without a title or a back button there is no top bar (the mockups' welcome and terms
+   * update screens, 21b).
+   */
+  title?: string;
   /** Shows the round back button on the left of the top bar. */
   onBack?: () => void;
   /** The back button's accessibility label, already translated. */
@@ -38,7 +50,8 @@ export interface ScreenProps {
  * A screen from the mockups' phone frames: the top bar (`.top`, a round back button and a
  * centred title), the scrolling body (`.body`) and the actions pinned at the bottom (`.foot`).
  * The SafeAreaView keeps the bar clear of the status bar and notch (BEAV-201) and the footer
- * clear of the home indicator.
+ * clear of the home indicator. On iOS the footer rides above the keyboard, and a tap on a
+ * button works while the keyboard is up (the sign-in forms, BEAV-215).
  */
 export function Screen({ title, onBack, backLabel, footer, children, testID }: ScreenProps) {
   const inline = useWindowDimensions().fontScale >= INLINE_FOOTER_FONT_SCALE;
@@ -50,14 +63,24 @@ export function Screen({ title, onBack, backLabel, footer, children, testID }: S
       {footer}
     </View>
   ) : null;
+  const bar = Boolean(title || onBack);
   return (
     <SafeAreaView style={styles.safeArea} testID={testID}>
-      <TopBar title={title} onBack={onBack} backLabel={backLabel} />
-      <ScrollView contentContainerStyle={styles.body}>
-        {children}
-        {inline ? foot : null}
-      </ScrollView>
-      {inline ? null : foot}
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {bar ? <TopBar title={title ?? ''} onBack={onBack} backLabel={backLabel} /> : null}
+        <ScrollView
+          contentContainerStyle={[styles.body, !bar && styles.bodyWithoutBar]}
+          keyboardShouldPersistTaps="handled"
+          testID={testID ? `${testID}-body` : undefined}
+        >
+          {children}
+          {inline ? foot : null}
+        </ScrollView>
+        {inline ? null : foot}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -67,7 +90,7 @@ export function TopBar({
   title,
   onBack,
   backLabel,
-}: Pick<ScreenProps, 'title' | 'onBack' | 'backLabel'>) {
+}: { title: string } & Pick<ScreenProps, 'onBack' | 'backLabel'>) {
   return (
     <View style={styles.top}>
       {onBack ? (
@@ -99,6 +122,7 @@ const CHEVRON_STROKE = 2.5;
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.offWhite },
+  flex: { flex: 1 },
   top: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -132,6 +156,8 @@ const styles = StyleSheet.create({
   },
   title: { ...textStyle('button'), flex: 1, textAlign: 'center', color: colors.ink },
   body: { flexGrow: 1, gap: spacing.lg, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },
+  // The mockups' screens without a top bar start their body 20pt down (21b).
+  bodyWithoutBar: { paddingTop: spacing.xl },
   foot: {
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,

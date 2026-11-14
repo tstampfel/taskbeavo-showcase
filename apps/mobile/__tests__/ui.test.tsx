@@ -10,7 +10,17 @@ import { fireEvent, render, screen, within } from '@testing-library/react-native
 import type { ReactElement } from 'react';
 import { Dimensions, StyleSheet, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Badge, Button, Card, Input, Note, Screen, Sheet } from '../src/components/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  Input,
+  ListCard,
+  ListRow,
+  Note,
+  Screen,
+  Sheet,
+} from '../src/components/ui';
 import { wordFitFontScale } from '../src/components/ui/heading';
 import { topSafeAreaEdge } from '../src/testing/safe-area';
 import { fonts } from '../src/fonts';
@@ -263,6 +273,87 @@ describe('Screen', () => {
     } finally {
       dimensions.mockRestore();
     }
+  });
+});
+
+// BEAV-215: the account screens use the same Screen, with or without a top bar.
+describe('Screen for the account screens', () => {
+  it('has no top bar without a title or back button, and starts the body lower', async () => {
+    await renderUi(
+      <Screen testID="s">
+        <Text>body</Text>
+      </Screen>,
+    );
+    expect(screen.queryByRole('header')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+    const body = screen.getByTestId('s-body');
+    expect(StyleSheet.flatten(body.props.contentContainerStyle).paddingTop).toBeGreaterThan(0);
+  });
+
+  it('keeps a tap on a button working while the keyboard is up', async () => {
+    await renderUi(
+      <Screen title="E-Mail" testID="s">
+        <Text>body</Text>
+      </Screen>,
+    );
+    expect(screen.getByTestId('s-body').props.keyboardShouldPersistTaps).toBe('handled');
+  });
+});
+
+// BEAV-215: the mockups' list card (19a, 21d): rows split by hairlines, a chevron on the right.
+describe('ListCard and ListRow', () => {
+  it('is a 44pt+ labelled row with a drawn chevron that screen readers skip', async () => {
+    const onPress = jest.fn();
+    await renderUi(
+      <ListCard testID="list">
+        <ListRow title="Datenschutz und Daten" onPress={onPress} testID="row" />
+      </ListCard>,
+    );
+    const row = screen.getByRole('button', { name: 'Datenschutz und Daten' });
+    expect(Number(flat(row).minHeight)).toBeGreaterThanOrEqual(minTapTarget);
+    expect(screen.queryByText('›', { includeHiddenElements: true })).toBeNull();
+    expect(
+      screen.getByTestId('row-chevron', { includeHiddenElements: true }).props
+        .importantForAccessibility,
+    ).toBe('no-hide-descendants');
+    await fireEvent.press(row);
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads the title in bold ink and the subtitle in muted caption text', async () => {
+    await renderUi(
+      <ListCard>
+        <ListRow title="Analytics" subtitle="Off until you agree." />
+      </ListCard>,
+    );
+    expect(flat(screen.getByText('Analytics'))).toMatchObject({
+      fontFamily: fonts.bold,
+      color: colors.ink,
+    });
+    expect(flat(screen.getByText('Off until you agree.')).color).toBe(colors.inkMuted);
+  });
+
+  it('splits rows with a hairline, none above the first', async () => {
+    await renderUi(
+      <ListCard>
+        <ListRow title="One" onPress={() => {}} testID="one" />
+        <ListRow title="Two" onPress={() => {}} testID="two" />
+      </ListCard>,
+    );
+    expect(flat(screen.getByTestId('one')).borderTopWidth ?? 0).toBe(0);
+    expect(flat(screen.getByTestId('two'))).toMatchObject({
+      borderTopWidth: 1,
+      borderTopColor: colors.line,
+    });
+  });
+
+  it('opens a link with the link role', async () => {
+    await renderUi(
+      <ListCard>
+        <ListRow title="Privacy notice" role="link" onPress={() => {}} />
+      </ListCard>,
+    );
+    expect(screen.getByRole('link', { name: 'Privacy notice' })).toBeTruthy();
   });
 });
 
