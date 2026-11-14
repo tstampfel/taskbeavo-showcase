@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from './ui';
+import { Button, Heading } from './ui';
 import { textStyle } from './ui/text-style';
 
 /** The screens links open; each has its title under `linkTarget.<screen>`. */
@@ -20,9 +20,7 @@ export function LinkTargetScreen({ target }: { target: LinkTarget }) {
   return (
     <SafeAreaView style={styles.safeArea} testID={`link-target-${target}`}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text accessibilityRole="header" style={[textStyle('h1'), styles.title]}>
-          {t(`linkTarget.${target}`)}
-        </Text>
+        <Heading style={[textStyle('h1'), styles.title]}>{t(`linkTarget.${target}`)}</Heading>
         <Text style={[textStyle('body'), styles.body]}>{t('linkTarget.notReady')}</Text>
         <Text style={[textStyle('small'), styles.body]}>{t('linkTarget.safety')}</Text>
         <Button

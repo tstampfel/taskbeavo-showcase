@@ -36,7 +36,7 @@ import { CodeField } from '../components/sign-in/code-field';
 import { CountryPicker } from '../components/sign-in/country-picker';
 import { errorMessage } from '../components/sign-in/error-message';
 import { useSecondsLeft } from '../components/sign-in/use-seconds-left';
-import { Button, Input } from '../components/ui';
+import { Button, Heading, Input } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 import { fonts } from '../fonts';
 import {
@@ -241,13 +241,13 @@ export function Page({
             ) : (
               <View style={styles.iconButton} />
             )}
-            <Text
+            <Heading
               style={styles.topTitle}
-              accessibilityRole="header"
-              maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
+              inset={TOP_TITLE_INSET}
+              maxScale={TITLE_MAX_FONT_SCALE}
             >
               {title}
-            </Text>
+            </Heading>
             <View style={styles.iconButton} />
           </View>
         ) : null}
@@ -336,9 +336,9 @@ function Welcome({
       }
     >
       <View style={styles.welcome}>
-        <Text accessibilityRole="header" style={styles.display}>
+        <Heading style={styles.display} inset={PAGE_HEADING_INSET}>
           {t('signIn.welcomeTitle')}
-        </Text>
+        </Heading>
         <Text style={styles.mutedCenter}>{t('signIn.welcomeBody')}</Text>
         <LanguageRow current={i18n.language as Locale} deps={onLanguage} />
       </View>
@@ -429,9 +429,9 @@ function EmailStep({
         <Button label={t('signIn.sendCode')} busy={busy} onPress={submit} testID="send-code" />
       }
     >
-      <Text accessibilityRole="header" style={styles.h1}>
+      <Heading style={styles.h1} inset={PAGE_HEADING_INSET}>
         {t('signIn.emailTitle')}
-      </Text>
+      </Heading>
       <Input
         label={t('signIn.emailLabel')}
         placeholder={t('signIn.emailPlaceholder')}
@@ -521,9 +521,9 @@ export function CodeStep({
 
   return (
     <Page testID={testID} title={header} onBack={onChange}>
-      <Text accessibilityRole="header" style={styles.h1}>
+      <Heading style={styles.h1} inset={PAGE_HEADING_INSET}>
         {title}
-      </Text>
+      </Heading>
       <Text style={styles.muted}>{intro}</Text>
       <Pressable
         accessibilityRole="link"
@@ -839,9 +839,9 @@ function LocalePrompt({
         </>
       }
     >
-      <Text accessibilityRole="header" style={styles.h1}>
+      <Heading style={styles.h1} inset={PAGE_HEADING_INSET}>
         {t('signIn.localePromptTitle', { language: languageNames[picked] })}
-      </Text>
+      </Heading>
       <Text style={styles.muted}>
         {t('signIn.localePromptBody', { account: languageNames[account] })}
       </Text>
@@ -854,6 +854,12 @@ function LocalePrompt({
  * words break mid-word in the narrow header (BEAV-190 QA F9). Body text keeps the full scale.
  */
 export const TITLE_MAX_FONT_SCALE = 1.6;
+
+/** The width beside the top bar title: the bar's padding and the two buttons. */
+const TOP_TITLE_INSET = 2 * spacing.sm + 2 * minTapTarget;
+
+/** The width beside a heading in the page body: its padding on both sides. */
+export const PAGE_HEADING_INSET = 2 * spacing.lg;
 
 export const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.offWhite },

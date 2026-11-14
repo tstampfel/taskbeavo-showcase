@@ -12,7 +12,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../ui';
+import { Button, Heading } from '../ui';
 import { textStyle } from '../ui/text-style';
 
 export interface CountryPickerProps {
@@ -28,6 +28,8 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
   const locale = i18n.language as Locale;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  // The Done button shares the header line; its width grows with the text size.
+  const [doneWidth, setDoneWidth] = useState<number>(minTapTarget);
   const countries = useMemo(() => sortedCountries(locale), [locale]);
   const shown = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase(locale);
@@ -60,14 +62,18 @@ export function CountryPicker({ label, value, onChange, testID }: CountryPickerP
       <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
         <SafeAreaView style={styles.sheet}>
           <View style={styles.header}>
-            <Text accessibilityRole="header" style={[textStyle('h2'), styles.value]}>
+            <Heading
+              style={[textStyle('h2'), styles.value, styles.title]}
+              inset={2 * spacing.lg + doneWidth}
+            >
               {label}
-            </Text>
+            </Heading>
             <Button
               label={t('signIn.countryDone')}
               variant="ghost"
               size="sm"
               onPress={() => setOpen(false)}
+              onLayout={(event) => setDoneWidth(event.nativeEvent.layout.width)}
             />
           </View>
           <TextInput
@@ -128,6 +134,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  title: { flexShrink: 1 },
   search: {
     minHeight: controlHeight.md,
     paddingHorizontal: spacing.lg,

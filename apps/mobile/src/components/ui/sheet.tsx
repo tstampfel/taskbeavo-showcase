@@ -10,7 +10,11 @@ import {
 import type { ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Heading } from './heading';
 import { textStyle } from './text-style';
+
+/** The width beside the sheet title: the panel's padding, the close button and the gap. */
+const SHEET_TITLE_INSET = 2 * spacing.lg + minTapTarget + spacing.sm;
 
 export interface SheetProps {
   visible: boolean;
@@ -60,9 +64,9 @@ export function Sheet({ visible, onClose, title, closeLabel, children, testID }:
             importantForAccessibility="no-hide-descendants"
           />
           <View style={styles.header}>
-            <Text accessibilityRole="header" style={[textStyle('h2'), styles.title]}>
+            <Heading style={[textStyle('h2'), styles.title]} inset={SHEET_TITLE_INSET}>
               {title}
-            </Text>
+            </Heading>
             <Pressable
               onPress={onClose}
               accessibilityRole="button"

@@ -4,8 +4,14 @@ import { colors, minTapTarget, spacing } from '@taskbeavo/ui-tokens';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { textStyle } from '../components/ui/text-style';
+import { Heading } from '../components/ui';
 import { styles as rowStyles } from './settings-screen';
-import { Page, TITLE_MAX_FONT_SCALE, styles as pageStyles } from './sign-in-screen';
+import {
+  Page,
+  PAGE_HEADING_INSET,
+  TITLE_MAX_FONT_SCALE,
+  styles as pageStyles,
+} from './sign-in-screen';
 import { Rich } from './terms-update-screen';
 
 export const MAXMIND_URL = 'https://www.maxmind.com';
@@ -54,13 +60,9 @@ export function LegalLicencesScreen({ onBack, openLegal, openUrl }: LegalLicence
 
   return (
     <Page title={t('settings.legal')} onBack={onBack} testID="legal-licences">
-      <Text
-        accessibilityRole="header"
-        style={styles.heading}
-        maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
-      >
+      <Heading style={styles.heading} inset={PAGE_HEADING_INSET} maxScale={TITLE_MAX_FONT_SCALE}>
         {t('settings.documents')}
-      </Text>
+      </Heading>
       <View style={styles.list}>
         {LEGAL_PAGES.map((page) => (
           <Pressable
@@ -82,13 +84,9 @@ export function LegalLicencesScreen({ onBack, openLegal, openUrl }: LegalLicence
           </Pressable>
         ))}
       </View>
-      <Text
-        accessibilityRole="header"
-        style={styles.heading}
-        maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
-      >
+      <Heading style={styles.heading} inset={PAGE_HEADING_INSET} maxScale={TITLE_MAX_FONT_SCALE}>
         {t('settings.licences')}
-      </Text>
+      </Heading>
       <View style={styles.list} testID="licence-geolite">
         {attribution}
       </View>

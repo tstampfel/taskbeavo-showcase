@@ -10,8 +10,8 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Text } from 'react-native';
 import { errorMessage } from '../components/sign-in/error-message';
-import { Button, Input } from '../components/ui';
-import { CodeStep, ErrorText, Page, styles } from './sign-in-screen';
+import { Button, Heading, Input } from '../components/ui';
+import { CodeStep, ErrorText, Page, PAGE_HEADING_INSET, styles } from './sign-in-screen';
 
 /** The code just sent, with the number as typed (kept in memory only, to send a new code). */
 type Sent = RequestPhoneCodeMutation['requestPhoneCode'] & { phone: string };
@@ -137,9 +137,9 @@ function PhoneNumber({
         </>
       }
     >
-      <Text accessibilityRole="header" style={styles.h1}>
+      <Heading style={styles.h1} inset={PAGE_HEADING_INSET}>
         {t('phone.title')}
-      </Text>
+      </Heading>
       <Text style={styles.muted}>{t('phone.body')}</Text>
       <Input
         label={t('phone.label')}

@@ -24,7 +24,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { TraderIdentity } from '../components/trader-identity';
-import { Badge, Button, Card, Note, Screen } from '../components/ui';
+import { Badge, Button, Card, Heading, Note, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 
 /** The booking screens the detail screen links into, by their route segment. */
@@ -270,9 +270,9 @@ function PlaceCard({ place }: { place: BookingPlace }) {
   const { t } = useTranslation();
   return (
     <Card style={styles.card} testID="booking-place">
-      <Text accessibilityRole="header" style={[textStyle('caption'), styles.muted, styles.section]}>
+      <Heading style={[textStyle('caption'), styles.muted, styles.section]}>
         {t('bookingDetail.place.title')}
-      </Text>
+      </Heading>
       {place.kind === 'exact' ? (
         <>
           <Text style={[textStyle('label'), styles.ink]} testID="booking-address">
@@ -330,9 +330,9 @@ function HelperCard({ trader }: { trader: NonNullable<BookingDetail['trader']> }
   const { t } = useTranslation();
   return (
     <Card style={styles.card} testID="booking-helper">
-      <Text accessibilityRole="header" style={[textStyle('caption'), styles.muted, styles.section]}>
+      <Heading style={[textStyle('caption'), styles.muted, styles.section]}>
         {t('bookingDetail.helperTitle')}
-      </Text>
+      </Heading>
       {trader.helperIsTrader ? (
         <TraderIdentity offer={trader} />
       ) : (

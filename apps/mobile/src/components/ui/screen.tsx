@@ -1,7 +1,8 @@
 import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Heading } from './heading';
 import { textStyle } from './text-style';
 
 /**
@@ -10,6 +11,9 @@ import { textStyle } from './text-style';
  * full scale.
  */
 export const TOP_TITLE_MAX_FONT_SCALE = 1.6;
+
+/** The width beside the top bar title: the bar's padding, the two buttons and their gaps. */
+const TOP_TITLE_INSET = 2 * spacing.lg + 2 * minTapTarget + 2 * spacing.sm;
 
 /**
  * From this text scale on, the footer scrolls with the body instead of staying pinned: at the
@@ -82,13 +86,9 @@ export function TopBar({
       ) : (
         <View style={styles.iconButton} />
       )}
-      <Text
-        accessibilityRole="header"
-        style={styles.title}
-        maxFontSizeMultiplier={TOP_TITLE_MAX_FONT_SCALE}
-      >
+      <Heading style={styles.title} inset={TOP_TITLE_INSET} maxScale={TOP_TITLE_MAX_FONT_SCALE}>
         {title}
-      </Text>
+      </Heading>
       <View style={styles.iconButton} />
     </View>
   );

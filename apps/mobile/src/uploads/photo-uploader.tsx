@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Linking, StyleSheet, Text, View } from 'react-native';
-import { Button, Card } from '../components/ui';
+import { Button, Card, Heading } from '../components/ui';
 import { fonts } from '../fonts';
 import { uploadPickedPhoto, type PhotoUploadState } from './photo-upload';
 
@@ -67,9 +67,7 @@ export function PhotoUploader({ purpose, onUploaded }: PhotoUploaderProps) {
   if (cameraAccess === 'explain') {
     return (
       <Card testID="camera-explanation">
-        <Text accessibilityRole="header" style={styles.title}>
-          {t('uploads.permission.cameraTitle')}
-        </Text>
+        <Heading style={styles.title}>{t('uploads.permission.cameraTitle')}</Heading>
         <Text style={styles.body}>{t('uploads.permission.cameraBody')}</Text>
         <Button
           testID="camera-continue"

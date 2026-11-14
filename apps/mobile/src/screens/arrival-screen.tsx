@@ -33,7 +33,7 @@ import type { TFunction } from 'i18next';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Button, Card, Note, Screen } from '../components/ui';
+import { Button, Card, Heading, Note, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 
 export interface ArrivalScreenProps {
@@ -450,9 +450,7 @@ function PosterPanel({
     <>
       {view.canAnswerLate && (
         <Card style={styles.card} testID="arrival-late">
-          <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
-            {t('arrival.lateTitle')}
-          </Text>
+          <Heading style={[textStyle('h2'), styles.ink]}>{t('arrival.lateTitle')}</Heading>
           <Text style={[textStyle('body'), styles.ink]}>{t('arrival.lateBody')}</Text>
           <Button
             label={t('arrival.lateKeep')}
@@ -472,9 +470,7 @@ function PosterPanel({
 
       {view.canAnswerEarlyStart && (
         <Card style={styles.card} testID="arrival-early-start">
-          <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
-            {t('arrival.earlyStartTitle')}
-          </Text>
+          <Heading style={[textStyle('h2'), styles.ink]}>{t('arrival.earlyStartTitle')}</Heading>
           <Text style={[textStyle('body'), styles.ink]} testID="arrival-early-body">
             {t(
               view.earlyStartWithdrawal
@@ -500,9 +496,7 @@ function PosterPanel({
 
       {(view.canConfirmCame || offer) && (
         <Card style={styles.card} testID="arrival-did-they-come">
-          <Text accessibilityRole="header" style={[textStyle('h2'), styles.ink]}>
-            {t('arrival.cameTitle')}
-          </Text>
+          <Heading style={[textStyle('h2'), styles.ink]}>{t('arrival.cameTitle')}</Heading>
           <Text style={[textStyle('body'), styles.ink]}>{t('arrival.cameBody')}</Text>
           {view.canConfirmCame && (
             <Button

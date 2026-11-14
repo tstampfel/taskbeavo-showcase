@@ -4,6 +4,7 @@ import { lazy, Suspense, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Heading } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
 import { openFees, openLegal } from '../auth/app-auth';
 import { CheckoutScreen } from '../screens/checkout-screen';
@@ -85,9 +86,7 @@ function NotConfigured() {
   const { t } = useTranslation();
   return (
     <SafeAreaView style={styles.safeArea} testID="checkout-not-configured">
-      <Text accessibilityRole="header" style={[textStyle('h1'), styles.title]}>
-        {t('checkout.title')}
-      </Text>
+      <Heading style={[textStyle('h1'), styles.title]}>{t('checkout.title')}</Heading>
       <Text accessibilityRole="alert" style={[textStyle('body'), styles.ink]}>
         {t('checkout.notConfigured')}
       </Text>
