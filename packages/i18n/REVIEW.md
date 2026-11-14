@@ -829,3 +829,9 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 
 - `arrival.statusHelper.onMyWayNoEta`, `arrival.statusPoster.onMyWayNoEta`
 - Backend push body for `booking.helper_on_my_way`: `Your helper set off. Open TaskBeavo to follow their arrival.` (it no longer promises an arrival time the helper may not have given)
+
+## Offers card sent time (BEAV-210)
+
+DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check.
+
+- `offers.sent`: the footer of each offer card ("Sent 2 days ago"). `{ago}` is the browser's own relative time in the page language (`Intl.RelativeTimeFormat`, "vor 2 Tagen", "il y a 2 jours", "prije 2 dana"), so only the verb is ours. Display only; the offers are still ordered by Newest or Lowest price alone.

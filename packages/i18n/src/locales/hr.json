@@ -65,6 +65,7 @@
     },
     "obligations": "TaskBeavo brine o plaćanju i podršci; pomagač je odgovoran za izvršenje zadatka.",
     "newHelper": "Novi pomagač · još nema recenzija",
+    "sent": "Poslano {ago}",
     "expires": "Vrijedi do {date}",
     "needsUpdate": "Promijenili ste zadatak. Pomagač mora potvrditi ovu ponudu prije nego što je možete prihvatiti.",
     "accept": "Prihvati",

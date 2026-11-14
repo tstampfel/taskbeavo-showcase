@@ -1,0 +1,19 @@
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-green-tint);
+  color: var(--tb-color-green);
+}
+
+.md {
+  width: 48px;
+  height: 48px;
+}
+
+.sm {
+  width: 36px;
+  height: 36px;
+}

@@ -87,6 +87,7 @@ describe('component styles', () => {
 
   it('exist for every component', () => {
     expect(sheets.sort()).toEqual([
+      'avatar.module.css',
       'badge.module.css',
       'button.module.css',
       'card.module.css',

@@ -65,6 +65,7 @@
     },
     "obligations": "TaskBeavo s’occupe du paiement et de l’assistance ; l’aidant est responsable de la réalisation de la tâche.",
     "newHelper": "Nouvel intervenant · pas encore d’avis",
+    "sent": "Envoyée {ago}",
     "expires": "Valable jusqu’au {date}",
     "needsUpdate": "Vous avez modifié la tâche. L’intervenant doit confirmer cette offre avant que vous puissiez l’accepter.",
     "accept": "Accepter",

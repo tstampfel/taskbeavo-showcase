@@ -8,9 +8,10 @@ import {
   type TaskQuery,
 } from '@taskbeavo/graphql';
 import { formatDate, formatMoney, type Locale } from '@taskbeavo/i18n';
+import { timeAgo } from './time-ago';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
-import { Badge, Button, Card } from '../ui';
+import { Avatar, Badge, Button, CalendarIcon, Card, InfoIcon } from '../ui';
 import styles from './offers.module.css';
 import { TraderIdentity } from './trader-identity';
 
@@ -128,16 +129,23 @@ export function OffersList({
   return (
     <section data-testid="offers-content" className={styles.main}>
       {task ? (
-        <Card variant="flat">
+        // Mockup 4a's compact task summary: the title, then the date and budget on one line.
+        <Card variant="flat" className={styles.task} data-testid="offers-task">
           <p className={styles.label}>{task.title}</p>
-          {task.windowStart ? (
-            <p className={`${styles.small} ${styles.muted}`}>{date(task.windowStart)}</p>
-          ) : null}
-          {task.budgetCents !== null ? (
-            <p className={`${styles.small} ${styles.muted}`}>
-              {t('budget', { amount: money(task.budgetCents) })}
-            </p>
-          ) : null}
+          <p className={`${styles.small} ${styles.muted} ${styles.iconRow}`}>
+            {task.windowStart ? (
+              <>
+                <CalendarIcon />
+                <span>{date(task.windowStart)}</span>
+              </>
+            ) : null}
+            {task.windowStart && task.budgetCents !== null ? (
+              <span aria-hidden="true">·</span>
+            ) : null}
+            {task.budgetCents !== null ? (
+              <span>{t('budget', { amount: money(task.budgetCents) })}</span>
+            ) : null}
+          </p>
         </Card>
       ) : null}
       {offers.length === 0 ? (
@@ -164,18 +172,17 @@ export function OffersList({
               </Button>
             ) : null}
           </div>
+          <RankingLink locale={locale} icon />
           <ul className={styles.list}>
             {open.map((offer) => (
               <li key={offer.id}>
-                <Card data-testid={`offer-card-${offer.id}`}>
+                <Card data-testid={`offer-card-${offer.id}`} className={styles.offer}>
                   <div className={styles.cardTop}>
+                    <Avatar />
                     <div className={styles.grow}>
-                      <Badge>{trader(offer)}</Badge>
-                      <TraderIdentity offer={offer} privateNotice />
+                      <Badge className={styles.typeBadge}>{trader(offer)}</Badge>
+                      {/* Ratings come with BEAV-144; until then every helper reads as new. */}
                       <p className={`${styles.small} ${styles.muted}`}>{t('newHelper')}</p>
-                      <p className={`${styles.small} ${styles.muted}`}>
-                        {t('expires', { date: date(offer.expiresAt) })}
-                      </p>
                     </div>
                     <div className={styles.priceBox}>
                       <p className={styles.price}>{money(offer.totalCents)}</p>
@@ -184,6 +191,10 @@ export function OffersList({
                         {t('helperPrice', { price: money(offer.priceCents) })}
                       </p>
                     </div>
+                  </div>
+                  {/* Rule e: who the poster contracts with, in its own box (mockup 4a). */}
+                  <div className={styles.traderBox} data-testid="trader-box">
+                    <TraderIdentity offer={offer} privateNotice />
                   </div>
                   {/* Absent while loading: the note is fetched, never restored from storage. */}
                   {offer.message ? (
@@ -195,6 +206,12 @@ export function OffersList({
                     <p className={styles.small}>{t('needsUpdate')}</p>
                   ) : null}
                   <p className={`${styles.small} ${styles.muted}`}>{t('obligations')}</p>
+                  {/* Display only: the order stays Newest or Lowest price (rule k). */}
+                  <div className={`${styles.small} ${styles.muted} ${styles.cardFoot}`}>
+                    <span>{t('sent', { ago: timeAgo(offer.createdAt, now, locale) })}</span>
+                    <span>{t('expires', { date: date(offer.expiresAt) })}</span>
+                  </div>
+                  {/* No Chat button: there is no chat before a booking yet. */}
                   {accept(offer, 'sm')}
                 </Card>
               </li>
@@ -216,7 +233,6 @@ export function OffersList({
           </ul>
         </>
       )}
-      <RankingLink locale={locale} />
     </section>
   );
 }
@@ -225,16 +241,17 @@ export function OffersList({
  * Where the offers are shown, the ranking parameters are one tap away (CRD art. 6a(1)(a)). It
  * opens a new tab like the other legal links, and says so to screen readers (review R3-3).
  */
-function RankingLink({ locale }: { locale: Locale }) {
+function RankingLink({ locale, icon = false }: { locale: Locale; icon?: boolean }) {
   const t = useTranslations('offers');
   return (
     <a
-      className={styles.link}
+      className={`${styles.link} ${icon ? styles.iconLink : ''}`}
       href={rankingPath(locale)}
       target="_blank"
       rel="noopener"
       data-testid="offers-ranking"
     >
+      {icon ? <InfoIcon /> : null}
       {t('rankingLink')}
       <span className={styles.srOnly}> {t('newTab')}</span>
     </a>

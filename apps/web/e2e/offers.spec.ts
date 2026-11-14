@@ -129,6 +129,15 @@ test('compares offers, sorts them and accepts one into checkout', async ({ page,
   );
   await expect(page.getByTestId('offer-card-marko')).toContainText('not a trader');
   await expect(page.getByTestId('offer-card-marko')).toContainText('TaskBeavo handles payment');
+  // Mockup 4a (BEAV-210): an avatar and the helper-type badge head each card, the trader's
+  // details sit in their own box, and the footer says when the offer was sent. No Chat button:
+  // there is no chat before a booking yet.
+  await expect(page.getByTestId('offer-card-marko').getByTestId('helper-avatar')).toBeVisible();
+  await expect(page.getByTestId('offer-card-stjepan').getByTestId('trader-box')).toContainText(
+    'Contact: in-app chat',
+  );
+  await expect(page.getByTestId('offer-card-marko')).toContainText(/Sent .+ago|Sent yesterday/);
+  await expect(page.getByRole('button', { name: /chat/i })).toHaveCount(0);
   // CRD art. 6a: the ranking parameters are one tap away from the offers.
   await expect(page.getByTestId('offers-ranking')).toHaveAttribute('href', '/en/ranking');
 

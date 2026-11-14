@@ -78,6 +78,9 @@ function render(locale: Locale, props: Partial<OffersListProps> = {}) {
   );
 }
 
+// Intl separates numbers from units with no-break spaces; compare with plain spaces.
+const plain = (text: string) => text.replace(/[\u00a0\u202f]/g, ' ');
+
 const cardOrder = (markup: string) =>
   [...markup.matchAll(/data-testid="offer-card-([^"]+)"/g)].map((m) => m[1]);
 
@@ -176,6 +179,68 @@ describe('OffersList', () => {
       expect(compared).toBe(t('compareTitle', { count: 3 }));
     });
   }
+
+  it('shows the task as one compact summary: title, then date and budget on one line', () => {
+    const summary = render('en').split('data-testid="offers-task"')[1]!.split('</div>')[0]!;
+
+    expect(summary).toContain('Mow lawn for Mama');
+    expect(plain(summary.replace(/<[^>]+>/g, ''))).toMatch(/Nov 7, 2026·Budget €35\.00/);
+  });
+
+  it('puts the ranking link right under the sort chips, before the first offer (mockup 4a)', () => {
+    const markup = render('en');
+
+    expect(markup.indexOf('data-testid="offers-ranking"')).toBeGreaterThan(
+      markup.indexOf('aria-pressed'),
+    );
+    expect(markup.indexOf('data-testid="offers-ranking"')).toBeLessThan(
+      markup.indexOf('data-testid="offer-card-'),
+    );
+    expect(markup.match(/data-testid="offers-ranking"/g)).toHaveLength(1);
+  });
+
+  it('heads each open card with an avatar and the helper-type badge row', () => {
+    const marko = card(render('en'), 'marko');
+
+    // A generic avatar: helper names and photos aren't in the API yet (BEAV-144).
+    expect(marko).toMatch(
+      /data-testid="helper-avatar"[^>]*aria-hidden="true"|aria-hidden="true"[^>]*data-testid="helper-avatar"/,
+    );
+    expect(marko.indexOf('helper-avatar')).toBeLessThan(marko.indexOf('Private individual'));
+    expect(marko.indexOf('Private individual')).toBeLessThan(marko.indexOf('New helper'));
+  });
+
+  it('keeps a trader helper’s details together in their own box', () => {
+    const stjepan = card(render('en'), 'stjepan');
+    const box = stjepan.split('data-testid="trader-box"')[1]!;
+
+    expect(box).toContain('Obrt Stjepan Popravci · OIB 00000000698');
+    expect(box).toContain('Contact: in-app chat');
+  });
+
+  it('says when each offer was sent and until when it is open, without changing the order', () => {
+    const markup = render('en');
+    const marko = card(markup, 'marko');
+
+    expect(marko).toContain('Sent 2 days ago');
+    expect(marko.indexOf('Sent 2 days ago')).toBeLessThan(marko.indexOf('Open until'));
+    expect(marko.indexOf('Open until')).toBeLessThan(marko.indexOf('Accept the offer'));
+    expect(cardOrder(markup)).toEqual(['marko', 'stjepan', 'changed', 'withdrawn', 'late']);
+  });
+
+  it('has no Chat button on the cards: there is no chat before a booking yet', () => {
+    const markup = render('en');
+
+    expect(markup).not.toMatch(/>\s*Chat\s*</);
+    expect(card(markup, 'marko').match(/<button/g)).toHaveLength(1);
+  });
+
+  it.each(locales)('words the sent time in %s', (locale) => {
+    const t = createTranslator({ locale, messages: catalogues[locale], namespace: 'offers' });
+    const ago = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(-2, 'day');
+
+    expect(plain(card(render(locale), 'marko'))).toContain(plain(t('sent', { ago })));
+  });
 
   it('says when there are no offers yet', () => {
     expect(render('en', { offers: [] })).toContain('No offers yet.');
