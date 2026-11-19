@@ -385,6 +385,15 @@ def read_url(upload: Upload) -> str | None:
     return None
 
 
+def private_copy_url(upload: Upload) -> str | None:
+    """A short-lived GET of a READY upload's clean copy, never the original: for the people
+    the owning object lets see it (an evidence photo or invoice of a booking, for its poster
+    and helper). The caller checks who that is."""
+    if upload.status != Status.READY or not upload.display_key:
+        return None
+    return storage.presigned_get(settings.R2_PRIVATE_BUCKET, upload.display_key)
+
+
 def public_photo_url(upload: Upload) -> str | None:
     """Where anyone can fetch a published task photo; None until it is published."""
     if upload.status != Status.READY or not upload.public_key:
@@ -625,7 +634,7 @@ def _own_upload(owner: User, upload_id: UUID, *, lock: bool) -> Upload:
 
 
 def _folder(owner: User, purpose: Purpose, upload: Upload) -> str:
-    kind = "task-photos" if purpose == Purpose.TASK_PHOTO else "evidence"
+    kind = {Purpose.TASK_PHOTO: "task-photos", Purpose.INVOICE: "invoices"}.get(purpose, "evidence")
     return f"users/{owner.pk}/{kind}/{upload.id}"
 
 

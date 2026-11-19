@@ -28,6 +28,13 @@ class UploadPurpose(Enum):
             "server-side and viewers see a copy without metadata."
         ),
     )
+    INVOICE = strawberry.enum_value(
+        Purpose.INVOICE.value,
+        description=(
+            "A registered-business helper's fiscalized invoice for a booking, as a photo or "
+            "scan. Private to the booking's poster and helper; stored without any metadata."
+        ),
+    )
 
 
 @strawberry.enum(description="Where an upload is in its life.")

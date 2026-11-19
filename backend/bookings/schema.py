@@ -38,7 +38,16 @@ from strawberry.types import Info
 from accounts.models import User
 from accounts.permissions import CanCreateWork, require_signed_in
 from accounts.schema import Locale, SessionPlatform
-from bookings import arrival, cancel, cancellation, checkout, helper_cancel, money, no_fault
+from bookings import (
+    arrival,
+    cancel,
+    cancellation,
+    checkout,
+    helper_cancel,
+    money,
+    no_fault,
+    payment_request,
+)
 from bookings.arrival_schema import BookingArrivalType
 from bookings.cancellation import NotACancellation, charged_cents, withdrawal_period_ends_at
 from bookings.models import (
@@ -47,6 +56,7 @@ from bookings.models import (
     CancellationSettlement,
     ConsentRecord,
     NoFaultRequest,
+    PaymentRequest,
 )
 from bookings.money import (
     CROATIAN_VAT_PERCENT,
@@ -61,6 +71,8 @@ from core.errors import ApiError, ErrorCode
 from core.realtime import LiveEvent, viewer_events
 from legal.checkout_consent import PRIVATE, TRADER
 from tasks.schema import TaskType
+from uploads.models import Upload
+from uploads.services import private_copy_url
 
 
 @strawberry.enum(
@@ -408,6 +420,63 @@ class BookingTraderType:
         )
 
 
+@strawberry.type(
+    name="BookingPhoto",
+    description="A photo of a booking (the finished job, an invoice), without its metadata.",
+)
+class BookingPhotoType:
+    id: strawberry.ID = strawberry.field(description="The upload's ID.")
+    url: str | None = strawberry.field(
+        description="Valid for a few minutes; query the booking again for a fresh one."
+    )
+    width: int | None
+    height: int | None
+
+    @classmethod
+    def of(cls, upload: Upload) -> "BookingPhotoType":
+        return cls(
+            id=strawberry.ID(str(upload.pk)),
+            url=private_copy_url(upload),
+            width=upload.width,
+            height=upload.height,
+        )
+
+
+@strawberry.type(
+    name="PaymentRequest",
+    description=(
+        "The helper's Request payment: the finished job's photos and note, and a registered "
+        "business's fiscalized invoice. The booking's poster and helper only. Its `id` is "
+        "the booking's."
+    ),
+)
+class PaymentRequestType:
+    id: strawberry.ID
+    requested_at: dt.datetime
+    note: str = strawberry.field(description="The helper's note; empty when none.")
+    photos: list[BookingPhotoType] = strawberry.field(description="In the helper's order.")
+    invoice_jir: str | None = strawberry.field(
+        description="The JIR of a registered business's invoice, as the helper typed it."
+    )
+    invoice: BookingPhotoType | None = strawberry.field(
+        description="A registered business's invoice, as a photo or scan."
+    )
+
+    @classmethod
+    def of(cls, request: PaymentRequest) -> "PaymentRequestType":
+        return cls(
+            id=strawberry.ID(str(request.pk)),
+            requested_at=request.created_at,
+            note=request.note,
+            photos=[
+                BookingPhotoType.of(photo.upload)
+                for photo in request.photos.select_related("upload")
+            ],
+            invoice_jir=request.invoice_jir or None,
+            invoice=BookingPhotoType.of(request.invoice_upload) if request.invoice_upload else None,
+        )
+
+
 @strawberry.type(name="Booking", description="An accepted offer, from checkout to payout.")
 class BookingType:
     id: strawberry.ID
@@ -503,6 +572,21 @@ class BookingType:
     arrival: BookingArrivalType = strawberry.field(
         description="The day of the job: On my way, arrival, the no-show timeline, early start."
     )
+    can_request_payment: bool = strawberry.field(
+        description=(
+            "For the helper: Request payment is offered now (the money is held and the job "
+            "has started)."
+        )
+    )
+    invoice_required: bool = strawberry.field(
+        description=(
+            "For the helper while `canRequestPayment`: they are a registered business and "
+            "must add their fiscalized invoice (a photo or scan, or its JIR) first."
+        )
+    )
+    payment_request: PaymentRequestType | None = strawberry.field(
+        description="Once the helper requested payment: their photos, note and invoice."
+    )
     created_at: dt.datetime
     updated_at: dt.datetime
 
@@ -567,6 +651,13 @@ class BookingType:
             and helper_cancel.can_reopen(booking, case=settled.case),
             task_reopened=booking.task_reopened_at is not None,
             arrival=BookingArrivalType.of(booking, viewer),
+            can_request_payment=(can_request := payment_request.can_request(booking, viewer)),
+            invoice_required=can_request and helper_is_trader,
+            payment_request=(
+                PaymentRequestType.of(request)
+                if (request := PaymentRequest.objects.filter(booking=booking).first())
+                else None
+            ),
             created_at=booking.created_at,
             updated_at=booking.updated_at,
         )
@@ -754,6 +845,22 @@ class CancellationAmountsType:
     withdrawal_period_days: int
 
 
+@strawberry.input(description="The helper's Request payment.")
+class RequestPaymentInput:
+    booking_id: strawberry.ID
+    note: str | None = strawberry.field(default=None, description="Up to 1000 characters.")
+    photo_ids: list[strawberry.ID] | None = strawberry.field(
+        default=None, description="Up to 6 of your READY EVIDENCE_PHOTO uploads, in order."
+    )
+    invoice_upload_id: strawberry.ID | None = strawberry.field(
+        default=None, description="A registered business: your READY INVOICE upload."
+    )
+    invoice_jir: str | None = strawberry.field(
+        default=None,
+        description="A registered business: the invoice's JIR (8-4-4-4-12 hexadecimal).",
+    )
+
+
 @strawberry.type
 class Mutation:
     @strawberry.mutation(
@@ -914,6 +1021,35 @@ class Mutation:
     async def reopen_task(self, info: Info, booking_id: strawberry.ID) -> BookingType:
         user = _user(info)
         booking = await sync_to_async(helper_cancel.reopen_task)(user, str(booking_id))
+        return await sync_to_async(BookingType.of)(booking, user)
+
+    @strawberry.mutation(
+        description=(
+            "As the helper, once the job has started and while `canRequestPayment`: ask the "
+            "poster to release the payment, with up to 6 photos (your EVIDENCE_PHOTO "
+            "uploads) and a note of up to 1000 characters, both optional. A registered "
+            "business adds its fiscalized invoice first: an INVOICE upload or its JIR "
+            "(`invoiceRequired`). Nothing is paid out until the poster releases. Errors: "
+            "UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, "
+            "PAYMENT_REQUEST_TOO_EARLY, INVOICE_REQUIRED, INVALID_PAYMENT_REQUEST, "
+            "UPLOAD_NOT_FOUND."
+        )
+    )
+    async def request_payment(self, info: Info, input: RequestPaymentInput) -> BookingType:
+        user = _user(info)
+        try:
+            photo_ids = [UUID(str(pk)) for pk in input.photo_ids or []]
+            invoice_id = UUID(str(input.invoice_upload_id)) if input.invoice_upload_id else None
+        except ValueError:
+            raise ApiError(ErrorCode.UPLOAD_NOT_FOUND, "No such upload.") from None
+        booking = await sync_to_async(payment_request.request_payment)(
+            user,
+            str(input.booking_id),
+            note=input.note or "",
+            photo_ids=photo_ids,
+            invoice_upload_id=invoice_id,
+            invoice_jir=input.invoice_jir,
+        )
         return await sync_to_async(BookingType.of)(booking, user)
 
     @strawberry.mutation(

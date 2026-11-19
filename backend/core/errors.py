@@ -511,6 +511,28 @@ class ErrorCode(Enum):
             "open a dispute, or use the withdrawal button while it is offered."
         ),
     )
+    PAYMENT_REQUEST_TOO_EARLY = strawberry.enum_value(
+        "PAYMENT_REQUEST_TOO_EARLY",
+        description=(
+            "Payment can be requested only once the job has started: at or after the booked "
+            "start, or a start the poster agreed to bring forward."
+        ),
+    )
+    INVOICE_REQUIRED = strawberry.enum_value(
+        "INVOICE_REQUIRED",
+        description=(
+            "A registered business must add its fiscalized invoice for the task, as a photo "
+            "or scan or by its JIR, before requesting payment."
+        ),
+    )
+    INVALID_PAYMENT_REQUEST = strawberry.enum_value(
+        "INVALID_PAYMENT_REQUEST",
+        description=(
+            "The payment request isn't valid: the note is longer than 1000 characters, there "
+            "are more than 6 photos, the JIR isn't in the JIR format, or a private helper "
+            "added an invoice."
+        ),
+    )
     INVALID_ETA = strawberry.enum_value(
         "INVALID_ETA",
         description=(
