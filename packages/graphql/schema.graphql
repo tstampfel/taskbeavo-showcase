@@ -870,6 +870,9 @@ enum ErrorCode {
   """No such task, or not one the caller may see or change."""
   TASK_NOT_FOUND
 
+  """The `after` cursor isn't one a task list returned; start from the top."""
+  INVALID_CURSOR
+
   """
   The task can't be changed this way: a draft is saved with saveTaskDraft and published once, and a closed task can't be changed.
   """
@@ -2005,6 +2008,21 @@ type Query {
   """
   task(id: ID!): Task!
 
+  """
+  A task as listings show it: approximate area only (hard rule e). Anyone sees an OPEN task; the poster sees their own in any state. Errors: TASK_NOT_FOUND.
+  """
+  taskListing(id: ID!): TaskListing!
+
+  """
+  Your helper feed: open tasks in the service areas on your helper profile that you could offer on, newest published first (hard rule k). Empty without a helper profile. `first` is 1 to 50. Errors: UNAUTHENTICATED, INVALID_CURSOR.
+  """
+  taskFeed(first: Int! = 20, after: String = null, category: TaskCategory = null): TaskListingPage!
+
+  """
+  Open tasks for anyone, in one active service area (`areaSlug`) or all, newest published first (hard rule k). `first` is 1 to 50. Errors: SERVICE_AREA_NOT_FOUND, INVALID_CURSOR.
+  """
+  openTasks(areaSlug: String = null, first: Int! = 20, after: String = null, category: TaskCategory = null): TaskListingPage!
+
   """Your tasks, newest first. Errors: UNAUTHENTICATED."""
   myTasks: [Task!]!
 
@@ -2236,6 +2254,43 @@ input TaskInput {
 
   """Your READY task-photo uploads, in order; replaces the task's photos."""
   photoIds: [ID!] = null
+}
+
+"""
+A task as the feed, browse pages and public task pages show it, to everyone: the approximate area only, never the exact address, coordinates, access details or on-site contact (hard rule e). The booked helper reads those from `task`.
+"""
+type TaskListing {
+  id: ID!
+  category: TaskCategory
+  title: String!
+  description: String!
+
+  """About a kilometre off the real place; safe to show on a map."""
+  approximateLat: Float
+  approximateLng: Float
+  serviceAreaName: String
+  windowStart: DateTime
+  windowEnd: DateTime
+  flexibleDate: Boolean!
+
+  """Euro cents; at least 1000."""
+  budgetCents: Int
+
+  """Published photos only."""
+  photos: [TaskPhoto!]!
+  isMine: Boolean!
+  publishedAt: DateTime
+}
+
+"""
+One page of open tasks, newest published first (a neutral order, hard rule k). Pass `endCursor` as `after` for the next page while `hasMore`.
+"""
+type TaskListingPage {
+  """The list, its filters and the page."""
+  id: ID!
+  items: [TaskListing!]!
+  endCursor: String
+  hasMore: Boolean!
 }
 
 input TaskLocationInput {

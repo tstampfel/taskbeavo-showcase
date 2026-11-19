@@ -1,0 +1,53 @@
+# Task listings (BEAV-88/89): the helper's feed, the public browse list and public task
+# pages. `TaskListing` has no exact address, coordinates, access details or on-site contact
+# (hard rule e), whoever asks; the booked helper reads those from `task`. Lists are newest
+# published first, the same for everyone (hard rule k). Page with `endCursor` as `after`
+# while `hasMore`; the cache appends pages (typePolicies.ts).
+
+fragment TaskListingFields on TaskListing {
+  id
+  category
+  title
+  description
+  approximateLat
+  approximateLng
+  serviceAreaName
+  windowStart
+  windowEnd
+  flexibleDate
+  budgetCents
+  photos {
+    id
+    url
+  }
+  isMine
+  publishedAt
+}
+
+query TaskFeed($first: Int, $after: String, $category: TaskCategory) {
+  taskFeed(first: $first, after: $after, category: $category) {
+    id
+    endCursor
+    hasMore
+    items {
+      ...TaskListingFields
+    }
+  }
+}
+
+query OpenTasks($areaSlug: String, $first: Int, $after: String, $category: TaskCategory) {
+  openTasks(areaSlug: $areaSlug, first: $first, after: $after, category: $category) {
+    id
+    endCursor
+    hasMore
+    items {
+      ...TaskListingFields
+    }
+  }
+}
+
+query TaskListing($id: ID!) {
+  taskListing(id: $id) {
+    ...TaskListingFields
+  }
+}

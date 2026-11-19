@@ -18,7 +18,7 @@ from care_contacts.schema import CareContactType, OnSiteContactType
 from core.categories import TaskCategoryEnum
 from core.errors import ApiError, ErrorCode
 from moderation.contact_filter import Verdict
-from tasks import services
+from tasks import feed, services
 from tasks.models import Task
 from uploads import services as uploads
 
@@ -150,6 +150,76 @@ class TaskType:
 
 
 @strawberry.type(
+    name="TaskListing",
+    description=(
+        "A task as the feed, browse pages and public task pages show it, to everyone: the "
+        "approximate area only, never the exact address, coordinates, access details or "
+        "on-site contact (hard rule e). The booked helper reads those from `task`."
+    ),
+)
+class TaskListingType:
+    id: strawberry.ID
+    category: TaskCategoryEnum | None
+    title: str
+    description: str
+    approximate_lat: float | None = strawberry.field(
+        description="About a kilometre off the real place; safe to show on a map."
+    )
+    approximate_lng: float | None
+    service_area_name: str | None
+    window_start: dt.datetime | None
+    window_end: dt.datetime | None
+    flexible_date: bool
+    budget_cents: int | None = strawberry.field(description="Euro cents; at least 1000.")
+    photos: list[TaskPhotoType] = strawberry.field(description="Published photos only.")
+    is_mine: bool
+    published_at: dt.datetime | None
+
+    @classmethod
+    def of(cls, task: Task, viewer: User | None) -> "TaskListingType":
+        approximate = task.approximate_location
+        return cls(
+            id=strawberry.ID(str(task.pk)),
+            category=TaskCategoryEnum(task.category) if task.category else None,
+            title=task.title,
+            description=task.description,
+            approximate_lat=approximate.y if approximate else None,
+            approximate_lng=approximate.x if approximate else None,
+            service_area_name=task.service_area.name if task.service_area else None,
+            window_start=task.window_start,
+            window_end=task.window_end,
+            flexible_date=task.flexible_date,
+            budget_cents=task.budget_cents,
+            photos=_photos(task, mine=False),
+            is_mine=viewer is not None and task.poster_id == viewer.pk,
+            published_at=task.published_at,
+        )
+
+
+@strawberry.type(
+    name="TaskListingPage",
+    description=(
+        "One page of open tasks, newest published first (a neutral order, hard rule k). "
+        "Pass `endCursor` as `after` for the next page while `hasMore`."
+    ),
+)
+class TaskListingPageType:
+    id: strawberry.ID = strawberry.field(description="The list, its filters and the page.")
+    items: list[TaskListingType]
+    end_cursor: str | None
+    has_more: bool
+
+    @classmethod
+    def of(cls, key: str, page: feed.Page, viewer: User | None) -> "TaskListingPageType":
+        return cls(
+            id=strawberry.ID(key),
+            items=[TaskListingType.of(task, viewer) for task in page.tasks],
+            end_cursor=page.end_cursor,
+            has_more=page.has_more,
+        )
+
+
+@strawberry.type(
     description="A saved task and what the poster should know. Its `id` is the task's."
 )
 class TaskPayload:
@@ -217,6 +287,51 @@ class Query:
         viewer = _viewer(info)
         task = await sync_to_async(_load)(viewer, str(id))
         return task
+
+    @strawberry.field(
+        description=(
+            "A task as listings show it: approximate area only (hard rule e). Anyone sees an "
+            "OPEN task; the poster sees their own in any state. Errors: TASK_NOT_FOUND."
+        )
+    )
+    async def task_listing(self, info: Info, id: strawberry.ID) -> TaskListingType:
+        viewer = _viewer(info)
+        return await sync_to_async(_listing)(viewer, str(id))
+
+    @strawberry.field(
+        description=(
+            "Your helper feed: open tasks in the service areas on your helper profile that "
+            "you could offer on, newest published first (hard rule k). Empty without a "
+            "helper profile. `first` is 1 to 50. Errors: UNAUTHENTICATED, INVALID_CURSOR."
+        )
+    )
+    async def task_feed(
+        self,
+        info: Info,
+        first: int = feed.DEFAULT_PAGE_SIZE,
+        after: str | None = None,
+        category: TaskCategoryEnum | None = None,
+    ) -> TaskListingPageType:
+        user = _signed_in_user(info)
+        return await sync_to_async(_feed)(user, first, after, category)
+
+    @strawberry.field(
+        description=(
+            "Open tasks for anyone, in one active service area (`areaSlug`) or all, newest "
+            "published first (hard rule k). `first` is 1 to 50. "
+            "Errors: SERVICE_AREA_NOT_FOUND, INVALID_CURSOR."
+        )
+    )
+    async def open_tasks(
+        self,
+        info: Info,
+        area_slug: str | None = None,
+        first: int = feed.DEFAULT_PAGE_SIZE,
+        after: str | None = None,
+        category: TaskCategoryEnum | None = None,
+    ) -> TaskListingPageType:
+        viewer = _viewer(info)
+        return await sync_to_async(_browse)(viewer, area_slug, first, after, category)
 
     @strawberry.field(description="Your tasks, newest first. Errors: UNAUTHENTICATED.")
     async def my_tasks(self, info: Info) -> list[TaskType]:
@@ -309,6 +424,34 @@ def _changes(input: TaskInput) -> services.TaskChanges:
 
 def _load(viewer: User | None, task_id: str) -> TaskType:
     return TaskType.of(services.visible_task(viewer, task_id), viewer)
+
+
+def _listing(viewer: User | None, task_id: str) -> TaskListingType:
+    task = services.visible_task(viewer, task_id)
+    if task.status != Task.Status.OPEN and (viewer is None or task.poster_id != viewer.pk):
+        # The booked helper reads a booked task through `task`; listings are OPEN tasks.
+        raise ApiError(ErrorCode.TASK_NOT_FOUND, "No such task.")
+    return TaskListingType.of(task, viewer)
+
+
+def _feed(
+    user: User, first: int, after: str | None, category: TaskCategoryEnum | None
+) -> TaskListingPageType:
+    kind = category.value if category else ""
+    page = feed.helper_feed(user, first=first, after=after, category=kind or None)
+    return TaskListingPageType.of(f"feed:{kind}:{after or ''}", page, user)
+
+
+def _browse(
+    viewer: User | None,
+    area_slug: str | None,
+    first: int,
+    after: str | None,
+    category: TaskCategoryEnum | None,
+) -> TaskListingPageType:
+    kind = category.value if category else ""
+    page = feed.browse(area_slug=area_slug, first=first, after=after, category=kind or None)
+    return TaskListingPageType.of(f"open:{area_slug or ''}:{kind}:{after or ''}", page, viewer)
 
 
 def _my_tasks(user: User) -> list[TaskType]:
