@@ -171,12 +171,15 @@ class TaskListingType:
     window_end: dt.datetime | None
     flexible_date: bool
     budget_cents: int | None = strawberry.field(description="Euro cents; at least 1000.")
-    photos: list[TaskPhotoType] = strawberry.field(description="Published photos only.")
+    photos: list[TaskPhotoType] = strawberry.field(
+        description="Published photos; the poster also gets their own unpublished ones."
+    )
     is_mine: bool
     published_at: dt.datetime | None
 
     @classmethod
     def of(cls, task: Task, viewer: User | None) -> "TaskListingType":
+        mine = viewer is not None and task.poster_id == viewer.pk
         approximate = task.approximate_location
         return cls(
             id=strawberry.ID(str(task.pk)),
@@ -190,8 +193,9 @@ class TaskListingType:
             window_end=task.window_end,
             flexible_date=task.flexible_date,
             budget_cents=task.budget_cents,
-            photos=_photos(task, mine=False),
-            is_mine=viewer is not None and task.poster_id == viewer.pk,
+            # The poster also sees photos not yet published (short-lived URLs), as in `task`.
+            photos=_photos(task, mine=mine),
+            is_mine=mine,
             published_at=task.published_at,
         )
 
@@ -290,8 +294,9 @@ class Query:
 
     @strawberry.field(
         description=(
-            "A task as listings show it: approximate area only (hard rule e). Anyone sees an "
-            "OPEN task; the poster sees their own in any state. Errors: TASK_NOT_FOUND."
+            "A task as listings show it: approximate area only (hard rule e). Anyone sees a "
+            "task helpers could still offer on (open, not booked, date not passed, in an "
+            "active area); the poster sees their own in any state. Errors: TASK_NOT_FOUND."
         )
     )
     async def task_listing(self, info: Info, id: strawberry.ID) -> TaskListingType:
@@ -428,8 +433,11 @@ def _load(viewer: User | None, task_id: str) -> TaskType:
 
 def _listing(viewer: User | None, task_id: str) -> TaskListingType:
     task = services.visible_task(viewer, task_id)
-    if task.status != Task.Status.OPEN and (viewer is None or task.poster_id != viewer.pk):
-        # The booked helper reads a booked task through `task`; listings are OPEN tasks.
+    mine = viewer is not None and task.poster_id == viewer.pk
+    # Everyone but the poster sees a listing only while helpers could still offer on it:
+    # not booked, not past its date, the poster active, inside an active area (rule j).
+    # The booked helper reads the task through `task`.
+    if not mine and not feed.offerable().filter(pk=task.pk).exists():
         raise ApiError(ErrorCode.TASK_NOT_FOUND, "No such task.")
     return TaskListingType.of(task, viewer)
 

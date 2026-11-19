@@ -1,7 +1,8 @@
 import { InMemoryCache } from '@apollo/client';
 import type { MockLink } from '@apollo/client/testing';
 import { MockedProvider } from '@apollo/client/testing/react';
-import { TaskFeedDocument, typePolicies } from '@taskbeavo/graphql';
+import { FeedHelperProfileDocument, TaskFeedDocument, typePolicies } from '@taskbeavo/graphql';
+import { GraphQLError } from 'graphql';
 import { catalogues, formatMoney, locales } from '@taskbeavo/i18n';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { i18n } from '../src/i18n';
@@ -52,9 +53,28 @@ function feedMock(
 
 const FIRST = { first: 20, category: null };
 
-async function show(mocks: MockLink.MockedResponse[], onOpenTask = jest.fn()) {
+function helperMock(hasProfile: boolean): MockLink.MockedResponse {
+  return {
+    request: { query: FeedHelperProfileDocument },
+    result: {
+      data: {
+        myHelperProfile: hasProfile ? { __typename: 'HelperProfile', id: 'hp1' } : null,
+      },
+    },
+    maxUsageCount: 5,
+  };
+}
+
+async function show(
+  mocks: MockLink.MockedResponse[],
+  onOpenTask = jest.fn(),
+  { helper = true }: { helper?: boolean } = {},
+) {
   await render(
-    <MockedProvider mocks={mocks} cache={new InMemoryCache({ typePolicies })}>
+    <MockedProvider
+      mocks={[helperMock(helper), ...mocks]}
+      cache={new InMemoryCache({ typePolicies })}
+    >
       <TaskFeedScreen firstName="Luka" onOpenTask={onOpenTask} onOpenSettings={jest.fn()} />
     </MockedProvider>,
   );
@@ -91,6 +111,52 @@ describe('TaskFeedScreen', () => {
       catalogues.en.taskFeed.empty,
       { exact: false },
     );
+  });
+
+  it('tells a poster without a helper profile how open tasks appear', async () => {
+    await i18n.changeLanguage('en');
+    await show([feedMock(FIRST, [], null, false)], jest.fn(), { helper: false });
+
+    const empty = await screen.findByTestId('feed-not-helper');
+    expect(empty).toHaveTextContent(catalogues.en.taskFeed.notHelperHint, { exact: false });
+    expect(screen.queryByText(catalogues.en.taskFeed.emptyHint)).toBeNull();
+  });
+
+  it('says so when the next page fails, and keeps the tasks', async () => {
+    await i18n.changeLanguage('en');
+    await show([
+      feedMock(FIRST, ['a'], 'c1', true),
+      {
+        request: { query: TaskFeedDocument, variables: { first: 20, category: null, after: 'c1' } },
+        error: new Error('offline'),
+      },
+    ]);
+
+    await fireEvent.press(await screen.findByTestId('feed-more'));
+
+    expect(await screen.findByTestId('feed-more-error')).toHaveTextContent(
+      catalogues.en.taskFeed.loadMoreError,
+    );
+    expect(screen.getByText('Task a')).toBeOnTheScreen();
+  });
+
+  it('starts again from the top when the cursor is no longer valid', async () => {
+    await i18n.changeLanguage('en');
+    await show([
+      feedMock(FIRST, ['a'], 'c1', true),
+      {
+        request: { query: TaskFeedDocument, variables: { first: 20, category: null, after: 'c1' } },
+        result: {
+          errors: [new GraphQLError('Bad cursor.', { extensions: { code: 'INVALID_CURSOR' } })],
+        },
+      },
+      feedMock(FIRST, ['n', 'a'], 'c2', false),
+    ]);
+
+    await fireEvent.press(await screen.findByTestId('feed-more'));
+
+    expect(await screen.findByText('Task n')).toBeOnTheScreen();
+    expect(screen.queryByTestId('feed-more-error')).toBeNull();
   });
 
   it('shows an error with a retry', async () => {

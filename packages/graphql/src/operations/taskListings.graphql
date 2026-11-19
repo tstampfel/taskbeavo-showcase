@@ -51,3 +51,11 @@ query TaskListing($id: ID!) {
     ...TaskListingFields
   }
 }
+
+# Whether the signed-in user has a helper profile: the feed is for helpers, so a poster
+# without one gets a different empty state.
+query FeedHelperProfile {
+  myHelperProfile {
+    id
+  }
+}

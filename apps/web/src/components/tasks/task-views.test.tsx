@@ -1,4 +1,12 @@
-import { TASK_TIME_ZONE, catalogues, formatMoney, locales, type Locale } from '@taskbeavo/i18n';
+import {
+  TASK_TIME_ZONE,
+  catalogues,
+  formatDate,
+  formatMoney,
+  formatTime,
+  locales,
+  type Locale,
+} from '@taskbeavo/i18n';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -129,5 +137,20 @@ describe('TaskPageView', () => {
       />,
     );
     expect(out).toContain(catalogues.en.taskListing.flexibleDate);
+  });
+
+  it.each(locales)('names both days of a window over several days in %s', (locale) => {
+    const start = '2026-11-22T08:00:00Z';
+    const end = '2026-11-25T16:00:00Z';
+    const out = html(
+      locale,
+      <TaskPageView locale={locale} task={listing('a', { windowStart: start, windowEnd: end })} />,
+    );
+    const expected = catalogues[locale].taskListing.windowDays
+      .replace('{startDate}', formatDate(start, locale))
+      .replace('{start}', formatTime(start, locale))
+      .replace('{endDate}', formatDate(end, locale))
+      .replace('{end}', formatTime(end, locale));
+    expect(out).toContain(plain(expected));
   });
 });

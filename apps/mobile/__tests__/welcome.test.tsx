@@ -1,5 +1,5 @@
 import { MockedProvider } from '@apollo/client/testing/react';
-import { ApiVersionDocument, ViewerDocument } from '@taskbeavo/graphql';
+import { ApiVersionDocument, FeedHelperProfileDocument, ViewerDocument } from '@taskbeavo/graphql';
 import { catalogues, locales } from '@taskbeavo/i18n';
 import { render, screen } from '@testing-library/react-native';
 import Welcome from '../app/index';
@@ -64,6 +64,10 @@ describe('Home when signed in', () => {
       <MockedProvider
         mocks={[
           { request: { query: ViewerDocument }, result: { data: { viewer } }, maxUsageCount: 5 },
+          {
+            request: { query: FeedHelperProfileDocument },
+            result: { data: { myHelperProfile: null } },
+          },
           apiVersion,
         ]}
       >

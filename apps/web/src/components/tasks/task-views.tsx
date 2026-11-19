@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
 import { Link } from '../../i18n/navigation';
@@ -119,13 +120,23 @@ function ListingCard({ task, locale }: { task: Listing; locale: Locale }) {
  * /{locale}/tasks/{id} (BEAV-91): a task's public page. It shows what `TaskListing` has, so the
  * approximate area only, never the exact address or access details (hard rule e).
  */
-export function TaskPageView({ task, locale }: { task: Listing; locale: Locale }) {
+export function TaskPageView({
+  task,
+  locale,
+  actions,
+}: {
+  task: Listing;
+  locale: Locale;
+  /** Under the title: the poster's "See offers" island, shown only to the poster. */
+  actions?: ReactNode;
+}) {
   const t = useTranslations();
   const area = listingArea(task, t);
   return (
     <main className={styles.main} data-testid="task-page">
       <Badge tone="green">{listingCategory(task, t)}</Badge>
       <h1 className={styles.title}>{task.title}</h1>
+      {actions}
       <Card className={styles.card}>
         <p data-testid="task-when">{listingWhen(task, t, locale)}</p>
         {area ? <p data-testid="task-area">{area}</p> : null}

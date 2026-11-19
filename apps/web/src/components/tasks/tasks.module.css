@@ -132,3 +132,22 @@
   margin: 0;
   font-size: var(--tb-font-h2-size);
 }
+
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-height: var(--tb-tap-target);
+  padding: 0 var(--tb-space-lg);
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-green);
+  color: var(--tb-color-white);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.primaryLink:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 2px;
+}

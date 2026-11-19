@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Answers } from './graphql-stub';
 
 /**
  * The public task pages (BEAV-91), server-rendered from the stub API (e2e/legal-api-stub.mjs).
@@ -66,4 +66,67 @@ test('a task page shows the approximate area and nothing exact', async ({ page }
 test('an unknown task is a 404', async ({ page }) => {
   const response = await page.goto('/en/tasks/999');
   expect(response?.status()).toBe(404);
+});
+
+const poster = {
+  __typename: 'User',
+  id: 'user-1',
+  email: 'poster@example.com',
+  firstName: 'Ana',
+  lastName: 'Primjer',
+  locale: 'EN',
+  country: 'DE',
+  timeZone: 'Europe/Berlin',
+  phoneVerified: true,
+  phoneNumberMasked: null,
+};
+
+function signedIn(isMine: boolean): Answers {
+  return {
+    Viewer: () => ({ data: { viewer: poster } }),
+    TermsStatus: () => ({
+      data: {
+        viewer: { __typename: 'User', id: poster.id, mustAcceptTerms: false, termsToAccept: null },
+      },
+    }),
+    TaskListing: ({ id }) => ({
+      data: {
+        taskListing: {
+          __typename: 'TaskListing',
+          id,
+          category: 'GARDEN',
+          title: 'Mow the lawn and trim the hedge',
+          description: null,
+          approximateLat: 42.66,
+          approximateLng: 18.09,
+          serviceAreaName: 'Dubrovnik',
+          windowStart: null,
+          windowEnd: null,
+          flexibleDate: true,
+          budgetCents: 3500,
+          photos: [],
+          isMine,
+          publishedAt: new Date().toISOString(),
+        },
+      },
+    }),
+  };
+}
+
+// Offer emails link a web-only poster to the task's public page: from there, their offers.
+test('the signed-in poster gets a way to their offers', async ({ page, stubGraphql }) => {
+  const stub = await stubGraphql(signedIn(true));
+  await page.goto('/en/tasks/42');
+  const link = page.getByTestId('see-offers');
+  await expect(link).toHaveText('See offers');
+  await expect(link).toHaveAttribute('href', '/en/tasks/42/offers');
+  expect(stub.calls.find((call) => call.name === 'TaskListing')?.variables).toEqual({ id: '42' });
+});
+
+test('other visitors get no offers link', async ({ page, stubGraphql }) => {
+  await stubGraphql(signedIn(false));
+  await page.goto('/en/tasks/42');
+  await expect(page.getByTestId('task-page')).toBeVisible();
+  await expect(page.getByTestId('site-header')).toBeVisible();
+  await expect(page.getByTestId('see-offers')).toHaveCount(0);
 });

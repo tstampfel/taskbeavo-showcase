@@ -893,6 +893,7 @@
     "noBudget": "Aucun budget indiqué",
     "flexibleDate": "N’importe quel jour convient",
     "window": "{date}, {start}–{end}",
+    "windowDays": "{startDate}, {start} – {endDate}, {end}",
     "area": "Secteur : {area}",
     "approximateNote": "Le secteur affiché est approximatif. L’adresse exacte et les informations d’accès ne sont communiquées qu’à l’aide dont l’offre a été acceptée et payée, et seulement tant que la réservation est active.",
     "details": "Détails",
@@ -906,14 +907,17 @@
   "taskFeed": {
     "title": "Tâches ouvertes",
     "greeting": "Bonjour {name}",
-    "order": "Les plus récentes d’abord. Toutes les aides voient la même liste dans le même ordre.",
+    "order": "Les plus récentes d’abord. L’ordre est le même pour toutes les aides.",
     "filterLabel": "Filtrer par catégorie",
     "all": "Toutes",
     "empty": "Aucune tâche ouverte dans vos secteurs pour le moment.",
     "emptyHint": "Les nouvelles tâches apparaissent ici dès leur publication. Vos secteurs se règlent dans votre profil d’aide.",
+    "notHelper": "Les tâches ouvertes apparaîtront ici dès que vous proposerez votre aide.",
+    "notHelperHint": "Pour voir les tâches ouvertes et envoyer des offres, créez d’abord un profil d’aide.",
     "loadError": "Nous n’avons pas pu charger les tâches.",
     "retry": "Réessayer",
     "loadingMore": "Chargement d’autres tâches",
+    "loadMoreError": "Nous n’avons pas pu charger d’autres tâches. Réessayez.",
     "settings": "Paramètres"
   },
   "browse": {

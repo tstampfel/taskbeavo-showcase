@@ -140,6 +140,51 @@ English is the source. Croatian is reviewed first. Remove a key from this list o
 | `signIn.localePromptBody`               | pending | pending | pending |
 | `signIn.localePromptYes`                | pending | pending | pending |
 | `signIn.localePromptNo`                 | pending | pending | pending |
+| `errors.INVALID_CURSOR`                 | pending | pending | pending |
+| `enums.TaskCategory.GARDEN`             | pending | pending | pending |
+| `enums.TaskCategory.ERRANDS`            | pending | pending | pending |
+| `enums.TaskCategory.REPAIRS`            | pending | pending | pending |
+| `enums.TaskCategory.CLEANING`           | pending | pending | pending |
+| `enums.TaskCategory.CHECK_IN`           | pending | pending | pending |
+| `taskListing.title`                     | pending | pending | pending |
+| `taskListing.back`                      | pending | pending | pending |
+| `taskListing.budget`                    | pending | pending | pending |
+| `taskListing.noBudget`                  | pending | pending | pending |
+| `taskListing.flexibleDate`              | pending | pending | pending |
+| `taskListing.window`                    | pending | pending | pending |
+| `taskListing.area`                      | pending | pending | pending |
+| `taskListing.approximateNote`           | pending | pending | pending |
+| `taskListing.details`                   | pending | pending | pending |
+| `taskListing.photos`                    | pending | pending | pending |
+| `taskListing.photoAlt`                  | pending | pending | pending |
+| `taskListing.seeOffers`                 | pending | pending | pending |
+| `taskListing.loadError`                 | pending | pending | pending |
+| `taskListing.retry`                     | pending | pending | pending |
+| `taskListing.posted`                    | pending | pending | pending |
+| `taskFeed.title`                        | pending | pending | pending |
+| `taskFeed.greeting`                     | pending | pending | pending |
+| `taskFeed.order`                        | pending | pending | pending |
+| `taskFeed.filterLabel`                  | pending | pending | pending |
+| `taskFeed.all`                          | pending | pending | pending |
+| `taskFeed.empty`                        | pending | pending | pending |
+| `taskFeed.emptyHint`                    | pending | pending | pending |
+| `taskFeed.loadError`                    | pending | pending | pending |
+| `taskFeed.retry`                        | pending | pending | pending |
+| `taskFeed.loadingMore`                  | pending | pending | pending |
+| `taskFeed.settings`                     | pending | pending | pending |
+| `browse.title`                          | pending | pending | pending |
+| `browse.metaDescription`                | pending | pending | pending |
+| `browse.intro`                          | pending | pending | pending |
+| `browse.order`                          | pending | pending | pending |
+| `browse.filterLabel`                    | pending | pending | pending |
+| `browse.all`                            | pending | pending | pending |
+| `browse.empty`                          | pending | pending | pending |
+| `browse.more`                           | pending | pending | pending |
+| `browse.firstPage`                      | pending | pending | pending |
+| `taskListing.windowDays`                | pending | pending | pending |
+| `taskFeed.notHelper`                    | pending | pending | pending |
+| `taskFeed.notHelperHint`                | pending | pending | pending |
+| `taskFeed.loadMoreError`                | pending | pending | pending |
 
 ## Legal sentences on "We've updated our terms"
 
@@ -852,44 +897,3 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 - `arrival.lateHint`: the note under the new arrival time chips (mockup 18g). "A late arrival never costs you anything" restates rule g (the helper never pays a penalty).
 - `arrival.contestExplainer`: next to "I was there" (mockup 18h). hr, de and fr quote the button labels as they read in each catalogue (`arrival.onMyWay`, `arrival.arrived`).
 - `arrival.noShowBadge.reported`, `.contested`, `.settled`: the badge on a reported no-show (mockups 18e, 18f).
-  | `errors.INVALID_CURSOR` | pending | pending | pending |
-  | `enums.TaskCategory.GARDEN` | pending | pending | pending |
-  | `enums.TaskCategory.ERRANDS` | pending | pending | pending |
-  | `enums.TaskCategory.REPAIRS` | pending | pending | pending |
-  | `enums.TaskCategory.CLEANING` | pending | pending | pending |
-  | `enums.TaskCategory.CHECK_IN` | pending | pending | pending |
-  | `taskListing.title` | pending | pending | pending |
-  | `taskListing.back` | pending | pending | pending |
-  | `taskListing.budget` | pending | pending | pending |
-  | `taskListing.noBudget` | pending | pending | pending |
-  | `taskListing.flexibleDate` | pending | pending | pending |
-  | `taskListing.window` | pending | pending | pending |
-  | `taskListing.area` | pending | pending | pending |
-  | `taskListing.approximateNote` | pending | pending | pending |
-  | `taskListing.details` | pending | pending | pending |
-  | `taskListing.photos` | pending | pending | pending |
-  | `taskListing.photoAlt` | pending | pending | pending |
-  | `taskListing.seeOffers` | pending | pending | pending |
-  | `taskListing.loadError` | pending | pending | pending |
-  | `taskListing.retry` | pending | pending | pending |
-  | `taskListing.posted` | pending | pending | pending |
-  | `taskFeed.title` | pending | pending | pending |
-  | `taskFeed.greeting` | pending | pending | pending |
-  | `taskFeed.order` | pending | pending | pending |
-  | `taskFeed.filterLabel` | pending | pending | pending |
-  | `taskFeed.all` | pending | pending | pending |
-  | `taskFeed.empty` | pending | pending | pending |
-  | `taskFeed.emptyHint` | pending | pending | pending |
-  | `taskFeed.loadError` | pending | pending | pending |
-  | `taskFeed.retry` | pending | pending | pending |
-  | `taskFeed.loadingMore` | pending | pending | pending |
-  | `taskFeed.settings` | pending | pending | pending |
-  | `browse.title` | pending | pending | pending |
-  | `browse.metaDescription` | pending | pending | pending |
-  | `browse.intro` | pending | pending | pending |
-  | `browse.order` | pending | pending | pending |
-  | `browse.filterLabel` | pending | pending | pending |
-  | `browse.all` | pending | pending | pending |
-  | `browse.empty` | pending | pending | pending |
-  | `browse.more` | pending | pending | pending |
-  | `browse.firstPage` | pending | pending | pending |

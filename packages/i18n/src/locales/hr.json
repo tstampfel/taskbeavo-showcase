@@ -893,6 +893,7 @@
     "noBudget": "Budžet nije naveden",
     "flexibleDate": "Odgovara bilo koji dan",
     "window": "{date}, {start}–{end}",
+    "windowDays": "{startDate}, {start} – {endDate}, {end}",
     "area": "Područje: {area}",
     "approximateNote": "Prikazano područje je približno. Točnu adresu i upute za ulaz dobiva samo pomagač čija je ponuda prihvaćena i plaćena, i to samo dok je rezervacija aktivna.",
     "details": "Pojedinosti",
@@ -906,14 +907,17 @@
   "taskFeed": {
     "title": "Otvoreni zadaci",
     "greeting": "Bok, {name}",
-    "order": "Najnoviji prvi. Svi pomagači vide isti popis istim redoslijedom.",
+    "order": "Najnoviji prvi. Redoslijed je isti za sve pomagače.",
     "filterLabel": "Filtrirajte po kategoriji",
     "all": "Sve",
     "empty": "Trenutačno nema otvorenih zadataka u Vašim područjima.",
     "emptyHint": "Novi zadaci pojavljuju se ovdje čim budu objavljeni. Područja birate u svom profilu pomagača.",
+    "notHelper": "Otvoreni zadaci pojavit će se ovdje kad počnete pomagati.",
+    "notHelperHint": "Da biste vidjeli otvorene zadatke i slali ponude, najprije postavite profil pomagača.",
     "loadError": "Zadatke nismo mogli učitati.",
     "retry": "Pokušajte ponovno",
     "loadingMore": "Učitavamo još zadataka",
+    "loadMoreError": "Nismo mogli učitati još zadataka. Pokušajte ponovno.",
     "settings": "Postavke"
   },
   "browse": {

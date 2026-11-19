@@ -1,5 +1,11 @@
 import { useQuery } from '@apollo/client/react';
-import { TaskFeedDocument, nextPageVariables, type TaskCategory } from '@taskbeavo/graphql';
+import {
+  FeedHelperProfileDocument,
+  TaskFeedDocument,
+  apiErrorCode,
+  nextPageVariables,
+  type TaskCategory,
+} from '@taskbeavo/graphql';
 import { defaultLocale, isLocale, type Locale } from '@taskbeavo/i18n';
 import { borderWidth, colors, minTapTarget, radii, spacing } from '@taskbeavo/ui-tokens';
 import { useState, type ReactNode } from 'react';
@@ -52,6 +58,10 @@ export function TaskFeedScreen({
   const locale: Locale = isLocale(i18n.language) ? i18n.language : defaultLocale;
   const [category, setCategory] = useState<TaskCategory | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [moreFailed, setMoreFailed] = useState(false);
+  // The feed is for helpers: a poster without a helper profile gets their own empty state.
+  const helper = useQuery(FeedHelperProfileDocument, { fetchPolicy: 'cache-and-network' });
+  const notHelper = helper.data !== undefined && helper.data.myHelperProfile === null;
   const feed = useQuery(TaskFeedDocument, {
     variables: { first: PAGE_SIZE, category },
     fetchPolicy: 'cache-and-network',
@@ -63,9 +73,16 @@ export function TaskFeedScreen({
     const next = nextPageVariables(page);
     if (!next || loadingMore) return;
     setLoadingMore(true);
+    setMoreFailed(false);
     void feed
       .fetchMore({ variables: { ...next, first: PAGE_SIZE, category } })
-      .catch(() => undefined)
+      .catch((error: unknown) => {
+        // A cursor the API no longer knows: start again from the top.
+        if (apiErrorCode(error) === 'INVALID_CURSOR') {
+          return feed.refetch().catch(() => setMoreFailed(true));
+        }
+        setMoreFailed(true);
+      })
       .finally(() => setLoadingMore(false));
   }
 
@@ -116,9 +133,13 @@ export function TaskFeedScreen({
       );
   } else if (page.items.length === 0) {
     body = (
-      <Card variant="flat" testID="feed-empty">
-        <Text style={[textStyle('label'), styles.ink]}>{t('taskFeed.empty')}</Text>
-        <Text style={[textStyle('small'), styles.muted]}>{t('taskFeed.emptyHint')}</Text>
+      <Card variant="flat" testID={notHelper ? 'feed-not-helper' : 'feed-empty'}>
+        <Text style={[textStyle('label'), styles.ink]}>
+          {notHelper ? t('taskFeed.notHelper') : t('taskFeed.empty')}
+        </Text>
+        <Text style={[textStyle('small'), styles.muted]}>
+          {notHelper ? t('taskFeed.notHelperHint') : t('taskFeed.emptyHint')}
+        </Text>
       </Card>
     );
   } else {
@@ -156,6 +177,15 @@ export function TaskFeedScreen({
             accessibilityHint={loadingMore ? t('taskFeed.loadingMore') : undefined}
             testID="feed-more"
           />
+        ) : null}
+        {moreFailed ? (
+          <Text
+            accessibilityRole="alert"
+            style={[textStyle('small'), styles.ink]}
+            testID="feed-more-error"
+          >
+            {t('taskFeed.loadMoreError')}
+          </Text>
         ) : null}
       </View>
     );

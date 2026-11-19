@@ -893,6 +893,7 @@
     "noBudget": "Kein Budget angegeben",
     "flexibleDate": "Jeder Tag passt",
     "window": "{date}, {start}–{end}",
+    "windowDays": "{startDate}, {start} – {endDate}, {end}",
     "area": "Gegend: {area}",
     "approximateNote": "Die angezeigte Gegend ist ungefähr. Die genaue Adresse und die Zugangsdetails erhält nur die Helferin oder der Helfer, deren Angebot angenommen und bezahlt wurde, und nur solange die Buchung aktiv ist.",
     "details": "Details",
@@ -906,14 +907,17 @@
   "taskFeed": {
     "title": "Offene Aufgaben",
     "greeting": "Hallo {name}",
-    "order": "Neueste zuerst. Alle Helfenden sehen dieselbe Liste in derselben Reihenfolge.",
+    "order": "Neueste zuerst. Die Reihenfolge ist für alle Helfenden gleich.",
     "filterLabel": "Nach Kategorie filtern",
     "all": "Alle",
     "empty": "Zurzeit gibt es keine offenen Aufgaben in Ihren Gebieten.",
     "emptyHint": "Neue Aufgaben erscheinen hier, sobald sie veröffentlicht sind. Ihre Gebiete legen Sie in Ihrem Helferprofil fest.",
+    "notHelper": "Offene Aufgaben erscheinen hier, sobald Sie Hilfe anbieten.",
+    "notHelperHint": "Um offene Aufgaben zu sehen und Angebote zu senden, legen Sie zuerst ein Helferprofil an.",
     "loadError": "Wir konnten die Aufgaben nicht laden.",
     "retry": "Erneut versuchen",
     "loadingMore": "Weitere Aufgaben werden geladen",
+    "loadMoreError": "Wir konnten keine weiteren Aufgaben laden. Versuchen Sie es erneut.",
     "settings": "Einstellungen"
   },
   "browse": {

@@ -2009,7 +2009,7 @@ type Query {
   task(id: ID!): Task!
 
   """
-  A task as listings show it: approximate area only (hard rule e). Anyone sees an OPEN task; the poster sees their own in any state. Errors: TASK_NOT_FOUND.
+  A task as listings show it: approximate area only (hard rule e). Anyone sees a task helpers could still offer on (open, not booked, date not passed, in an active area); the poster sees their own in any state. Errors: TASK_NOT_FOUND.
   """
   taskListing(id: ID!): TaskListing!
 
@@ -2276,7 +2276,7 @@ type TaskListing {
   """Euro cents; at least 1000."""
   budgetCents: Int
 
-  """Published photos only."""
+  """Published photos; the poster also gets their own unpublished ones."""
   photos: [TaskPhoto!]!
   isMine: Boolean!
   publishedAt: DateTime

@@ -21,9 +21,9 @@ from offers import services as offers
 from offers.tests.factories import make_helper, open_task
 from offers.tests.test_business_posters import become_business, make_trader
 from tasks import feed
-from tasks.models import Task
+from tasks.models import Task, TaskPhoto
 from tasks.services import Location
-from tasks.tests.factories import make_poster, window
+from tasks.tests.factories import make_poster, ready_photo, window
 
 pytestmark = pytest.mark.django_db
 
@@ -299,25 +299,68 @@ def test_a_public_listing_is_redacted_for_everyone(client: Client) -> None:
         _assert_no_exact_place(body, task)
 
 
-def test_the_booked_helper_gets_a_listing_without_the_exact_place(client: Client) -> None:
-    booking = make_booking(
-        Booking.Status.FUNDS_HELD, location=Location(SECRET_ADDRESS, 42.661373, 18.085331)
-    )
+def test_the_booked_helper_gets_no_listing_and_reads_the_booking_instead(client: Client) -> None:
+    """A booked task no longer takes offers, so it has no listing; the booked helper reads
+    the exact place through `task` while the booking is active."""
+    booking = make_booking(Booking.Status.FUNDS_HELD)
     token = sign_in(booking.helper).access_token
 
     body = gql(client, LISTING_QUERY, {"id": str(booking.task.pk)}, token=token)
 
-    assert body["data"]["taskListing"]["id"] == str(booking.task.pk)
-    _assert_no_exact_place(body, booking.task)
+    assert error_codes(body) == ["TASK_NOT_FOUND"]
 
 
-def test_a_closed_or_draft_task_has_no_public_listing(client: Client) -> None:
-    task = precise_task()
-    Task.objects.filter(pk=task.pk).update(status=Task.Status.CLOSED)
+def _not_offerable(kind: str) -> Task:
+    if kind == "booked":
+        return make_booking(Booking.Status.FUNDS_HELD).task
+    if kind == "flexible_expired":
+        task = open_task(flexible_date=True, window_start=None, window_end=None)
+        return published(task, timezone.now() - dt.timedelta(days=31))
+    task = open_task()
+    if kind == "closed":
+        Task.objects.filter(pk=task.pk).update(status=Task.Status.CLOSED)
+    elif kind == "date_passed":
+        Task.objects.filter(pk=task.pk).update(window_end=timezone.now() - dt.timedelta(hours=1))
+    elif kind == "suspended_poster":
+        User.objects.filter(pk=task.poster_id).update(status=User.Status.SUSPENDED)
+    elif kind == "inactive_area":
+        ServiceArea.objects.filter(slug="dubrovnik").update(active=False)
+    return task
+
+
+@pytest.mark.parametrize(
+    "kind",
+    [
+        "booked",
+        "closed",
+        "date_passed",
+        "flexible_expired",
+        "suspended_poster",
+        "inactive_area",
+    ],
+)
+def test_a_task_that_takes_no_offers_has_no_public_listing(client: Client, kind: str) -> None:
+    helper = sign_in(make_helper("someone")).access_token
+    task = _not_offerable(kind)
 
     assert error_codes(gql(client, LISTING_QUERY, {"id": str(task.pk)})) == ["TASK_NOT_FOUND"]
+    body = gql(client, LISTING_QUERY, {"id": str(task.pk)}, token=helper)
+    assert error_codes(body) == ["TASK_NOT_FOUND"]
     mine = gql(client, LISTING_QUERY, {"id": str(task.pk)}, token=sign_in(task.poster).access_token)
     assert mine["data"]["taskListing"]["isMine"] is True
+
+
+def test_the_poster_sees_their_unpublished_photos(client: Client, r2: Any) -> None:
+    task = open_task()
+    photo = ready_photo(task.poster)
+    TaskPhoto.objects.create(task=task, upload=photo, position=0)
+    query = "query($id: ID!) { taskListing(id: $id) { id photos { id url } } }"
+
+    mine = gql(client, query, {"id": str(task.pk)}, token=sign_in(task.poster).access_token)
+    public = gql(client, query, {"id": str(task.pk)})
+
+    assert [p["id"] for p in mine["data"]["taskListing"]["photos"]] == [str(photo.pk)]
+    assert public["data"]["taskListing"]["photos"] == []
 
 
 def test_the_feed_runs_a_fixed_number_of_queries(

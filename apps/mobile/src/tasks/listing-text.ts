@@ -7,15 +7,28 @@ type Listing = Pick<
   'flexibleDate' | 'windowStart' | 'windowEnd' | 'budgetCents' | 'serviceAreaName' | 'category'
 >;
 
-/** When: "Sat 22 Nov 2026, 09:00–11:00" in Zagreb time, or "Any day suits". */
+/**
+ * When, in Zagreb time: "22 Nov 2026, 09:00–11:00" for a window within one day, both dates
+ * when it spans several ("22 Nov 2026, 09:00 – 25 Nov 2026, 17:00"), or "Any day suits".
+ */
 export function listingWhen(listing: Listing, t: TFunction, locale: Locale): string {
   if (listing.flexibleDate || !listing.windowStart || !listing.windowEnd) {
     return t('taskListing.flexibleDate');
   }
   const start = String(listing.windowStart);
   const end = String(listing.windowEnd);
+  const startDate = formatDate(start, locale, 'medium');
+  const endDate = formatDate(end, locale, 'medium');
+  if (startDate !== endDate) {
+    return t('taskListing.windowDays', {
+      startDate,
+      start: formatTime(start, locale),
+      endDate,
+      end: formatTime(end, locale),
+    });
+  }
   return t('taskListing.window', {
-    date: formatDate(start, locale, 'medium'),
+    date: startDate,
     start: formatTime(start, locale),
     end: formatTime(end, locale),
   });

@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { cache } from 'react';
 import { SiteHeader } from '../../../../components/shell/site-header';
 import { loadListing } from '../../../../components/tasks/load-tasks';
+import { PosterOffersLink } from '../../../../components/tasks/poster-offers-link';
 import { TaskPageView } from '../../../../components/tasks/task-views';
 import { localeAlternates, siteUrl } from '../../../../i18n/metadata';
 
@@ -85,7 +86,11 @@ export default async function TaskPage({ params }: PageProps<'/[locale]/tasks/[i
           __html: JSON.stringify(breadcrumbs).replace(/</g, '\\u003c'),
         }}
       />
-      <TaskPageView task={task} locale={locale} />
+      <TaskPageView
+        task={task}
+        locale={locale}
+        actions={<PosterOffersLink taskId={id} label={t('taskListing.seeOffers')} />}
+      />
     </>
   );
 }

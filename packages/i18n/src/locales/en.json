@@ -893,6 +893,7 @@
     "noBudget": "No budget given",
     "flexibleDate": "Any day suits",
     "window": "{date}, {start}–{end}",
+    "windowDays": "{startDate}, {start} – {endDate}, {end}",
     "area": "Around {area}",
     "approximateNote": "The area shown is approximate. The exact address and access details go only to the helper whose offer is accepted and paid, and only while the booking is active.",
     "details": "Details",
@@ -906,14 +907,17 @@
   "taskFeed": {
     "title": "Open tasks",
     "greeting": "Hi, {name}",
-    "order": "Newest first. Every helper sees the same list in the same order.",
+    "order": "Newest first. The order is the same for every helper.",
     "filterLabel": "Filter by category",
     "all": "All",
     "empty": "No open tasks in your areas right now.",
     "emptyHint": "New tasks appear here as soon as they're posted. Your areas are set in your helper profile.",
+    "notHelper": "Open tasks appear here once you offer help.",
+    "notHelperHint": "To see open tasks and send offers, set up a helper profile first.",
     "loadError": "We couldn't load the tasks.",
     "retry": "Try again",
     "loadingMore": "Loading more tasks",
+    "loadMoreError": "We couldn't load more tasks. Try again.",
     "settings": "Settings"
   },
   "browse": {
