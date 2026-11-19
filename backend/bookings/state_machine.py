@@ -124,7 +124,7 @@ TRANSITIONS: Mapping[tuple[S, S], frozenset[A]] = {
     (S.PAYMENT_REQUESTED, S.DISPUTED): frozenset({A.POSTER, _CHARGEBACK}),
     # Only the poster's no-show "No" and free cancel after "Running late" (review R1-1,
     # owner decision 2026-11-19): a payment request doesn't end those routes until the
-    # poster said "Yes, they came" (bookings/arrival.py). Checked in `_check_actor`.
+    # poster said "Yes, they came" (bookings/arrival.py). Checked in `_check_after_request`.
     (S.PAYMENT_REQUESTED, S.CANCEL_REQUESTED): frozenset({A.POSTER}),
     # Support rejects such a no-show (the helper was there): back to the request.
     (S.CANCEL_REQUESTED, S.PAYMENT_REQUESTED): frozenset({A.ADMIN}),

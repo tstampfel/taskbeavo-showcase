@@ -273,6 +273,9 @@ fragment BookingDetailFields on Booking {
   arrival {
     id
     noShowContestBy
+    canAnswerLate
+    canConfirmCame
+    canConfirmNoShow
   }
   canRequestPayment
   invoiceRequired

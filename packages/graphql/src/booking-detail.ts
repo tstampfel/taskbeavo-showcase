@@ -146,7 +146,14 @@ export function bookingDetailView(
     confirmationEmailed: poster && HELD_OR_LATER(status),
     links: {
       checkout: poster && (checkout?.kind === 'pay' || checkout?.kind === 'authenticating'),
-      arrival: status === 'FUNDS_HELD' || booking.arrival.noShowContestBy != null,
+      // The server's flags, not just FUNDS_HELD: after a payment request the poster's
+      // "No" and late free cancel stay open until "Yes, they came" (BEAV-116 review R1-1).
+      arrival:
+        status === 'FUNDS_HELD' ||
+        booking.arrival.noShowContestBy != null ||
+        booking.arrival.canAnswerLate ||
+        booking.arrival.canConfirmCame ||
+        booking.arrival.canConfirmNoShow,
       cancel:
         booking.cancellation != null ||
         booking.canRequestNoFault ||
