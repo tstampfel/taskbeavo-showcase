@@ -1016,3 +1016,24 @@ def test_keep_until_leaves_held_uploads_alone(
     services.keep_until([upload], timezone.now())
     upload.refresh_from_db()
     assert upload.delete_after is None
+
+
+def test_an_invoice_keeps_only_its_clean_copy_and_may_come_from_the_web(
+    r2: FakeR2, django_capture_on_commit_callbacks: Any
+) -> None:
+    """A trader's invoice (BEAV-116): a scan may be on a computer, and nothing of the
+    original, with its EXIF position, is kept."""
+    marko = make_user()
+    data = photo_with_gps()
+    target = services.create_upload_url(
+        marko, Purpose.INVOICE, "image/jpeg", len(data), platform="web"
+    )
+    assert r2.client_put(target.url, data, "image/jpeg") == 200
+    with django_capture_on_commit_callbacks(execute=True):
+        services.complete_upload(marko, target.upload.pk)
+
+    invoice = Upload.objects.get(pk=target.upload.pk)
+    assert invoice.status == Status.READY
+    assert "/invoices/" in invoice.upload_key
+    assert invoice.display_key and not invoice.original_key and not invoice.public_key
+    assert invoice.exif_location is None and invoice.exif_taken_at is None

@@ -25,6 +25,7 @@ from bookings.tests.test_checkout import (  # noqa: F401 (fixtures)
 from bookings.tests.test_poster_cancel import code, helper, paid, poster, token
 from core.errors import ApiError, ErrorCode
 from core.models import ActorKind, Outbox
+from helpers.models import HelperProfile
 from notifications.models import Delivery
 from offers.tests.factories import make_helper
 from tasks.tests.factories import ready_photo
@@ -310,6 +311,19 @@ def test_a_private_helper_skips_the_invoice(client: Client, gateway: FakeGateway
     assert code(exc) == ErrorCode.INVALID_PAYMENT_REQUEST.value
 
 
+def test_a_helper_who_registered_since_checkout_may_add_the_invoice(
+    client: Client, gateway: FakeGateway
+) -> None:
+    booking = started(paid(client))
+    HelperProfile.objects.filter(user_id=booking.helper_id).update(
+        declared_status=HelperProfile.Status.BUSINESS
+    )
+
+    request(booking, invoice_jir=JIR)
+
+    assert PaymentRequest.objects.get(booking=booking).invoice_jir == JIR.lower()
+
+
 # --- Telling the poster, and no release before the request. ---
 
 
@@ -450,6 +464,18 @@ def test_the_button_waits_for_the_start(client: Client, gateway: FakeGateway) ->
     Booking.objects.filter(pk=booking.pk).update(slot_start=timezone.now() + H)
 
     assert gql_booking(client, booking, helper(booking))["canRequestPayment"] is False
+
+
+def test_nobody_else_sees_the_request(client: Client, gateway: FakeGateway) -> None:
+    from accounts.tests.test_schema import error_codes, gql
+
+    booking = started(paid(client))
+    request(booking, note="All delivered", photo_ids=[p.pk for p in evidence(helper(booking))])
+
+    body = gql(client, BOOKING, {"id": str(booking.pk)}, token=token(make_helper("stranger")))
+
+    assert error_codes(body) == ["BOOKING_NOT_FOUND"]
+    assert "All delivered" not in str(body)
 
 
 def gql_booking(client: Client, booking: Booking, user: User) -> dict:

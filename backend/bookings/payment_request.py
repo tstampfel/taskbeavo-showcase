@@ -19,7 +19,8 @@ A registered business (the helper type the poster contracted on at checkout,
 (PLAN.md, "Obrt helper finishes a job"). It adds the invoice first, as a photo or scan
 (an INVOICE upload) or by its JIR. Only the JIR's format is checked: TaskBeavo never calls
 CIS or any government service (owner decision 2026-11-14). A private helper skips this
-step and may not add an invoice.
+step and may not add an invoice, unless they have registered a business since checkout
+(their current `HelperProfile`): they may then add the invoice they now owe.
 
 `REQUESTED_TOPIC` tells the poster: a push and an email (`booking.payment_requested`,
 always emailed, in their language). The live event to both sides is the state machine's
@@ -46,6 +47,7 @@ from bookings.models import Booking, PaymentRequest, PaymentRequestPhoto
 from core.errors import ApiError, ErrorCode
 from core.models import ActorKind
 from core.outbox import enqueue
+from helpers.models import HelperProfile
 from uploads import services as uploads
 from uploads.models import Purpose
 
@@ -95,7 +97,8 @@ def request_payment(
         has_invoice = invoice_upload_id is not None or bool(jir)
         if trader and not has_invoice:
             raise ApiError(ErrorCode.INVOICE_REQUIRED, "Add your fiscalized invoice first.")
-        if not trader and has_invoice:
+        if not trader and has_invoice and not _registered_now(helper):
+            # A helper who registered a business since checkout may owe an invoice now.
             raise _invalid("A private helper adds no invoice.")
         booking = state_machine.transition(
             booking.pk,
@@ -138,6 +141,12 @@ def can_request(booking: Booking, viewer: User, now: dt.datetime | None = None) 
 
 def _held(booking: Booking) -> bool:
     return booking.status == S.FUNDS_HELD and booking.task_reopened_at is None
+
+
+def _registered_now(helper: User) -> bool:
+    return HelperProfile.objects.filter(
+        user=helper, declared_status=HelperProfile.Status.BUSINESS
+    ).exists()
 
 
 def _jir(value: str | None) -> str:

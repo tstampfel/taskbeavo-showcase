@@ -699,8 +699,9 @@ class PaymentRequest(models.Model):
     (owner decision 2026-11-14).
 
     Personal data: `note` is the helper's free text and may name people; it never goes to
-    BookingEvent data, logs, Sentry or Honeycomb. The photos and invoice are retained with
-    the booking's evidence (bookings.state_machine `_retain_evidence`).
+    BookingEvent data, logs, Sentry or Honeycomb. Account deletion (BEAV-153) must
+    anonymise it and Download my data must include it. The photos and invoice are retained
+    with the booking's evidence (bookings.state_machine `_retain_evidence`).
     """
 
     booking = models.OneToOneField(
