@@ -10,6 +10,10 @@
  * It also answers the service fee price lists (/fees, BEAV-191): 2026-11 charged now, a 2027-03
  * change announced, and an earlier 2026-01 list for the archive. The real numbers come from
  * backend/bookings/money.py; these only stand in for them.
+ *
+ * And the public task pages (BEAV-91): `openTasks` lists three open tasks over two pages, and
+ * `taskListing` answers task 42 and refuses anything else with TASK_NOT_FOUND. A listing has
+ * no exact address or access details, as the API's TaskListing type has none.
  */
 import { createServer } from 'node:http';
 
@@ -62,7 +66,67 @@ function feeSchedule(version, effectiveFrom, percent, minimumCents, status) {
   };
 }
 
+const LISTINGS = [
+  ['42', 'GARDEN', 'Mow the lawn and trim the hedge', 3500, false],
+  ['43', 'ERRANDS', 'Grocery and pharmacy run', 2000, true],
+  ['44', 'CLEANING', 'Balcony and windows', 4500, false],
+].map(([id, category, title, budgetCents, flexibleDate]) => ({
+  __typename: 'TaskListing',
+  id,
+  category,
+  title,
+  description: `${title}. Stub text from e2e/legal-api-stub.mjs.`,
+  approximateLat: 42.66,
+  approximateLng: 18.09,
+  serviceAreaName: 'Dubrovnik',
+  windowStart: flexibleDate ? null : new Date(Date.now() + 3 * DAY).toISOString(),
+  windowEnd: flexibleDate ? null : new Date(Date.now() + 3 * DAY + 2 * 3600 * 1000).toISOString(),
+  flexibleDate,
+  budgetCents,
+  photos: [],
+  isMine: false,
+  publishedAt: inForce,
+}));
+
+function taskAnswer(operationName, variables) {
+  if (operationName === 'TaskListing') {
+    const listing = LISTINGS.find((row) => row.id === variables.id);
+    if (listing) return { data: { taskListing: listing } };
+    return {
+      data: null,
+      errors: [{ message: 'No such task.', extensions: { code: 'TASK_NOT_FOUND' } }],
+    };
+  }
+  if (operationName === 'OpenTasks') {
+    if (variables.areaSlug && variables.areaSlug !== 'dubrovnik') {
+      return {
+        data: null,
+        errors: [{ message: 'No such area.', extensions: { code: 'SERVICE_AREA_NOT_FOUND' } }],
+      };
+    }
+    const matching = LISTINGS.filter(
+      (row) => !variables.category || row.category === variables.category,
+    );
+    const items = variables.after === 'page2' ? matching.slice(2) : matching.slice(0, 2);
+    const hasMore = variables.after !== 'page2' && matching.length > 2;
+    return {
+      data: {
+        openTasks: {
+          __typename: 'TaskListingPage',
+          id: `open:${variables.after ?? ''}`,
+          endCursor: hasMore ? 'page2' : null,
+          hasMore,
+          items,
+        },
+      },
+    };
+  }
+  return null;
+}
+
 function answer({ operationName, variables = {} }) {
+  const tasks = taskAnswer(operationName, variables);
+  if (tasks) return tasks;
   if (operationName === 'ServiceFeeSchedules') {
     return {
       data: {

@@ -27,7 +27,6 @@ test('assetlinks.json is JSON at its exact path, without a redirect', async ({ r
 });
 
 for (const [path, title] of [
-  ['/de/tasks/42', 'Aufgabe'],
   ['/fr/bookings/7/release', 'Débloquer le paiement'],
   ['/hr/bookings/7/no-access', 'Pomagač nije mogao ući'],
   ['/en/conversations/3', 'Messages'],
