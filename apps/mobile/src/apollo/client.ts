@@ -16,6 +16,7 @@ import { createClientStateReset } from '../auth/reset-client-state';
 import { authHeaders, createSessionManager } from '../auth/session';
 import { secureSessionStore } from '../auth/token-store';
 import { forgetLocaleChoice } from '../i18n/locale-store';
+import { deviceTaskDraftStore } from '../tasks/device-task-draft-store';
 import { securePushTokenStore } from '../push/token-store';
 import { createCachePersistor, restorePersistedCache } from './cache-persist';
 import { graphqlUrl } from './endpoint';
@@ -62,6 +63,7 @@ export function restoreAppCache(): Promise<void> {
     persistor: cachePersistor,
     versions: AsyncStorage,
     hasSession: async () => (await secureSessionStore.load()) !== null,
+    clearSignedOut: deviceTaskDraftStore.clear,
   });
 }
 
@@ -88,4 +90,5 @@ export const resetAppClientState = createClientStateReset(() => ({
   pushTokens: securePushTokenStore,
   persistor: cachePersistor,
   forgetLanguage: forgetLocaleChoice,
+  clearTaskDraft: deviceTaskDraftStore.clear,
 }));

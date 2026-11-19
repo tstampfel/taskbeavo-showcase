@@ -31,6 +31,7 @@ function deps(pushToken: string | null, refreshToken: string | null = 'refresh-1
       resume: jest.fn(() => void calls.push('resumePersist')),
     },
     forgetLanguage: jest.fn(async () => void calls.push('forgetLanguage')),
+    clearTaskDraft: jest.fn(async () => void calls.push('clearTaskDraft')),
   };
   return { d: d as unknown as ResetClientStateDeps & typeof d, calls };
 }
@@ -50,6 +51,7 @@ describe('resetClientState', () => {
       'clearStore',
       'purgeCache',
       'resumePersist',
+      'clearTaskDraft',
     ]);
     expect(d.client.mutate).toHaveBeenCalledWith({
       mutation: UnregisterPushTokenDocument,
@@ -229,6 +231,7 @@ describe('a fresh start after logout', () => {
       },
       persistor: second.persistor,
       forgetLanguage: async () => undefined,
+      clearTaskDraft: async () => undefined,
     });
     expect(second.cache.readQuery({ query: VIEWER })).toBeNull();
     expect(storage.items.has('cache')).toBe(false);

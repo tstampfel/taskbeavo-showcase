@@ -68,14 +68,19 @@ function helperMock(hasProfile: boolean): MockLink.MockedResponse {
 async function show(
   mocks: MockLink.MockedResponse[],
   onOpenTask = jest.fn(),
-  { helper = true }: { helper?: boolean } = {},
+  { helper = true, onPostTask }: { helper?: boolean; onPostTask?: () => void } = {},
 ) {
   await render(
     <MockedProvider
       mocks={[helperMock(helper), ...mocks]}
       cache={new InMemoryCache({ typePolicies })}
     >
-      <TaskFeedScreen firstName="Luka" onOpenTask={onOpenTask} onOpenSettings={jest.fn()} />
+      <TaskFeedScreen
+        firstName="Luka"
+        onOpenTask={onOpenTask}
+        onOpenSettings={jest.fn()}
+        onPostTask={onPostTask}
+      />
     </MockedProvider>,
   );
   return onOpenTask;
@@ -101,6 +106,15 @@ describe('TaskFeedScreen', () => {
     // Rule k: the screen says the order is the same for everyone.
     expect(screen.getByTestId('feed-order')).toHaveTextContent(messages.taskFeed.order);
     expect(screen.getByRole('header')).toHaveTextContent(/Luka/);
+  });
+
+  it('opens the post-a-task wizard from home', async () => {
+    await i18n.changeLanguage('en');
+    const onPostTask = jest.fn();
+    await show([feedMock(FIRST, [], null, false)], jest.fn(), { onPostTask });
+
+    await fireEvent.press(await screen.findByText(catalogues.en.postTask.open));
+    expect(onPostTask).toHaveBeenCalled();
   });
 
   it('shows an empty state', async () => {

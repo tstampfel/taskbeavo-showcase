@@ -42,6 +42,12 @@ xcrun simctl openurl booted "https://taskbeavo.com/tasks/42"
 adb shell pm get-app-links com.taskbeavo.app                          # Android verification state
 ```
 
+## Address search
+
+The post-a-task wizard (`src/screens/post-task-screen.tsx`, BEAV-86) looks addresses up with [OpenStreetMap Nominatim](https://nominatim.org/), so it needs no key or setup. `src/tasks/address-search.ts` follows Nominatim's usage policy: it searches only when the poster taps Search or submits (no search-as-you-type), one request at a time, limited to Croatia (`countrycodes=hr`), with the generic `User-Agent` `TaskBeavo-showcase/1.0`, and the wizard shows "© OpenStreetMap contributors" under the results. The typed address and the app language go to the OpenStreetMap Foundation's servers. The task is posted with the picked result's own coordinates; the app never makes them up, and the API's service-area check decides (an address outside it offers the waitlist). If Nominatim can't be reached, the draft stays saved and the wizard offers a retry. Another geocoder can replace it behind the `AddressSearch` interface.
+
+The wizard's draft is saved on the phone as the poster goes: the exact address and access details in SecureStore, the rest in AsyncStorage (`docs/storage-inventory.md`). It is deleted after posting, on "Start again", at sign-out and account deletion, and at launch when no one is signed in.
+
 ## EAS
 
 Profiles in `eas.json`: `development` (dev client, internal), `development-simulator` (the same, built for the iOS simulator), `preview` (internal) and `production` (store, build number auto-incremented by EAS).

@@ -930,5 +930,139 @@
     "empty": "Ovdje trenutačno nema otvorenih zadataka.",
     "more": "Još zadataka",
     "firstPage": "Natrag na najnovije zadatke"
+  },
+  "postTask": {
+    "open": "Objavite zadatak",
+    "title": "Objava zadatka",
+    "close": "Zatvori. Vaš je nacrt spremljen.",
+    "back": "Natrag",
+    "loading": "Učitavanje nacrta",
+    "progress": "Korak {step} od {total}",
+    "progressShort": "{step}/{total}",
+    "next": "Dalje",
+    "reviewTask": "Pregled zadatka",
+    "backToReview": "Natrag na pregled",
+    "posted": "Vaš je zadatak objavljen.",
+    "resume": {
+      "title": "Nastaviti s nacrtom?",
+      "body": "Na ovom ste telefonu počeli objavljivati „{title}”.",
+      "bodyUntitled": "Na ovom ste telefonu počeli objavljivati zadatak.",
+      "continue": "Nastavi",
+      "startAgain": "Počni ispočetka"
+    },
+    "what": {
+      "heading": "U čemu Vam treba pomoć?",
+      "categoryLabel": "Kategorija",
+      "titleLabel": "Naslov",
+      "titleHint": "Nekoliko riječi, na primjer: Kupnja namirnica za mamu"
+    },
+    "details": {
+      "heading": "Opišite zadatak pomagačima",
+      "descriptionLabel": "Opis",
+      "descriptionHint": "Ovdje ne navodite brojeve telefona ni točne adrese.",
+      "photosLabel": "Fotografije (neobavezno, najviše {max})",
+      "photoAlt": "Fotografija {number}",
+      "removePhoto": "Ukloni",
+      "removePhotoLabel": "Ukloni fotografiju {number}",
+      "photosFull": "Dodali ste najveći broj fotografija koji zadatak ovdje može imati."
+    },
+    "where": {
+      "heading": "Gdje i tko je na mjestu?",
+      "addressLabel": "Adresa",
+      "addressHint": "Ulica, kućni broj i mjesto, zatim dodirnite Traži.",
+      "search": "Traži",
+      "noResults": "Adresa u Hrvatskoj nije pronađena. Provjerite pravopis ili dodajte mjesto.",
+      "resultsCount": "{count, plural, one {Pronađena je # adresa} few {Pronađene su # adrese} other {Pronađeno je # adresa}}",
+      "searchFailed": "Pretraživanje adresa trenutačno nije dostupno. Nacrt je spremljen, pa pokušajte ponovno.",
+      "retry": "Pokušaj ponovno",
+      "resultsLabel": "Pronađene adrese",
+      "picked": "Odabrana adresa",
+      "change": "Promijeni adresu",
+      "approximate": "Pomagači vide samo približno područje dok ne prihvatite ponudu.",
+      "contactHeading": "Koga će pomagač dočekati?",
+      "noContact": "Mene, bit ću tamo",
+      "addContact": "Dodaj osobu na mjestu",
+      "contactsError": "Spremljene kontakte nije bilo moguće učitati.",
+      "accessLabel": "Upute za pristup (neobavezno)",
+      "accessHint": "Ime na zvonu, kat ili stan, šifra ulaza, gdje je ključ. Vidi ih samo pomagač kojeg rezervirate i samo dok je rezervacija aktivna."
+    },
+    "contact": {
+      "title": "Dodaj osobu na mjestu",
+      "close": "Zatvori bez spremanja",
+      "intro": "Osoba koju pomagač dočekuje. Ovaj broj vidi samo pomagač kojeg rezervirate i samo dok je rezervacija aktivna, kako bi mogao nazvati s vrata. Bez pametnog telefona osoba dobiva jedan SMS podsjetnik večer prije.",
+      "name": "Ime",
+      "phone": "Telefon",
+      "phoneHint": "Mobitel ili fiksni telefon, s pozivnim brojem države: +385 9X XXX XXXX",
+      "area": "Područje",
+      "areaHint": "Na primjer: Gruž, Dubrovnik",
+      "language": "Jezik SMS poruka",
+      "noSmartphone": "Ne koristi pametni telefon",
+      "agreement": "Ova osoba pristaje da spremim njezino ime i broj telefona za rezervacije na TaskBeavu.",
+      "save": "Spremi kontakt",
+      "failed": "Kontakt nije bilo moguće spremiti. Pokušajte ponovno."
+    },
+    "when": {
+      "heading": "Kada bi se trebalo obaviti?",
+      "today": "Danas",
+      "tomorrow": "Sutra",
+      "pickDate": "Odaberi datum",
+      "flexible": "Fleksibilno",
+      "flexibleHint": "Odgovara Vam bilo koji dan. Fleksibilni zadatak ostaje otvoren 30 dana.",
+      "previousMonth": "Prethodni mjesec",
+      "nextMonth": "Sljedeći mjesec",
+      "windowLabel": "Vremenski okvir",
+      "windows": {
+        "MORNING": "Jutro {start}–{end}",
+        "AFTERNOON": "Poslijepodne {start}–{end}",
+        "EVENING": "Večer {start}–{end}"
+      },
+      "limit": "Možete rezervirati do 60 dana unaprijed. Vremena su po hrvatskom vremenu."
+    },
+    "budget": {
+      "heading": "Koliki je Vaš budžet?",
+      "label": "Vaš budžet u eurima",
+      "hint": "Budžet određujete Vi. Pomagači šalju svoju cijenu.",
+      "payment": "Plaćate tek kad prihvatite ponudu. Plaćanje se sigurno drži preko Stripea dok ga ne oslobodite."
+    },
+    "review": {
+      "title": "Pregled zadatka",
+      "what": "Što",
+      "where": "Gdje i tko",
+      "when": "Kada",
+      "budget": "Budžet",
+      "details": "Detalji",
+      "photos": "{count, plural, one {# fotografija} few {# fotografije} other {# fotografija}}",
+      "noPhotos": "Bez fotografija",
+      "onSite": "Na mjestu: {name}",
+      "edit": "Uredi",
+      "editSection": "Uredi: {section}",
+      "privacy": "Točnu adresu, upute za pristup i telefon osobe na mjestu dobiva samo pomagač kojeg rezervirate, dok je rezervacija aktivna.",
+      "post": "Objavi zadatak",
+      "postFailed": "Zadatak nije bilo moguće objaviti. Nacrt je spremljen, pa pokušajte ponovno.",
+      "verifyPhone": "Potvrdi moj broj",
+      "acceptTerms": "Pregledaj uvjete"
+    },
+    "waitlist": {
+      "heading": "Još nismo ondje",
+      "city": "Mjesto",
+      "email": "E-pošta",
+      "consent": "Pošaljite mi jednu poruku e-pošte kad TaskBeavo počne raditi u ovom mjestu i ništa više.",
+      "join": "Upiši me na listu čekanja",
+      "joined": "Na listi ste čekanja za {city}. Javit ćemo Vam se jednom e-poštom kad stignemo.",
+      "changeAddress": "Promijeni adresu",
+      "failed": "Upis na listu čekanja nije uspio. Pokušajte ponovno."
+    },
+    "errors": {
+      "category": "Odaberite u čemu Vam treba pomoć.",
+      "title": "Dajte zadatku naslov.",
+      "description": "Opišite zadatak pomagačima.",
+      "address": "Potražite adresu i odaberite je s popisa.",
+      "when": "Odaberite dan ili označite datum kao fleksibilan.",
+      "timeWindow": "Odaberite vremenski okvir.",
+      "windowPassed": "Ovo je vrijeme već počelo. Odaberite kasnije.",
+      "tooFarAhead": "Odaberite dan unutar sljedećih 60 dana.",
+      "budget": "Upišite budžet u eurima, samo brojkama.",
+      "budgetTooHigh": "Budžet može biti najviše 10.000 €."
+    }
   }
 }
