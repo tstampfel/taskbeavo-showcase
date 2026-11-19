@@ -1,3 +1,15 @@
+<!--
+  Built in BEAV-88/BEAV-90 (apps/mobile src/screens/task-feed-screen.tsx): 2b's helper feed as a
+  list. Signed in, home shows the greeting, "Open tasks" with the line saying the order is
+  newest first and the same for every helper (hard rule k), the category chips (All and the
+  five categories), and cards with category, title, the approximate area ("Around Dubrovnik",
+  the service area's name, hard rule e), the date and the budget. "More tasks" loads the next
+  page. The empty state says there are no open tasks in the helper's areas yet (2d's frame, without the beaver and the post button).
+  Kept here for what isn't built yet: 2a (the poster's home with helpers nearby), 2c's map,
+  2e "Not for me", 2f's views nudge; the search box, the area picker, distances, the poster's
+  name, rating and "Booked from" line and the offer count on 2b's cards aren't in the API.
+  Delete each frame once built.
+-->
 <div class="screen" id="2a Home · Poster list">{{sb}}
  <div class="body" style="gap:14px;padding-top:4px">
   <div class="row between"><div class="col" style="gap:2px"><span class="h1">Hi, Ana</span><span class="chip" style="height:36px;padding:0 12px">{{i:pin:16:#1F5C46}} Lapad, Dubrovnik {{i:down:16}}</span></div><span class="ibtn" style="position:relative">{{i:bell}}<i style="position:absolute;top:9px;right:11px;width:10px;height:10px;border-radius:9px;background:#F2A33A;border:2px solid #fff"></i></span></div>

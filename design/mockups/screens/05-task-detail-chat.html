@@ -1,3 +1,11 @@
+<!--
+  BEAV-88/BEAV-90 built the task detail before booking (apps/mobile
+  src/screens/task-detail-screen.tsx, web /[locale]/tasks/[id]), which these frames don't show:
+  category, title, date, the approximate area, budget, a note that the exact address and
+  access details go only to the booked helper while the booking is active (hard rule e), the
+  description and photos, and "See offers" for the poster. The booked frames below are the
+  booking screens (BEAV-107 and later) and chat (BEAV-104).
+-->
 <div class="screen" id="5a Task detail · Poster · Chat">{{sb}}
  <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Grocery run for Mama</span><span class="ibtn">{{i:more}}</span></div>
  <div style="padding:0 12px 8px" class="stepper">
