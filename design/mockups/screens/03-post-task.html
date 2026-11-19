@@ -1,3 +1,21 @@
+<!--
+  Built in BEAV-86 (apps/mobile src/screens/post-task-screen.tsx and src/screens/post-task/):
+  3a's category choice (the API's five categories) and title; 3b's description and photos (up to
+  5); 3c's address search (OpenStreetMap Nominatim, Croatia only, on tap) with the picked
+  address, the on-site contact choice ("Me, I'll be there" or a saved contact) and "Add on-site
+  contact"; 3d's sheet (name, phone, area, SMS language, no smartphone, plus the agreement
+  tick-box the API requires); 3j's access details as one text field (the API stores one string);
+  3e's Today / Tomorrow / Pick a date / Flexible with a month calendar up to 60 days ahead and
+  three time windows in Croatian time; 3f's budget typed by the poster, empty, no amount shown
+  (hard rule k); 3g's review with Edit per part; 3i's waitlist card, offered when postTask says
+  OUT_OF_SERVICE_AREA. After posting, the app opens the new task's detail screen instead of 3h.
+  Drafts are saved on the phone and resumed. Home has a "Post a task" button.
+  Kept here for what isn't built: the map preview in 3c, the "At my place / For a family member"
+  switch, the title suggestion chips, "Helper should bring tools" (not in the API), the extra
+  categories Holiday rentals and Pets (not in TaskCategory), "Fixed price / Ask for offers" (the
+  API needs a budget), "This week", 3j's separate access fields, and 3h's success screen.
+  Delete each frame once built.
+-->
 <div class="screen" id="3a Step 1 · What">{{sb}}
  <div class="top"><span class="ibtn">{{i:x}}</span><span class="t">Post a task</span><span class="c mut" style="width:44px;text-align:right">1/5</span></div>
  <div class="progress"><i class="on"></i><i></i><i></i><i></i><i></i></div>
