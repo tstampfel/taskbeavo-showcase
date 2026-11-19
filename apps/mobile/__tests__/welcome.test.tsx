@@ -1,5 +1,5 @@
 import { MockedProvider } from '@apollo/client/testing/react';
-import { ApiVersionDocument, ViewerDocument } from '@taskbeavo/graphql';
+import { ApiVersionDocument, FeedHelperProfileDocument, ViewerDocument } from '@taskbeavo/graphql';
 import { catalogues, locales } from '@taskbeavo/i18n';
 import { render, screen } from '@testing-library/react-native';
 import Welcome from '../app/index';
@@ -42,5 +42,42 @@ describe('Welcome screen', () => {
     const headline = screen.getByRole('header');
     expect(headline.props.numberOfLines).toBeUndefined();
     expect(headline.props.allowFontScaling).not.toBe(false);
+  });
+});
+
+describe('Home when signed in', () => {
+  it('shows the task feed with the terms banner, account row and language switcher', async () => {
+    await i18n.changeLanguage('en');
+    const viewer = {
+      __typename: 'User',
+      id: 'u1',
+      email: 'luka@example.com',
+      firstName: 'Luka',
+      lastName: 'Test',
+      locale: 'EN',
+      country: 'HR',
+      timeZone: 'Europe/Zagreb',
+      phoneVerified: true,
+      phoneNumberMasked: '+385 ••• 678',
+    };
+    await render(
+      <MockedProvider
+        mocks={[
+          { request: { query: ViewerDocument }, result: { data: { viewer } }, maxUsageCount: 5 },
+          {
+            request: { query: FeedHelperProfileDocument },
+            result: { data: { myHelperProfile: null } },
+          },
+          apiVersion,
+        ]}
+      >
+        <Welcome />
+      </MockedProvider>,
+    );
+    expect(await screen.findByTestId('task-feed')).toBeOnTheScreen();
+    expect(screen.getByRole('header')).toHaveTextContent(/Luka/);
+    // Signing out and switching language stay on home until the account tab exists.
+    expect(await screen.findByTestId('sign-out')).toBeOnTheScreen();
+    expect(screen.getByTestId('language-switcher')).toBeOnTheScreen();
   });
 });

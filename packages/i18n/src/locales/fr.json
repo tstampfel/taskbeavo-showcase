@@ -12,7 +12,6 @@
     "backHome": "Retour à l’accueil"
   },
   "linkTarget": {
-    "task": "Tâche",
     "release": "Débloquer le paiement",
     "noAccess": "Votre intervenant n’a pas pu entrer",
     "conversation": "Messages",
@@ -156,6 +155,7 @@
     "INVALID_TASK_DATES": "Veuillez choisir un créneau qui commence à partir de maintenant et se termine dans les 60 prochains jours, ou indiquer que la date est flexible.",
     "BUDGET_BELOW_MINIMUM": "Le prix minimum d’une tâche est de 10 €.",
     "TASK_NOT_FOUND": "Cette tâche n’est pas disponible.",
+    "INVALID_CURSOR": "Cette liste a changé. Veuillez la recharger depuis le début.",
     "TASK_NOT_EDITABLE": "Cette tâche ne peut plus être modifiée.",
     "TASK_NOT_OPEN_FOR_OFFERS": "Cette tâche n’accepte plus d’offres.",
     "OFFER_ON_OWN_TASK": "Vous ne pouvez pas faire d’offre sur votre propre tâche.",
@@ -311,6 +311,13 @@
     },
     "TaskWarning": {
       "DUPLICATE_TASK": "Vous avez déjà publié une tâche à cette adresse pour ce jour."
+    },
+    "TaskCategory": {
+      "GARDEN": "Jardin",
+      "ERRANDS": "Courses et démarches",
+      "REPAIRS": "Petites réparations",
+      "CLEANING": "Ménage",
+      "CHECK_IN": "Visites"
     }
   },
   "checkout": {
@@ -878,5 +885,50 @@
     "amountLabelHelper": "Vous recevez",
     "requestedHelper": "En attente que le client verse {amount}.",
     "requestedPoster": "Votre aidant a demandé le paiement. Versez-le quand le travail vous convient."
+  },
+  "taskListing": {
+    "title": "Tâche",
+    "back": "Retour",
+    "budget": "Budget {amount}",
+    "noBudget": "Aucun budget indiqué",
+    "flexibleDate": "N’importe quel jour convient",
+    "window": "{date}, {start}–{end}",
+    "windowDays": "{startDate}, {start} – {endDate}, {end}",
+    "area": "Secteur : {area}",
+    "approximateNote": "Le secteur affiché est approximatif. L’adresse exacte et les informations d’accès ne sont communiquées qu’à l’aide dont l’offre a été acceptée et payée, et seulement tant que la réservation est active.",
+    "details": "Détails",
+    "photos": "Photos",
+    "photoAlt": "Photo {number} de la tâche",
+    "seeOffers": "Voir les offres",
+    "loadError": "Nous n’avons pas pu charger cette tâche.",
+    "retry": "Réessayer",
+    "posted": "Publiée le {date}"
+  },
+  "taskFeed": {
+    "title": "Tâches ouvertes",
+    "greeting": "Bonjour {name}",
+    "order": "Les plus récentes d’abord. L’ordre est le même pour toutes les aides.",
+    "filterLabel": "Filtrer par catégorie",
+    "all": "Toutes",
+    "empty": "Aucune tâche ouverte dans vos secteurs pour le moment.",
+    "emptyHint": "Les nouvelles tâches apparaissent ici dès leur publication. Vos secteurs se règlent dans votre profil d’aide.",
+    "notHelper": "Les tâches ouvertes apparaîtront ici dès que vous proposerez votre aide.",
+    "notHelperHint": "Pour voir les tâches ouvertes et envoyer des offres, créez d’abord un profil d’aide.",
+    "loadError": "Nous n’avons pas pu charger les tâches.",
+    "retry": "Réessayer",
+    "loadingMore": "Chargement d’autres tâches",
+    "loadMoreError": "Nous n’avons pas pu charger d’autres tâches. Réessayez.",
+    "settings": "Paramètres"
+  },
+  "browse": {
+    "title": "Tâches ouvertes",
+    "metaDescription": "Parcourez les tâches ouvertes sur TaskBeavo : jardinage, courses, petites réparations, ménage et visites dans les villes actives en Croatie.",
+    "intro": "Les tâches peuvent être publiées pour des lieux situés dans les villes actives de TaskBeavo en Croatie. Vous pouvez réserver depuis n’importe où.",
+    "order": "Les plus récentes d’abord",
+    "filterLabel": "Catégorie",
+    "all": "Toutes",
+    "empty": "Aucune tâche ouverte ici pour le moment.",
+    "more": "Plus de tâches",
+    "firstPage": "Retour aux tâches les plus récentes"
   }
 }

@@ -383,6 +383,10 @@ class ErrorCode(Enum):
         "TASK_NOT_FOUND",
         description="No such task, or not one the caller may see or change.",
     )
+    INVALID_CURSOR = strawberry.enum_value(
+        "INVALID_CURSOR",
+        description="The `after` cursor isn't one a task list returned; start from the top.",
+    )
     TASK_NOT_EDITABLE = strawberry.enum_value(
         "TASK_NOT_EDITABLE",
         description=(

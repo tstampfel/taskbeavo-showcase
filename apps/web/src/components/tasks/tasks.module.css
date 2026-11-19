@@ -1,0 +1,153 @@
+/* Public task pages (BEAV-91): mockup 10 (browse) and the task facts of mockup 05. */
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-lg);
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--tb-space-xl) var(--tb-space-lg) var(--tb-space-xxl);
+  box-sizing: border-box;
+}
+
+.title {
+  margin: 0;
+  color: var(--tb-color-ink);
+  font-size: var(--tb-font-h1-size);
+  line-height: var(--tb-font-h1-line);
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  margin: 0;
+  color: var(--tb-color-ink-muted);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tb-tap-target);
+  padding: 0 var(--tb-space-md);
+  border: var(--tb-border-thin) solid var(--tb-color-control);
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-white);
+  color: var(--tb-color-ink);
+  text-decoration: none;
+}
+
+.chip[aria-current='true'] {
+  border-color: var(--tb-color-green);
+  background: var(--tb-color-green);
+  color: var(--tb-color-white);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cardLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--tb-radius-md);
+}
+
+.cardLink:focus-visible {
+  outline: var(--tb-border-focus) solid var(--tb-color-green);
+  outline-offset: 2px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tb-space-xs);
+}
+
+.category {
+  margin: 0;
+  color: var(--tb-color-green);
+  font-size: var(--tb-font-caption-size);
+  font-weight: 700;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--tb-font-body-size);
+  overflow-wrap: anywhere;
+}
+
+.budget {
+  margin: 0;
+  color: var(--tb-color-green);
+  font-weight: 700;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-md);
+}
+
+.pagerLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tb-tap-target);
+  color: var(--tb-color-green);
+  font-weight: 700;
+}
+
+.description {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tb-space-sm);
+}
+
+.photo {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: var(--tb-radius-md);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--tb-font-h2-size);
+}
+
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-height: var(--tb-tap-target);
+  padding: 0 var(--tb-space-lg);
+  border-radius: var(--tb-radius-pill);
+  background: var(--tb-color-green);
+  color: var(--tb-color-white);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.primaryLink:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 2px;
+}

@@ -52,6 +52,7 @@ export {
   withNewOffer,
   type OfferSort,
 } from './offers';
+export { mergeListingPages, nextPageVariables } from './task-listings';
 export { NOT_PERSISTED, PERSIST_CHECKED, withoutSensitiveData } from './persistence';
 export {
   WS_FORBIDDEN,
