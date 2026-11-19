@@ -82,6 +82,8 @@ export interface BookingLinks {
   cancel: boolean;
   noAccess: boolean;
   release: boolean;
+  /** The helper's Request payment (BEAV-116): the money is held and the job has started. */
+  requestPayment: boolean;
 }
 
 export type TraderFields = Pick<
@@ -144,7 +146,14 @@ export function bookingDetailView(
     confirmationEmailed: poster && HELD_OR_LATER(status),
     links: {
       checkout: poster && (checkout?.kind === 'pay' || checkout?.kind === 'authenticating'),
-      arrival: status === 'FUNDS_HELD' || booking.arrival.noShowContestBy != null,
+      // The server's flags, not just FUNDS_HELD: after a payment request the poster's
+      // "No" and late free cancel stay open until "Yes, they came" (BEAV-116 review R1-1).
+      arrival:
+        status === 'FUNDS_HELD' ||
+        booking.arrival.noShowContestBy != null ||
+        booking.arrival.canAnswerLate ||
+        booking.arrival.canConfirmCame ||
+        booking.arrival.canConfirmNoShow,
       cancel:
         booking.cancellation != null ||
         booking.canRequestNoFault ||
@@ -154,6 +163,7 @@ export function bookingDetailView(
           : booking.helperCancelPreview != null),
       noAccess: poster && status === 'NO_ACCESS_REPORTED',
       release: poster && status === 'PAYMENT_REQUESTED',
+      requestPayment: !poster && booking.canRequestPayment,
     },
   };
 }

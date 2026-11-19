@@ -683,3 +683,60 @@ class BookingArrival(models.Model):
 
     def __str__(self) -> str:
         return f"BookingArrival {self.pk}"
+
+
+class PaymentRequest(models.Model):
+    """The helper's "Request payment" (PLAN.md, "The adapted flow keeps Airtasker's release
+    model"; bookings/payment_request.py, BEAV-116): the job is done, optionally with photos
+    and a short note, and for a registered-business helper their own fiscalized invoice,
+    as a photo or scan (`invoice_upload`) or its JIR. One per booking: the move to
+    PAYMENT_REQUESTED happens once.
+
+    Who sees it (hard rule e): the booking's poster and helper only. The photos and the
+    invoice are private uploads; viewers get short-lived URLs of their metadata-free
+    copies (uploads/models.py). The invoice is the helper's own legal duty: TaskBeavo
+    checks the JIR's format only and never calls CIS or any other government service
+    (owner decision 2026-11-14).
+
+    Personal data: `note` is the helper's free text and may name people; it never goes to
+    BookingEvent data, logs, Sentry or Honeycomb. Account deletion (BEAV-153) must
+    anonymise it and Download my data must include it. The photos and invoice are retained
+    with the booking's evidence (bookings.state_machine `_retain_evidence`).
+    """
+
+    booking = models.OneToOneField(
+        Booking, on_delete=models.PROTECT, primary_key=True, related_name="payment_request"
+    )
+    note = models.TextField(blank=True)
+    invoice_upload = models.ForeignKey(
+        "uploads.Upload", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    # The JIR the helper typed: a UUID, stored lower case.
+    invoice_jir = models.CharField(max_length=36, blank=True)
+    created_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "booking_payment_requests"
+
+    def __str__(self) -> str:
+        return f"PaymentRequest {self.pk}"
+
+
+class PaymentRequestPhoto(models.Model):
+    """A photo of the finished job attached to a payment request, in the helper's order.
+    An EVIDENCE_PHOTO upload: its capture data stays server-side."""
+
+    payment_request = models.ForeignKey(
+        PaymentRequest, on_delete=models.CASCADE, related_name="photos"
+    )
+    upload = models.OneToOneField(
+        "uploads.Upload", on_delete=models.CASCADE, related_name="payment_request_photo"
+    )
+    position = models.PositiveSmallIntegerField()
+
+    class Meta:
+        db_table = "booking_payment_request_photos"
+        ordering: ClassVar = ["position"]
+
+    def __str__(self) -> str:
+        return f"PaymentRequestPhoto {self.pk}"

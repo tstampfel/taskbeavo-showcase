@@ -27,7 +27,7 @@ type CameraAccess = 'unknown' | 'explain' | 'denied';
  * "Take photo" (and, for task photos, "Choose photo") that uploads straight to R2 and shows
  * progress. Evidence must come from the camera, so it has no library button. Before the
  * system camera prompt, an explanation in the user's language says why it's needed; a
- * refusal links to Settings and never re-prompts. Task, booking and evidence screens
+ * refusal links to Settings and never re-prompts. Task, invoice and evidence screens
  * (BEAV-86, 87, 116, 125) place it.
  */
 export function PhotoUploader({ purpose, onUploaded, preview = true }: PhotoUploaderProps) {
@@ -89,7 +89,7 @@ export function PhotoUploader({ purpose, onUploaded, preview = true }: PhotoUplo
         busy={busy}
         onPress={() => void takePhoto()}
       />
-      {purpose === 'TASK_PHOTO' ? (
+      {purpose !== 'EVIDENCE_PHOTO' ? (
         <Button
           testID="choose-photo"
           variant="secondary"

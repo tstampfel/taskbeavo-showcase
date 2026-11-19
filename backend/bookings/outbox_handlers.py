@@ -75,11 +75,16 @@ poster's answer, or a reminder, prompt or question of the timeline. Both sides g
 event; the step's push (and email, by the kind's rule) goes to whoever must hear or act
 (`ARRIVAL_PUSHES`). The payload's `step` is an enum key; no ETA or time in the push.
 
+`booking.payment_requested`: the helper requested payment (bookings/payment_request.py,
+BEAV-116). The poster gets the `booking.payment_requested` push and email, in their
+language; the push opens the release screen. No names, amounts, photos or note in it:
+the app loads them. The live event to both sides is `booking.updated`.
+
 `booking.late_payment_refunded`: that refund was made. The poster gets a push and an
 email, in their language, saying their payment was refunded in full.
 """
 
-from bookings import arrival, contract_email, settlement, withdrawal_email
+from bookings import arrival, contract_email, payment_request, settlement, withdrawal_email
 from bookings.cancel import CANCELLED_TOPIC, WITHDRAWAL_RECEIVED_TOPIC
 from bookings.checkout import (
     ACTION_REQUIRED_TOPIC,
@@ -159,6 +164,14 @@ def confirm_the_booking(row: Outbox) -> None:
     ).values_list("helper_id", flat=True)
     notify(row, "booking.offer_declined", declined, actor_id=booking.poster_id)
     notify(row, contract_email.KIND, [booking.poster_id])
+
+
+@register_handler(payment_request.REQUESTED_TOPIC)
+def ask_the_poster_to_release(row: Outbox) -> None:
+    booking = Booking.objects.filter(pk=row.aggregate_id).first()
+    if booking is None or booking.status != Booking.Status.PAYMENT_REQUESTED:
+        return  # released, disputed or settled meanwhile: nothing left to ask
+    notify(row, "booking.payment_requested", [booking.poster_id], actor_id=booking.helper_id)
 
 
 @register_handler(PAYMENT_ATTEMPT_FAILED_TOPIC)

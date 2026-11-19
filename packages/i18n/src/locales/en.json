@@ -190,7 +190,10 @@
     "CANCELLATION_CHANGED": "The refund changed since you opened this screen, because a deadline passed. Check the new amount. Nothing was cancelled.",
     "INVALID_WITHDRAWAL_DETAILS": "Withdrawal details are missing or invalid. Check your name and email address.",
     "INVALID_ETA": "Pick an arrival time between 1 minute and 4 hours from now.",
-    "CONSENT_UNAVAILABLE": "Analytics and news can't be switched on right now. Please try again later."
+    "CONSENT_UNAVAILABLE": "Analytics and news can't be switched on right now. Please try again later.",
+    "PAYMENT_REQUEST_TOO_EARLY": "You can request payment once the job has started.",
+    "INVOICE_REQUIRED": "Add your fiscalized invoice first: a photo or scan, or its JIR.",
+    "INVALID_PAYMENT_REQUEST": "Something in the request isn't right. Check the note, the photos and the JIR, then try again."
   },
   "uploads": {
     "choosePhoto": "Choose photo",
@@ -878,7 +881,8 @@
       "arrival": "Day of the job",
       "cancel": "Cancel or withdraw",
       "noAccess": "Choose what happens next",
-      "release": "Release payment"
+      "release": "Release payment",
+      "requestPayment": "Request payment"
     },
     "safety": "Keep payment and chat in TaskBeavo to stay protected.",
     "amountLabelPoster": "You pay",
@@ -1063,6 +1067,34 @@
       "tooFarAhead": "Please choose a day within the next 60 days.",
       "budget": "Enter your budget in euros, in numbers only.",
       "budgetTooHigh": "The budget can be at most €10,000."
+    }
+  },
+  "requestPayment": {
+    "title": "Request payment",
+    "back": "Back",
+    "backToBooking": "Back to the booking",
+    "loadError": "We couldn't load this booking. Check your connection and try again.",
+    "retry": "Try again",
+    "photosTitle": "Add photos of the finished job (optional)",
+    "photosAdded": "{count, plural, one {# photo added} other {# photos added}}",
+    "photosMax": "You've added the most photos you can.",
+    "noteLabel": "Note (optional)",
+    "noteHint": "For example, where you left the receipt or the keys.",
+    "invoiceTitle": "Your fiscalized invoice",
+    "invoiceBody": "As a registered business, you issue your own fiscalized invoice for this task. Add a photo or scan of it, or type its JIR. The poster can see it.",
+    "invoiceAdded": "Invoice added",
+    "jirLabel": "JIR of the invoice",
+    "jirHint": "36 characters with dashes, as printed on the invoice.",
+    "releaseNote": "The poster is notified and releases the payment when they're happy. Payment is held securely via Stripe until then.",
+    "submit": "Request payment",
+    "requested": "Payment requested",
+    "requestedBody": "Waiting for the poster to release {amount}.",
+    "unavailable": "You can request payment once the job has started and while the payment is held.",
+    "problems": {
+      "invoiceMissing": "Add a photo or scan of your invoice, or type its JIR.",
+      "jirInvalid": "That doesn't look like a JIR. Check it against the invoice.",
+      "noteTooLong": "The note can be up to 1000 characters.",
+      "tooManyPhotos": "You can add up to 6 photos."
     }
   }
 }

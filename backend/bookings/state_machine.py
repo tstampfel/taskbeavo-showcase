@@ -43,7 +43,13 @@ from accounts.models import User
 from areas.services import assert_in_service_area
 from bookings import credit
 from bookings.alerts import money_alert
-from bookings.models import Booking, BookingEvent, CancellationSettlement, NoFaultRequest
+from bookings.models import (
+    Booking,
+    BookingEvent,
+    CancellationSettlement,
+    NoFaultRequest,
+    PaymentRequest,
+)
 from bookings.money import fee_schedule_at
 from bookings.queries import active, task_is_booked
 from care_contacts.models import CareContact
@@ -57,7 +63,8 @@ from offers.services import task_ends_at, withdraw_registered_only
 from payments.models import StripeEvent
 from staff import retention as staff_retention
 from tasks.models import Task
-from uploads.services import lift_legal_hold, place_legal_hold
+from uploads.models import Upload
+from uploads.services import RetentionOutcome, lift_legal_hold, place_legal_hold, set_retention
 
 S = Booking.Status
 A = ActorKind
@@ -75,6 +82,8 @@ WITHDRAWAL_CANCEL_REASON = "WITHDRAWAL"
 # A no-show the poster reported (bookings/arrival.py): only support, the system or Stripe
 # move it on, never the poster or the helper.
 NO_SHOW_CANCEL_REASON = "NO_SHOW"
+# The no-fault label of the poster's free cancel after "Running late" (bookings/no_fault.py).
+LATE_HELPER_LABEL = "HELPER_LATE"
 
 # The BookingEvent type of a Stripe event support must look at (`apply_stripe_transition`).
 SUPPORT_FLAG = "support_flag"
@@ -113,6 +122,12 @@ TRANSITIONS: Mapping[tuple[S, S], frozenset[A]] = {
     (S.PAYMENT_REQUESTED, S.RELEASED): frozenset({A.POSTER, A.ADMIN}),
     (S.PAYMENT_REQUESTED, S.PARTIALLY_SETTLED): frozenset({A.STRIPE_WEBHOOK}),
     (S.PAYMENT_REQUESTED, S.DISPUTED): frozenset({A.POSTER, _CHARGEBACK}),
+    # Only the poster's no-show "No" and free cancel after "Running late" (review R1-1,
+    # owner decision 2026-11-19): a payment request doesn't end those routes until the
+    # poster said "Yes, they came" (bookings/arrival.py). Checked in `_check_after_request`.
+    (S.PAYMENT_REQUESTED, S.CANCEL_REQUESTED): frozenset({A.POSTER}),
+    # Support rejects such a no-show (the helper was there): back to the request.
+    (S.CANCEL_REQUESTED, S.PAYMENT_REQUESTED): frozenset({A.ADMIN}),
     # 30 days with no release and no dispute.
     (S.PAYMENT_REQUESTED, S.REFUNDED): frozenset({A.STRIPE_WEBHOOK}),
     (S.DISPUTED, S.RELEASED): frozenset({A.ADMIN}),
@@ -483,6 +498,7 @@ def transition(
                 lock_poster(poster_id.first())
             with locked_for_update(Booking.objects, pk) as booking:
                 _check_actor(booking, target, actor_kind, actor)
+                _check_after_request(booking, target, data)
                 _apply(booking, target, actor_kind, actor, data, now or timezone.now())
     except Booking.DoesNotExist:
         raise ApiError(ErrorCode.BOOKING_NOT_FOUND, "No such booking.") from None
@@ -611,6 +627,22 @@ def _check_actor(booking: Booking, target: S, actor_kind: A, actor: User | None)
         )
 
 
+def _check_after_request(booking: Booking, target: S, data: Mapping[str, Any] | None) -> None:
+    """A payment request ends cancelling (rule g, "Helper has already requested payment"),
+    except the poster's no-show "No" and free cancel after "Running late" (review R1-1)."""
+    if booking.status != S.PAYMENT_REQUESTED or target != S.CANCEL_REQUESTED:
+        return
+    data = data or {}
+    if (
+        data.get("reason") == NO_SHOW_CANCEL_REASON
+        or data.get("no_fault_label") == LATE_HELPER_LABEL
+    ):
+        return
+    raise ApiError(
+        ErrorCode.BOOKING_ACTION_NOT_ALLOWED, "Payment was requested: this isn't a cancellation."
+    )
+
+
 def _apply(
     booking: Booking,
     target: S,
@@ -620,10 +652,16 @@ def _apply(
     now: dt.datetime,
 ) -> None:
     source = S(booking.status)
+    source_since = booking.status_changed_at
     booking.status = target
     booking.status_changed_at = now
     fields = ["status", "status_changed_at", "updated_at"]
-    if target == S.PAYMENT_REQUESTED:
+    if target == S.PAYMENT_REQUESTED and source == S.CANCEL_REQUESTED:
+        # Back from a rejected no-show: the request stands as made.
+        booking.cancel_requested_at = None
+        booking.cancel_requested_by = ""
+        fields += ["cancel_requested_at", "cancel_requested_by"]
+    elif target == S.PAYMENT_REQUESTED:
         booking.payment_requested_at = now
         fields.append("payment_requested_at")
     elif target == S.RELEASED:
@@ -655,19 +693,59 @@ def _apply(
         # credit back; confirm_refund also restores it for a partly settled cancel.
         credit.restore(booking, now, reason="refunded")
     _legal_hold(booking, source, target, now)
+    if target == S.CLOSED:
+        _retain_evidence(booking, source, source_since, now)
     _record(booking, source, target, actor_kind, actor, data or {})
 
 
 def _legal_hold(booking: Booking, source: S, target: S, now: dt.datetime) -> None:
     """An open dispute or chargeback keeps the task's photos and the staff notes on the
-    booking as evidence (BEAV-63, staff.retention). Booking evidence photos join them
-    with BEAV-116."""
+    booking as evidence (BEAV-63, staff.retention), with the photos and invoice of its
+    payment request (BEAV-116)."""
     if target == S.DISPUTED:
-        place_legal_hold(booking.task.photos.all())
+        place_legal_hold([*booking.task.photos.all(), *evidence_uploads(booking)])
         staff_retention.place_legal_hold(Booking._meta.label_lower, str(booking.pk))
     elif source == S.DISPUTED:
-        lift_legal_hold(booking.task.photos.all(), resolved_at=now)
+        lift_legal_hold([*booking.task.photos.all(), *evidence_uploads(booking)], resolved_at=now)
         staff_retention.lift_legal_hold(Booking._meta.label_lower, str(booking.pk), resolved_at=now)
+
+
+def evidence_uploads(booking: Booking) -> list[Upload]:
+    """The photos and invoice of the booking's payment request (bookings/payment_request.py);
+    empty when payment wasn't requested."""
+    request = PaymentRequest.objects.filter(booking=booking).first()
+    if request is None:
+        return []
+    found = [photo.upload for photo in request.photos.select_related("upload")]
+    if request.invoice_upload is not None:
+        found.append(request.invoice_upload)
+    return found
+
+
+# How a booking that closes from each status ended, for its evidence's retention
+# (uploads.services.set_retention): a refund or a partial settlement keeps it longer,
+# counted from when that money moved (the status the booking closes from).
+_CLOSING_OUTCOMES: Mapping[S, RetentionOutcome] = {
+    S.REFUNDED: RetentionOutcome.REFUND,
+    S.PARTIALLY_SETTLED: RetentionOutcome.PARTIAL_RELEASE,
+}
+
+
+def _retain_evidence(
+    booking: Booking, source: S, source_since: dt.datetime, now: dt.datetime
+) -> None:
+    """The booking closed: start the retention clock of its payment request's photos and
+    invoice (uploads/models.py)."""
+    found = evidence_uploads(booking)
+    if not found:
+        return
+    outcome = _CLOSING_OUTCOMES.get(source, RetentionOutcome.CLOSED)
+    set_retention(
+        found,
+        closed_at=now,
+        outcome=outcome,
+        paid_at=None if outcome == RetentionOutcome.CLOSED else source_since,
+    )
 
 
 def _record(

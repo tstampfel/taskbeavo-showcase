@@ -91,6 +91,11 @@ class Purpose(models.TextChoices):
     # Proof for a booking (no-access, damage): the original stays private, with its time
     # and GPS position kept server-side.
     EVIDENCE_PHOTO = "EVIDENCE_PHOTO"
+    # A registered-business helper's own fiscalized invoice for a booking, as a photo or
+    # scan (BEAV-116). Private: only a clean copy is kept, for the booking's poster and
+    # helper. Taken in the app or on the web. PDFs aren't accepted yet; the helper can
+    # type the invoice's JIR instead.
+    INVOICE = "INVOICE"
 
 
 class Status(models.TextChoices):

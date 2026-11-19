@@ -32,7 +32,16 @@ function booking(extra: Partial<Booking> = {}, task: Partial<Booking['task']> = 
     canRequestNoFault: false,
     noFaultRequest: null,
     cancellation: null,
-    arrival: { id: 'b1', noShowContestBy: null },
+    arrival: {
+      id: 'b1',
+      noShowContestBy: null,
+      canAnswerLate: false,
+      canConfirmCame: false,
+      canConfirmNoShow: false,
+    },
+    canRequestPayment: false,
+    invoiceRequired: false,
+    paymentRequest: null,
     ...extra,
   };
 }
@@ -208,9 +217,35 @@ describe('the links into the other booking screens', () => {
     expect(view(booking({ status: 'PAYMENT_REQUESTED' })).links.arrival).toBe(false);
     const reported = booking({
       status: 'CANCEL_REQUESTED',
-      arrival: { id: 'b1', noShowContestBy: LATER },
+      arrival: {
+        id: 'b1',
+        noShowContestBy: LATER,
+        canAnswerLate: false,
+        canConfirmCame: false,
+        canConfirmNoShow: false,
+      },
     });
     expect(view(reported, 'helper').links.arrival).toBe(true);
+  });
+
+  it("keeps the day of the job open after a payment request while the poster's route is (R1-1)", () => {
+    const open = (flags: Record<string, boolean>) =>
+      booking({
+        status: 'PAYMENT_REQUESTED',
+        arrival: {
+          id: 'b1',
+          noShowContestBy: null,
+          canAnswerLate: false,
+          canConfirmCame: false,
+          canConfirmNoShow: false,
+          ...flags,
+        },
+      });
+    expect(view(open({ canConfirmCame: true })).links.arrival).toBe(true);
+    expect(view(open({ canConfirmNoShow: true })).links.arrival).toBe(true);
+    expect(view(open({ canAnswerLate: true })).links.arrival).toBe(true);
+    // After "Yes, they came" the server says no: only Release is left.
+    expect(view(open({})).links.arrival).toBe(false);
   });
 
   it('offers cancel to the poster only when the server has something to show there', () => {
@@ -229,6 +264,13 @@ describe('the links into the other booking screens', () => {
       view(booking({ noFaultRequest: { id: 'n1', canRespond: true } }), 'helper').links.cancel,
     ).toBe(true);
     expect(view(booking({ canRequestNoFault: true }), 'helper').links.cancel).toBe(true);
+  });
+
+  it('offers the helper Request payment while the server says so', () => {
+    expect(view(booking({ canRequestPayment: true }), 'helper').links.requestPayment).toBe(true);
+    expect(view(booking({ canRequestPayment: false }), 'helper').links.requestPayment).toBe(false);
+    // The server never offers it to the poster; the view doesn't either.
+    expect(view(booking({ canRequestPayment: true })).links.requestPayment).toBe(false);
   });
 
   it('sends the poster to release and to the no-access choice', () => {

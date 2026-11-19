@@ -907,3 +907,12 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 - `postTask.contact.agreement`: the poster confirms the on-site contact agreed to their name and phone being saved (`hasTheirAgreement`).
 - `postTask.waitlist.consent`: the consent to one launch email only; keep it that narrow in every language.
 - `postTask.where.accessHint`, `postTask.contact.intro`, `postTask.review.privacy`: restate hard rule e (exact address, access details and the contact's phone only for the booked helper while the booking is active).
+
+## Request payment (BEAV-116)
+
+DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check. None of it is legal text.
+
+- `requestPayment.*`: the helper's Request payment screen on mobile (mockup 7a): optional photos and note, and for a registered business its fiscalized invoice (a photo or scan, or the JIR) first. `requestPayment.releaseNote` uses the plan's wording ("held securely via Stripe"), never "escrow". `requestPayment.invoiceBody` says the invoice is the helper's own; it promises no check by TaskBeavo or the tax office.
+- `bookingDetail.links.requestPayment`: the helper's button on the booking detail screen.
+- `errors.PAYMENT_REQUEST_TOO_EARLY`, `errors.INVOICE_REQUIRED`, `errors.INVALID_PAYMENT_REQUEST`: the new API error codes.
+- hr `requestPayment.photosAdded` uses one/few/other.

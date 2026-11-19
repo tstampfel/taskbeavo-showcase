@@ -226,7 +226,9 @@ def cancel_for_late_helper(booking: Booking, poster: User, now: dt.datetime) -> 
     """The poster cancels for free after the helper reported running late (user decision
     2026-11-08; bookings/arrival.py): a no-fault cancel the helper's own report already
     agreed to. A full refund at once, with no 48-hour wait, no EUR 5 credit and no
-    reliability fault. `booking` is locked and FUNDS_HELD in the caller's transaction."""
+    reliability fault. `booking` is locked in the caller's transaction, FUNDS_HELD or, if
+    the helper requested payment without the poster's "Yes, they came", PAYMENT_REQUESTED
+    (review R1-1)."""
     reason = NoFaultReason.HELPER_LATE
     booking = state_machine.transition(
         booking.pk,

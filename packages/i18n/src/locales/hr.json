@@ -190,7 +190,10 @@
     "CANCELLATION_CHANGED": "Povrat se promijenio otkad ste otvorili ovaj zaslon jer je prošao rok. Provjerite novi iznos. Ništa nije otkazano.",
     "INVALID_WITHDRAWAL_DETAILS": "Podaci za raskid nedostaju ili nisu ispravni. Provjerite ime i adresu e-pošte.",
     "INVALID_ETA": "Odaberite vrijeme dolaska između 1 minute i 4 sata od sada.",
-    "CONSENT_UNAVAILABLE": "Analitiku i novosti trenutačno nije moguće uključiti. Pokušajte ponovno kasnije."
+    "CONSENT_UNAVAILABLE": "Analitiku i novosti trenutačno nije moguće uključiti. Pokušajte ponovno kasnije.",
+    "PAYMENT_REQUEST_TOO_EARLY": "Isplatu možete zatražiti kad posao započne.",
+    "INVOICE_REQUIRED": "Najprije dodajte svoj fiskalizirani račun: fotografiju ili sken, ili njegov JIR.",
+    "INVALID_PAYMENT_REQUEST": "Nešto u zahtjevu nije u redu. Provjerite napomenu, fotografije i JIR pa pokušajte ponovno."
   },
   "uploads": {
     "choosePhoto": "Odaberi fotografiju",
@@ -878,7 +881,8 @@
       "arrival": "Dan posla",
       "cancel": "Otkaži ili raskini",
       "noAccess": "Odaberite što dalje",
-      "release": "Oslobodi isplatu"
+      "release": "Oslobodi isplatu",
+      "requestPayment": "Zatraži isplatu"
     },
     "safety": "Plaćanje i razgovor zadržite u TaskBeavu kako biste bili zaštićeni.",
     "amountLabelPoster": "Plaćate",
@@ -1063,6 +1067,34 @@
       "tooFarAhead": "Odaberite dan unutar sljedećih 60 dana.",
       "budget": "Upišite budžet u eurima, samo brojkama.",
       "budgetTooHigh": "Budžet može biti najviše 10.000 €."
+    }
+  },
+  "requestPayment": {
+    "title": "Zatraži isplatu",
+    "back": "Natrag",
+    "backToBooking": "Natrag na rezervaciju",
+    "loadError": "Nismo mogli učitati ovu rezervaciju. Provjerite vezu i pokušajte ponovno.",
+    "retry": "Pokušaj ponovno",
+    "photosTitle": "Dodajte fotografije obavljenog posla (neobavezno)",
+    "photosAdded": "{count, plural, one {Dodana je # fotografija} few {Dodane su # fotografije} other {Dodano je # fotografija}}",
+    "photosMax": "Dodali ste najveći broj fotografija.",
+    "noteLabel": "Napomena (neobavezno)",
+    "noteHint": "Na primjer, gdje ste ostavili račun ili ključeve.",
+    "invoiceTitle": "Vaš fiskalizirani račun",
+    "invoiceBody": "Kao registrirani obrt ili tvrtka sami izdajete fiskalizirani račun za ovaj zadatak. Dodajte njegovu fotografiju ili sken, ili upišite JIR. Naručitelj ga može vidjeti.",
+    "invoiceAdded": "Račun je dodan",
+    "jirLabel": "JIR računa",
+    "jirHint": "36 znakova s crticama, kako piše na računu.",
+    "releaseNote": "Naručitelj dobiva obavijest i oslobađa plaćanje kad je zadovoljan. Do tada je plaćanje sigurno zadržano putem Stripea.",
+    "submit": "Zatraži isplatu",
+    "requested": "Isplata je zatražena",
+    "requestedBody": "Čeka se da naručitelj oslobodi {amount}.",
+    "unavailable": "Isplatu možete zatražiti kad posao započne i dok je plaćanje zadržano.",
+    "problems": {
+      "invoiceMissing": "Dodajte fotografiju ili sken računa, ili upišite njegov JIR.",
+      "jirInvalid": "To ne izgleda kao JIR. Provjerite ga na računu.",
+      "noteTooLong": "Napomena može imati najviše 1000 znakova.",
+      "tooManyPhotos": "Možete dodati najviše 6 fotografija."
     }
   }
 }
