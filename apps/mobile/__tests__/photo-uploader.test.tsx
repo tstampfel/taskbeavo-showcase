@@ -129,7 +129,7 @@ describe('PhotoUploader', () => {
     await i18n.changeLanguage('hr');
   });
 
-  const show = (purpose: 'TASK_PHOTO' | 'EVIDENCE_PHOTO', onUploaded = jest.fn()) =>
+  const show = (purpose: 'TASK_PHOTO' | 'EVIDENCE_PHOTO' | 'INVOICE', onUploaded = jest.fn()) =>
     render(
       <MockedProvider>
         <PhotoUploader purpose={purpose} onUploaded={onUploaded} />
@@ -235,5 +235,12 @@ describe('PhotoUploader', () => {
 
     expect(screen.getByTestId('take-photo')).toBeOnTheScreen();
     expect(screen.queryByTestId('choose-photo')).toBeNull();
+  });
+
+  it('lets an invoice come from a scan in the library too', async () => {
+    await show('INVOICE');
+
+    expect(screen.getByTestId('take-photo')).toBeOnTheScreen();
+    expect(screen.getByTestId('choose-photo')).toBeOnTheScreen();
   });
 });

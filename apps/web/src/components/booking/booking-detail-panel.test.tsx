@@ -45,6 +45,9 @@ function booking(extra: Partial<Booking> = {}, exact = true): Booking {
     noFaultRequest: null,
     cancellation: null,
     arrival: { id: 'b1', noShowContestBy: null },
+    canRequestPayment: false,
+    invoiceRequired: false,
+    paymentRequest: null,
     ...extra,
   };
 }

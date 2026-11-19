@@ -32,7 +32,8 @@ import { lineEm, wordsFit } from '../components/ui/heading';
 import { textStyle } from '../components/ui/text-style';
 
 /** The booking screens the detail screen links into, by their route segment. */
-export type BookingScreen = 'checkout' | 'arrival' | 'cancel' | 'no-access' | 'release';
+export type BookingScreen =
+  'checkout' | 'arrival' | 'cancel' | 'no-access' | 'release' | 'request-payment';
 
 export interface BookingDetailScreenProps {
   bookingId: string;
@@ -75,6 +76,7 @@ export function startsBesideStatus(
 
 const LINKS: readonly Link[] = [
   { link: 'release', screen: 'release', primary: true },
+  { link: 'requestPayment', screen: 'request-payment', primary: true },
   { link: 'noAccess', screen: 'no-access', primary: true },
   { link: 'arrival', screen: 'arrival' },
   { link: 'cancel', screen: 'cancel' },

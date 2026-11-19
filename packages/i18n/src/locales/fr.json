@@ -190,7 +190,10 @@
     "CANCELLATION_CHANGED": "Le remboursement a changé depuis l’ouverture de cet écran, car un délai est passé. Vérifiez le nouveau montant. Rien n’a été annulé.",
     "INVALID_WITHDRAWAL_DETAILS": "Les informations de rétractation sont manquantes ou invalides. Vérifiez votre nom et votre adresse e-mail.",
     "INVALID_ETA": "Choisissez une heure d’arrivée entre 1 minute et 4 heures à partir de maintenant.",
-    "CONSENT_UNAVAILABLE": "Les statistiques et les actualités ne peuvent pas être activées pour le moment. Veuillez réessayer plus tard."
+    "CONSENT_UNAVAILABLE": "Les statistiques et les actualités ne peuvent pas être activées pour le moment. Veuillez réessayer plus tard.",
+    "PAYMENT_REQUEST_TOO_EARLY": "Vous pourrez demander le paiement une fois la mission commencée.",
+    "INVOICE_REQUIRED": "Ajoutez d’abord votre facture fiscalisée : une photo ou un scan, ou son JIR.",
+    "INVALID_PAYMENT_REQUEST": "Quelque chose ne va pas dans la demande. Vérifiez la note, les photos et le JIR, puis réessayez."
   },
   "uploads": {
     "choosePhoto": "Choisir une photo",
@@ -878,7 +881,8 @@
       "arrival": "Jour de la mission",
       "cancel": "Annuler ou se rétracter",
       "noAccess": "Choisir la suite",
-      "release": "Verser le paiement"
+      "release": "Verser le paiement",
+      "requestPayment": "Demander le paiement"
     },
     "safety": "Gardez le paiement et la discussion dans TaskBeavo pour rester protégé.",
     "amountLabelPoster": "Vous payez",
@@ -1063,6 +1067,34 @@
       "tooFarAhead": "Veuillez choisir un jour dans les 60 prochains jours.",
       "budget": "Indiquez votre budget en euros, uniquement en chiffres.",
       "budgetTooHigh": "Le budget ne peut pas dépasser 10 000 €."
+    }
+  },
+  "requestPayment": {
+    "title": "Demander le paiement",
+    "back": "Retour",
+    "backToBooking": "Retour à la réservation",
+    "loadError": "Nous n’avons pas pu charger cette réservation. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer",
+    "photosTitle": "Ajoutez des photos du travail terminé (facultatif)",
+    "photosAdded": "{count, plural, one {# photo ajoutée} other {# photos ajoutées}}",
+    "photosMax": "Vous avez ajouté le nombre maximum de photos.",
+    "noteLabel": "Note (facultatif)",
+    "noteHint": "Par exemple, où vous avez laissé le ticket de caisse ou les clés.",
+    "invoiceTitle": "Votre facture fiscalisée",
+    "invoiceBody": "En tant qu’entreprise enregistrée, vous émettez votre propre facture fiscalisée pour cette mission. Ajoutez-en une photo ou un scan, ou saisissez son JIR. Le demandeur peut la voir.",
+    "invoiceAdded": "Facture ajoutée",
+    "jirLabel": "JIR de la facture",
+    "jirHint": "36 caractères avec des tirets, tel qu’imprimé sur la facture.",
+    "releaseNote": "Le demandeur est averti et débloque le paiement lorsqu’il est satisfait. D’ici là, le paiement est conservé en toute sécurité via Stripe.",
+    "submit": "Demander le paiement",
+    "requested": "Paiement demandé",
+    "requestedBody": "En attente du déblocage de {amount} par le demandeur.",
+    "unavailable": "Vous pourrez demander le paiement une fois la mission commencée et tant que le paiement est conservé.",
+    "problems": {
+      "invoiceMissing": "Ajoutez une photo ou un scan de votre facture, ou saisissez son JIR.",
+      "jirInvalid": "Cela ne ressemble pas à un JIR. Vérifiez-le sur la facture.",
+      "noteTooLong": "La note peut contenir jusqu’à 1000 caractères.",
+      "tooManyPhotos": "Vous pouvez ajouter jusqu’à 6 photos."
     }
   }
 }

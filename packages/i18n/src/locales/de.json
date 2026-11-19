@@ -190,7 +190,10 @@
     "CANCELLATION_CHANGED": "Die Erstattung hat sich geändert, seit Sie diese Seite geöffnet haben, weil eine Frist abgelaufen ist. Prüfen Sie den neuen Betrag. Es wurde nichts storniert.",
     "INVALID_WITHDRAWAL_DETAILS": "Angaben zum Widerruf fehlen oder sind ungültig. Prüfen Sie Ihren Namen und Ihre E-Mail-Adresse.",
     "INVALID_ETA": "Wählen Sie eine Ankunftszeit zwischen 1 Minute und 4 Stunden ab jetzt.",
-    "CONSENT_UNAVAILABLE": "Analyse und Neuigkeiten können gerade nicht eingeschaltet werden. Bitte versuchen Sie es später erneut."
+    "CONSENT_UNAVAILABLE": "Analyse und Neuigkeiten können gerade nicht eingeschaltet werden. Bitte versuchen Sie es später erneut.",
+    "PAYMENT_REQUEST_TOO_EARLY": "Sie können die Zahlung anfordern, sobald der Auftrag begonnen hat.",
+    "INVOICE_REQUIRED": "Fügen Sie zuerst Ihre fiskalisierte Rechnung hinzu: ein Foto oder einen Scan oder ihre JIR.",
+    "INVALID_PAYMENT_REQUEST": "Etwas an der Anfrage stimmt nicht. Prüfen Sie die Notiz, die Fotos und die JIR und versuchen Sie es erneut."
   },
   "uploads": {
     "choosePhoto": "Foto auswählen",
@@ -878,7 +881,8 @@
       "arrival": "Tag des Auftrags",
       "cancel": "Stornieren oder widerrufen",
       "noAccess": "Entscheiden, wie es weitergeht",
-      "release": "Zahlung freigeben"
+      "release": "Zahlung freigeben",
+      "requestPayment": "Zahlung anfordern"
     },
     "safety": "Wickeln Sie Zahlung und Chat über TaskBeavo ab, um geschützt zu bleiben.",
     "amountLabelPoster": "Sie zahlen",
@@ -1063,6 +1067,34 @@
       "tooFarAhead": "Bitte wählen Sie einen Tag innerhalb der nächsten 60 Tage.",
       "budget": "Geben Sie Ihr Budget in Euro ein, nur mit Ziffern.",
       "budgetTooHigh": "Das Budget darf höchstens 10.000 € betragen."
+    }
+  },
+  "requestPayment": {
+    "title": "Zahlung anfordern",
+    "back": "Zurück",
+    "backToBooking": "Zurück zur Buchung",
+    "loadError": "Wir konnten diese Buchung nicht laden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "retry": "Erneut versuchen",
+    "photosTitle": "Fotos der erledigten Arbeit hinzufügen (optional)",
+    "photosAdded": "{count, plural, one {# Foto hinzugefügt} other {# Fotos hinzugefügt}}",
+    "photosMax": "Sie haben die größtmögliche Zahl an Fotos hinzugefügt.",
+    "noteLabel": "Notiz (optional)",
+    "noteHint": "Zum Beispiel, wo Sie den Kassenbon oder die Schlüssel hinterlassen haben.",
+    "invoiceTitle": "Ihre fiskalisierte Rechnung",
+    "invoiceBody": "Als eingetragenes Unternehmen stellen Sie für diesen Auftrag Ihre eigene fiskalisierte Rechnung aus. Fügen Sie ein Foto oder einen Scan davon hinzu oder geben Sie ihre JIR ein. Der Auftraggeber kann sie sehen.",
+    "invoiceAdded": "Rechnung hinzugefügt",
+    "jirLabel": "JIR der Rechnung",
+    "jirHint": "36 Zeichen mit Bindestrichen, wie auf der Rechnung angegeben.",
+    "releaseNote": "Der Auftraggeber wird benachrichtigt und gibt die Zahlung frei, wenn er zufrieden ist. Bis dahin wird die Zahlung sicher über Stripe zurückgehalten.",
+    "submit": "Zahlung anfordern",
+    "requested": "Zahlung angefordert",
+    "requestedBody": "Warten, bis der Auftraggeber {amount} freigibt.",
+    "unavailable": "Sie können die Zahlung anfordern, sobald der Auftrag begonnen hat und solange die Zahlung zurückgehalten wird.",
+    "problems": {
+      "invoiceMissing": "Fügen Sie ein Foto oder einen Scan Ihrer Rechnung hinzu oder geben Sie ihre JIR ein.",
+      "jirInvalid": "Das sieht nicht wie eine JIR aus. Prüfen Sie sie auf der Rechnung.",
+      "noteTooLong": "Die Notiz darf höchstens 1000 Zeichen lang sein.",
+      "tooManyPhotos": "Sie können bis zu 6 Fotos hinzufügen."
     }
   }
 }

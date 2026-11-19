@@ -57,6 +57,9 @@ function booking(helperUserId: string, { exact = true, ...extra }: Record<string
     noFaultRequest: null,
     cancellation: null,
     arrival: { __typename: 'BookingArrival', id: 'booking-1', noShowContestBy: null },
+    canRequestPayment: false,
+    invoiceRequired: false,
+    paymentRequest: null,
     ...extra,
   };
 }
