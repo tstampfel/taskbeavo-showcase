@@ -21,6 +21,18 @@ export const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 /** Generic and identifying, as Nominatim's usage policy asks; no person's name or email. */
 export const NOMINATIM_USER_AGENT = 'TaskBeavo-showcase/1.0';
 export const MIN_QUERY_LENGTH = 3;
+/** Nominatim's usage policy: at most one request per second. */
+export const MIN_REQUEST_INTERVAL_MS = 1_000;
+
+export interface Clock {
+  now(): number;
+  sleep(ms: number): Promise<void>;
+}
+
+const systemClock: Clock = {
+  now: () => Date.now(),
+  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+};
 
 interface NominatimPlace {
   place_id?: number | string;
@@ -33,10 +45,28 @@ interface NominatimPlace {
 /**
  * OpenStreetMap Nominatim (no key needed), limited to Croatia. The address text goes to the
  * OpenStreetMap Foundation's servers. Usage policy: the wizard searches only when the poster
- * taps Search or submits, one request at a time, and shows the attribution. Throws when the
+ * taps Search or submits and shows the attribution; here, requests go one at a time and at
+ * least a second apart (a quick second tap waits its turn). Throws when the
  * service can't be reached, so the wizard can offer a retry; the draft stays saved.
  */
-export function nominatimSearch(request: typeof fetch = fetch): AddressSearch {
+export function nominatimSearch(
+  request: typeof fetch = fetch,
+  clock: Clock = systemClock,
+): AddressSearch {
+  let lastRequestAt = -Infinity;
+  let queue: Promise<void> = Promise.resolve();
+
+  /** Resolves when this request may go: after the one before it, and a second after it. */
+  function turn(): Promise<void> {
+    const mine = queue.then(async () => {
+      const wait = lastRequestAt + MIN_REQUEST_INTERVAL_MS - clock.now();
+      if (wait > 0) await clock.sleep(wait);
+      lastRequestAt = clock.now();
+    });
+    queue = mine.catch(() => undefined);
+    return mine;
+  }
+
   return {
     attribution: '© OpenStreetMap contributors',
     async search(query, locale) {
@@ -52,6 +82,7 @@ export function nominatimSearch(request: typeof fetch = fetch): AddressSearch {
       ]
         .map(([key, value]) => `${key}=${encodeURIComponent(value!)}`)
         .join('&');
+      await turn();
       const response = await request(`${NOMINATIM_URL}?${params}`, {
         headers: { Accept: 'application/json', 'User-Agent': NOMINATIM_USER_AGENT },
       });

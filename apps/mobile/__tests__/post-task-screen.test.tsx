@@ -486,6 +486,59 @@ it('edits a part from the review and comes back to it', async () => {
   expect(screen.getByTestId('post-review-budget').props.children).toBe('€45.00');
 });
 
+it('edits the description and photos from the review, then walks the steps again', async () => {
+  const plain = memory();
+  const secure = memory();
+  await createTaskDraftStore(plain, secure).save({
+    ...emptyDraft(),
+    step: 'review',
+    category: 'ERRANDS',
+    title: 'Grocery run',
+    description: 'Bread and milk.',
+    photos: [
+      { id: 'upload-1', url: null },
+      { id: 'upload-2', url: null },
+    ],
+    address: 'Ulica Ante Starčevića 1, Dubrovnik',
+    lat: 42.6583,
+    lng: 18.0861,
+    city: 'Dubrovnik',
+    dateMode: 'flexible',
+    budget: '30',
+  });
+  const { variables, props } = await renderWizard({
+    plain,
+    secure,
+    answers: { PostTask: () => POSTED },
+  });
+  await fireEvent.press(await screen.findByTestId('post-resume-continue'));
+  expect((await screen.findByTestId('post-review-details')).props.children).toBe('Bread and milk.');
+
+  // A photo the upload sweep removed, or a typo: both are fixed from the review.
+  await fireEvent.press(screen.getByTestId('post-edit-details'));
+  await fireEvent.changeText(await screen.findByTestId('post-description'), 'Bread, milk, eggs.');
+  await fireEvent.press(screen.getByTestId('post-photo-remove-0'));
+  await fireEvent.press(screen.getByTestId('post-next'));
+  expect((await screen.findByTestId('post-review-details')).props.children).toBe(
+    'Bread, milk, eggs.',
+  );
+  expect(screen.getByText('1 photo')).toBeTruthy();
+
+  // Back at the review, the edit is over: Back goes to the budget step, not round in a loop.
+  await fireEvent.press(screen.getByTestId('screen-back'));
+  expect(await screen.findByTestId('post-budget')).toBeTruthy();
+  await fireEvent.press(screen.getByTestId('screen-back'));
+  expect(await screen.findByTestId('post-when-flexible')).toBeTruthy();
+  await fireEvent.press(screen.getByTestId('post-next'));
+  await fireEvent.press(await screen.findByTestId('post-next'));
+  await fireEvent.press(await screen.findByTestId('post-submit'));
+
+  await waitFor(() => expect(props.onPosted).toHaveBeenCalledWith('task-9'));
+  expect(variables.PostTask).toMatchObject({
+    input: { description: 'Bread, milk, eggs.', photoIds: ['upload-2'] },
+  });
+});
+
 it('closes from the first step without losing the draft', async () => {
   const plain = memory();
   const { props } = await renderWizard({ plain });

@@ -95,6 +95,8 @@ export function PostTaskScreen({
 
   function goTo(step: WizardStep) {
     setShowProblems(false);
+    // Back at the review, an edit is done: Next and Back walk the steps again from here.
+    if (step === 'review') setBackToReview(false);
     setDraft((current) => ({ ...current, step }));
   }
 
@@ -113,8 +115,8 @@ export function PostTaskScreen({
   }
 
   function back() {
-    if (index === 0) onClose();
-    else if (backToReview) goTo('review');
+    if (backToReview) goTo('review');
+    else if (index === 0) onClose();
     else goTo(WIZARD_STEPS[index - 1]!);
   }
 
@@ -254,7 +256,7 @@ export function PostTaskScreen({
     <Screen
       title={reviewing ? t('postTask.review.title') : t('postTask.title')}
       onBack={back}
-      backLabel={index === 0 ? t('postTask.close') : t('postTask.back')}
+      backLabel={index === 0 && !backToReview ? t('postTask.close') : t('postTask.back')}
       footer={footer}
       testID="post-task"
     >

@@ -1,4 +1,9 @@
-import { NOMINATIM_USER_AGENT, nominatimSearch } from '../src/tasks/address-search';
+import {
+  MIN_REQUEST_INTERVAL_MS,
+  NOMINATIM_USER_AGENT,
+  nominatimSearch,
+  type Clock,
+} from '../src/tasks/address-search';
 
 function answer(body: unknown, ok = true) {
   return jest.fn(async () => ({ ok, status: ok ? 200 : 503, json: async () => body }) as Response);
@@ -49,4 +54,51 @@ it('throws when the service fails, so the wizard can offer a retry', async () =>
 
 it('names OpenStreetMap as its terms ask', () => {
   expect(nominatimSearch(answer([])).attribution).toBe('© OpenStreetMap contributors');
+});
+
+it('keeps at least a second between requests, as Nominatim asks', async () => {
+  let time = 10_000;
+  const sent: number[] = [];
+  const slept: number[] = [];
+  const clock: Clock = {
+    now: () => time,
+    sleep: async (ms) => {
+      slept.push(ms);
+      time += ms;
+    },
+  };
+  const request = jest.fn(async () => {
+    sent.push(time);
+    time += 200; // the answer takes 200 ms
+    return { ok: true, status: 200, json: async () => [] } as unknown as Response;
+  });
+  const search = nominatimSearch(request, clock);
+
+  await search.search('Gruž', 'hr');
+  await search.search('Gruž 1', 'hr');
+  time += 5_000;
+  await search.search('Lapad', 'hr');
+
+  expect(sent).toEqual([10_000, 11_000, 16_200]);
+  expect(slept).toEqual([MIN_REQUEST_INTERVAL_MS - 200]);
+});
+
+it('queues taps that come at the same time instead of sending them together', async () => {
+  let time = 0;
+  const sent: number[] = [];
+  const clock: Clock = {
+    now: () => time,
+    sleep: async (ms) => {
+      time += ms;
+    },
+  };
+  const request = jest.fn(async () => {
+    sent.push(time);
+    return { ok: true, status: 200, json: async () => [] } as unknown as Response;
+  });
+  const search = nominatimSearch(request, clock);
+
+  await Promise.all([search.search('Gruž', 'hr'), search.search('Lapad', 'hr')]);
+
+  expect(sent).toEqual([0, MIN_REQUEST_INTERVAL_MS]);
 });

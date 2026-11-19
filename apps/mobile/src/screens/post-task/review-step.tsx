@@ -24,6 +24,13 @@ import {
 } from '../../tasks/post-task-model';
 import { ProblemText } from './simple-steps';
 
+const EXCERPT_LENGTH = 140;
+
+/** The start of a long description, so the review stays short; Edit shows all of it. */
+function excerpt(text: string): string {
+  return text.length > EXCERPT_LENGTH ? `${text.slice(0, EXCERPT_LENGTH).trimEnd()}…` : text;
+}
+
 /** Mockup 03, 3g: what the poster is about to post, each part with Edit. */
 export function ReviewStep({
   draft,
@@ -59,14 +66,16 @@ export function ReviewStep({
       step: 'what',
       label: t('postTask.review.what'),
       main: draft.title.trim(),
-      detail: [
-        draft.category ? t(`enums.TaskCategory.${draft.category}`) : null,
+      detail: draft.category ? t(`enums.TaskCategory.${draft.category}`) : undefined,
+    },
+    {
+      step: 'details',
+      label: t('postTask.review.details'),
+      main: excerpt(draft.description.trim()),
+      detail:
         draft.photos.length > 0
           ? t('postTask.review.photos', { count: draft.photos.length })
-          : null,
-      ]
-        .filter(Boolean)
-        .join(' · '),
+          : t('postTask.review.noPhotos'),
     },
     {
       step: 'where',
