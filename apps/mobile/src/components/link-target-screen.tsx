@@ -8,7 +8,7 @@ import { Button, Heading } from './ui';
 import { textStyle } from './ui/text-style';
 
 /** The screens links open; each has its title under `linkTarget.<screen>`. */
-export type LinkTarget = 'task' | 'release' | 'noAccess' | 'conversation' | 'payouts';
+export type LinkTarget = 'release' | 'noAccess' | 'conversation' | 'payouts';
 
 /**
  * Placeholder for a screen a link opens, until the real screen is built. It only shows where

@@ -1,3 +1,5 @@
+import { useQuery } from '@apollo/client/react';
+import { ViewerDocument } from '@taskbeavo/graphql';
 import { colors } from '@taskbeavo/ui-tokens';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -12,9 +14,35 @@ import { Button, Heading } from '../src/components/ui';
 import { fonts } from '../src/fonts';
 import { appLanguage } from '../src/i18n/language';
 import { chooseLocale } from '../src/i18n/preference';
+import { TaskFeedScreen } from '../src/screens/task-feed-screen';
 
-/** Placeholder welcome screen (mockup 01-onboarding, "1a Welcome") until onboarding is built. */
-export default function Welcome() {
+/**
+ * Home. Signed in: the task feed (mockup 02, BEAV-90). Signed out: the placeholder welcome
+ * screen (mockup 01-onboarding, "1a Welcome") until onboarding is built.
+ */
+export default function Home() {
+  const router = useRouter();
+  const viewer = useQuery(ViewerDocument, { fetchPolicy: 'cache-and-network' }).data?.viewer;
+  if (viewer) {
+    return (
+      <TaskFeedScreen
+        firstName={viewer.firstName}
+        onOpenTask={(id) => router.push({ pathname: '/tasks/[id]', params: { id } })}
+        onOpenSettings={() => router.push('/settings')}
+        banner={<TermsBanner />}
+        account={
+          <>
+            <AccountRow />
+            <LanguageSwitcher onChoose={(locale) => void chooseLocale(locale, appLanguage)} />
+          </>
+        }
+      />
+    );
+  }
+  return <Welcome />;
+}
+
+function Welcome() {
   const { t } = useTranslation();
   const router = useRouter();
 

@@ -9,15 +9,47 @@ import Conversation from '../app/conversations/[id]';
 import Payouts from '../app/helper/payouts/index';
 import PayoutsRefresh from '../app/helper/payouts/refresh';
 import PayoutsReturn from '../app/helper/payouts/return';
+import { MockedProvider } from '@apollo/client/testing/react';
+import { TaskListingDocument } from '@taskbeavo/graphql';
 import TaskDetail from '../app/tasks/[id]/index';
 import Checkout from '../app/tasks/[id]/offers/[offerId]/checkout';
 import { i18n } from '../src/i18n';
 import { appPathFromLink } from '../src/links/routes';
 import { topSafeAreaEdge } from '../src/testing/safe-area';
 
+const listing = {
+  __typename: 'TaskListing',
+  id: '42',
+  category: 'GARDEN',
+  title: 'Mow the lawn',
+  description: '',
+  approximateLat: 42.66,
+  approximateLng: 18.09,
+  serviceAreaName: 'Dubrovnik',
+  windowStart: null,
+  windowEnd: null,
+  flexibleDate: true,
+  budgetCents: 3_500,
+  photos: [],
+  isMine: false,
+  publishedAt: '2026-11-19T10:00:00Z',
+};
+
+function TaskDetailWithApi() {
+  const mock = {
+    request: { query: TaskListingDocument, variables: { id: '42' } },
+    result: { data: { taskListing: listing } },
+  };
+  return (
+    <MockedProvider mocks={[mock]}>
+      <TaskDetail />
+    </MockedProvider>
+  );
+}
+
 const routes = {
   index: () => <Text testID="home">home</Text>,
-  'tasks/[id]/index': TaskDetail,
+  'tasks/[id]/index': TaskDetailWithApi,
   'tasks/[id]/offers/[offerId]/checkout': Checkout,
   'bookings/[id]/release': ReleasePayment,
   'bookings/[id]/no-access': NoAccess,
@@ -34,7 +66,6 @@ describe('screens opened by links', () => {
   });
 
   it.each([
-    ['https://taskbeavo.com/de/tasks/42', '/tasks/42', 'task'],
     ['https://taskbeavo.com/fr/bookings/7/release', '/bookings/7/release', 'release'],
     ['taskbeavo://bookings/7/no-access', '/bookings/7/no-access', 'noAccess'],
     ['/conversations/3', '/conversations/3', 'conversation'],
@@ -47,6 +78,16 @@ describe('screens opened by links', () => {
     expect(screen).toHavePathname(pathname);
     expect(screen.getByTestId(`link-target-${target}`)).toBeOnTheScreen();
     expect(screen.getByRole('header')).toHaveTextContent(catalogues.en.linkTarget[target]);
+  });
+
+  it('a task link opens the task detail (BEAV-90)', async () => {
+    await i18n.changeLanguage('de');
+    await renderRouter(routes, {
+      initialUrl: appPathFromLink('https://taskbeavo.com/de/tasks/42'),
+    });
+    expect(screen).toHavePathname('/tasks/42');
+    expect(await screen.findByTestId('task-detail')).toBeOnTheScreen();
+    expect(screen.getByText('Mow the lawn')).toBeOnTheScreen();
   });
 
   it.each(locales)(

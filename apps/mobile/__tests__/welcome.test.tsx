@@ -44,3 +44,36 @@ describe('Welcome screen', () => {
     expect(headline.props.allowFontScaling).not.toBe(false);
   });
 });
+
+describe('Home when signed in', () => {
+  it('shows the task feed with the terms banner, account row and language switcher', async () => {
+    await i18n.changeLanguage('en');
+    const viewer = {
+      __typename: 'User',
+      id: 'u1',
+      email: 'luka@example.com',
+      firstName: 'Luka',
+      lastName: 'Test',
+      locale: 'EN',
+      country: 'HR',
+      timeZone: 'Europe/Zagreb',
+      phoneVerified: true,
+      phoneNumberMasked: '+385 ••• 678',
+    };
+    await render(
+      <MockedProvider
+        mocks={[
+          { request: { query: ViewerDocument }, result: { data: { viewer } }, maxUsageCount: 5 },
+          apiVersion,
+        ]}
+      >
+        <Welcome />
+      </MockedProvider>,
+    );
+    expect(await screen.findByTestId('task-feed')).toBeOnTheScreen();
+    expect(screen.getByRole('header')).toHaveTextContent(/Luka/);
+    // Signing out and switching language stay on home until the account tab exists.
+    expect(await screen.findByTestId('sign-out')).toBeOnTheScreen();
+    expect(screen.getByTestId('language-switcher')).toBeOnTheScreen();
+  });
+});
