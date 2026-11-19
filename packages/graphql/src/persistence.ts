@@ -36,6 +36,10 @@ export const NOT_PERSISTED: Readonly<Record<string, readonly string[] | 'all'>> 
   PhoneCodeSent: ['phoneNumberMasked'],
   // Signed for a few minutes, and may show an evidence photo.
   Upload: ['url'],
+  // A finished job's photo or a trader's invoice (BEAV-116): signed for a few minutes.
+  BookingPhoto: ['url'],
+  // The helper's note with the payment request: their free text, treated like chat.
+  PaymentRequest: ['note'],
   AuthSession: 'all',
   UploadTarget: 'all',
   PayoutOnboardingLink: 'all',

@@ -82,6 +82,8 @@ export interface BookingLinks {
   cancel: boolean;
   noAccess: boolean;
   release: boolean;
+  /** The helper's Request payment (BEAV-116): the money is held and the job has started. */
+  requestPayment: boolean;
 }
 
 export type TraderFields = Pick<
@@ -154,6 +156,7 @@ export function bookingDetailView(
           : booking.helperCancelPreview != null),
       noAccess: poster && status === 'NO_ACCESS_REPORTED',
       release: poster && status === 'PAYMENT_REQUESTED',
+      requestPayment: !poster && booking.canRequestPayment,
     },
   };
 }

@@ -274,6 +274,11 @@ fragment BookingDetailFields on Booking {
     id
     noShowContestBy
   }
+  canRequestPayment
+  invoiceRequired
+  paymentRequest {
+    ...PaymentRequestFields
+  }
 }
 
 query BookingDetail($id: ID!) {
@@ -285,6 +290,36 @@ query BookingDetail($id: ID!) {
 
 subscription BookingDetailUpdated($id: ID!) {
   bookingUpdated(id: $id) {
+    ...BookingFields
+    ...BookingDetailFields
+  }
+}
+
+# The helper's Request payment (BEAV-116, mockup 07): photos of the finished job and a
+# note, both optional, and a registered business's fiscalized invoice (an INVOICE upload or
+# its JIR) first. The poster and the helper see what was sent; photo URLs are short-lived
+# copies without metadata. Returns the whole booking, now PAYMENT_REQUESTED.
+fragment PaymentRequestFields on PaymentRequest {
+  id
+  requestedAt
+  note
+  invoiceJir
+  invoice {
+    id
+    url
+    width
+    height
+  }
+  photos {
+    id
+    url
+    width
+    height
+  }
+}
+
+mutation RequestPayment($input: RequestPaymentInput!) {
+  requestPayment(input: $input) {
     ...BookingFields
     ...BookingDetailFields
   }

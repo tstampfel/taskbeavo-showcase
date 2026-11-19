@@ -33,6 +33,9 @@ function booking(extra: Partial<Booking> = {}, task: Partial<Booking['task']> = 
     noFaultRequest: null,
     cancellation: null,
     arrival: { id: 'b1', noShowContestBy: null },
+    canRequestPayment: false,
+    invoiceRequired: false,
+    paymentRequest: null,
     ...extra,
   };
 }
@@ -229,6 +232,13 @@ describe('the links into the other booking screens', () => {
       view(booking({ noFaultRequest: { id: 'n1', canRespond: true } }), 'helper').links.cancel,
     ).toBe(true);
     expect(view(booking({ canRequestNoFault: true }), 'helper').links.cancel).toBe(true);
+  });
+
+  it('offers the helper Request payment while the server says so', () => {
+    expect(view(booking({ canRequestPayment: true }), 'helper').links.requestPayment).toBe(true);
+    expect(view(booking({ canRequestPayment: false }), 'helper').links.requestPayment).toBe(false);
+    // The server never offers it to the poster; the view doesn't either.
+    expect(view(booking({ canRequestPayment: true })).links.requestPayment).toBe(false);
   });
 
   it('sends the poster to release and to the no-access choice', () => {
