@@ -51,12 +51,15 @@ export interface RestoreDeps {
   versions: CacheVersionStore;
   /** Whether a session is stored; throws when it can't be read (iOS, phone locked). */
   hasSession: () => Promise<boolean>;
+  /** Deletes the rest of a signed-out account's data on the phone (the post-a-task draft). */
+  clearSignedOut?: () => Promise<void>;
 }
 
 /**
  * Loads the saved cache at launch, before any screen queries it. Only a signed-in phone
  * restores: with no session the saved cache is purged, so a fresh start after logout never
- * shows the previous user's data, even when the logout was cut short before its own purge.
+ * shows the previous user's data, even when the logout was cut short before its own purge;
+ * the saved post-a-task draft is deleted then too.
  * A cache from another CACHE_SCHEMA_VERSION, or one that can't be read, is purged too.
  * Never rejects: the app can always start from an empty cache.
  */
@@ -64,6 +67,7 @@ export async function restorePersistedCache({
   persistor,
   versions,
   hasSession,
+  clearSignedOut,
 }: RestoreDeps): Promise<void> {
   let signedIn: boolean;
   try {
@@ -72,6 +76,7 @@ export async function restorePersistedCache({
     // The session may still be there; start empty and leave the saved cache alone.
     return;
   }
+  if (!signedIn) await clearSignedOut?.().catch(() => undefined);
   try {
     const version = await versions.getItem(VERSION_KEY);
     if (!signedIn || version !== CACHE_SCHEMA_VERSION) {

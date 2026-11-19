@@ -41,6 +41,21 @@ describe('restorePersistedCache', () => {
     expect(calls).toEqual(['purge']);
   });
 
+  it('deletes the saved post-a-task draft too when no one is signed in', async () => {
+    const { deps, calls } = setup({ hasSession: async () => false });
+    const clearSignedOut = jest.fn(async () => void calls.push('clearDraft'));
+    await restorePersistedCache({ ...deps, clearSignedOut });
+    expect(calls).toEqual(['clearDraft', 'purge']);
+  });
+
+  it('keeps the draft of the signed-in poster', async () => {
+    const { deps, calls } = setup();
+    const clearSignedOut = jest.fn(async () => undefined);
+    await restorePersistedCache({ ...deps, clearSignedOut });
+    expect(clearSignedOut).not.toHaveBeenCalled();
+    expect(calls).toEqual(['restore']);
+  });
+
   it('purges instead of restoring when no one is signed in', async () => {
     // Covers a sign-out cut short (app killed, purge failed) before the cache was emptied.
     const { deps, calls } = setup({ hasSession: async () => false });

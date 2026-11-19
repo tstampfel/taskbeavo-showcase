@@ -12,6 +12,8 @@ export interface ResetClientStateDeps {
   persistor: Pick<CachePersistor<unknown>, 'pause' | 'purge' | 'resume'>;
   /** Forgets the language chosen on this phone; only account deletion does. */
   forgetLanguage: () => Promise<void>;
+  /** Deletes the post-a-task draft saved on this phone (BEAV-86). */
+  clearTaskDraft: () => Promise<void>;
 }
 
 export type ResetReason = 'signOut' | 'accountDeleted';
@@ -20,12 +22,13 @@ export type ResetReason = 'signOut' | 'accountDeleted';
  * Leaves nothing of the account on this phone. Sign-out and account deletion both call it.
  * First the push token is unregistered while the session can still do it (the API refuses a
  * token still live for another account), then the session is revoked and its tokens deleted
- * from SecureStore, and finally the in-memory and persisted Apollo caches are emptied. Each
+ * from SecureStore, then the in-memory and persisted Apollo caches are emptied and the saved
+ * post-a-task draft (with its address and access details) is deleted. Each
  * step runs even when an earlier one failed offline, so the phone is signed out regardless;
  * a persisted cache that survives is purged at the next launch, since no session is left.
  */
 export async function resetClientState(
-  { client, sessions, pushTokens, persistor, forgetLanguage }: ResetClientStateDeps,
+  { client, sessions, pushTokens, persistor, forgetLanguage, clearTaskDraft }: ResetClientStateDeps,
   reason: ResetReason = 'signOut',
 ): Promise<void> {
   const pushToken = await pushTokens.load().catch(() => null);
@@ -56,6 +59,7 @@ export async function resetClientState(
   } finally {
     persistor.resume();
   }
+  await clearTaskDraft().catch(() => undefined);
   if (reason === 'accountDeleted') await forgetLanguage().catch(() => undefined);
 }
 
