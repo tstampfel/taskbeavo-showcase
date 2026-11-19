@@ -12,7 +12,6 @@
     "backHome": "Zurück zur Startseite"
   },
   "linkTarget": {
-    "task": "Aufgabe",
     "release": "Zahlung freigeben",
     "noAccess": "Ihr Helfer kam nicht hinein",
     "conversation": "Nachrichten",
@@ -156,6 +155,7 @@
     "INVALID_TASK_DATES": "Bitte wählen Sie einen Zeitraum, der ab jetzt beginnt und innerhalb der nächsten 60 Tage endet, oder markieren Sie das Datum als flexibel.",
     "BUDGET_BELOW_MINIMUM": "Der Mindestpreis für eine Aufgabe beträgt 10 €.",
     "TASK_NOT_FOUND": "Diese Aufgabe ist nicht verfügbar.",
+    "INVALID_CURSOR": "Die Liste hat sich geändert. Bitte laden Sie sie von oben neu.",
     "TASK_NOT_EDITABLE": "Diese Aufgabe kann nicht mehr geändert werden.",
     "TASK_NOT_OPEN_FOR_OFFERS": "Für diese Aufgabe können keine Angebote mehr abgegeben werden.",
     "OFFER_ON_OWN_TASK": "Sie können kein Angebot für Ihre eigene Aufgabe abgeben.",
@@ -311,6 +311,13 @@
     },
     "TaskWarning": {
       "DUPLICATE_TASK": "Sie haben für diesen Tag bereits eine Aufgabe an dieser Adresse veröffentlicht."
+    },
+    "TaskCategory": {
+      "GARDEN": "Garten",
+      "ERRANDS": "Besorgungen",
+      "REPAIRS": "Kleine Reparaturen",
+      "CLEANING": "Reinigung",
+      "CHECK_IN": "Besuche"
     }
   },
   "checkout": {
@@ -878,5 +885,46 @@
     "amountLabelHelper": "Sie erhalten",
     "requestedHelper": "Wartet darauf, dass der Auftraggeber {amount} freigibt.",
     "requestedPoster": "Ihr Helfer hat die Zahlung angefordert. Geben Sie sie frei, wenn Sie mit der Arbeit zufrieden sind."
+  },
+  "taskListing": {
+    "title": "Aufgabe",
+    "back": "Zurück",
+    "budget": "Budget {amount}",
+    "noBudget": "Kein Budget angegeben",
+    "flexibleDate": "Jeder Tag passt",
+    "window": "{date}, {start}–{end}",
+    "area": "Gegend: {area}",
+    "approximateNote": "Die angezeigte Gegend ist ungefähr. Die genaue Adresse und die Zugangsdetails erhält nur die Helferin oder der Helfer, deren Angebot angenommen und bezahlt wurde, und nur solange die Buchung aktiv ist.",
+    "details": "Details",
+    "photos": "Fotos",
+    "photoAlt": "Foto {number} der Aufgabe",
+    "seeOffers": "Angebote ansehen",
+    "loadError": "Wir konnten diese Aufgabe nicht laden.",
+    "retry": "Erneut versuchen",
+    "posted": "Veröffentlicht am {date}"
+  },
+  "taskFeed": {
+    "title": "Offene Aufgaben",
+    "greeting": "Hallo {name}",
+    "order": "Neueste zuerst. Alle Helfenden sehen dieselbe Liste in derselben Reihenfolge.",
+    "filterLabel": "Nach Kategorie filtern",
+    "all": "Alle",
+    "empty": "Zurzeit gibt es keine offenen Aufgaben in Ihren Gebieten.",
+    "emptyHint": "Neue Aufgaben erscheinen hier, sobald sie veröffentlicht sind. Ihre Gebiete legen Sie in Ihrem Helferprofil fest.",
+    "loadError": "Wir konnten die Aufgaben nicht laden.",
+    "retry": "Erneut versuchen",
+    "loadingMore": "Weitere Aufgaben werden geladen",
+    "settings": "Einstellungen"
+  },
+  "browse": {
+    "title": "Offene Aufgaben",
+    "metaDescription": "Offene Aufgaben auf TaskBeavo: Gartenarbeit, Besorgungen, kleine Reparaturen, Reinigung und Besuche in aktiven Städten in Kroatien.",
+    "intro": "Aufgaben können für Orte in den aktiven Städten von TaskBeavo in Kroatien eingestellt werden. Buchen können Sie von überall.",
+    "order": "Neueste zuerst",
+    "filterLabel": "Kategorie",
+    "all": "Alle",
+    "empty": "Hier gibt es zurzeit keine offenen Aufgaben.",
+    "more": "Weitere Aufgaben",
+    "firstPage": "Zurück zu den neuesten Aufgaben"
   }
 }

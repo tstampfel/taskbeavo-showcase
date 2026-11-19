@@ -12,7 +12,6 @@
     "backHome": "Natrag na početnu"
   },
   "linkTarget": {
-    "task": "Zadatak",
     "release": "Oslobodi plaćanje",
     "noAccess": "Pomagač nije mogao ući",
     "conversation": "Poruke",
@@ -156,6 +155,7 @@
     "INVALID_TASK_DATES": "Odaberite termin koji počinje od sada i završava u sljedećih 60 dana ili označite da je datum fleksibilan.",
     "BUDGET_BELOW_MINIMUM": "Najniža cijena zadatka je 10 €.",
     "TASK_NOT_FOUND": "Ovaj zadatak nije dostupan.",
+    "INVALID_CURSOR": "Popis se promijenio. Učitajte ga ponovno od početka.",
     "TASK_NOT_EDITABLE": "Ovaj zadatak više se ne može mijenjati.",
     "TASK_NOT_OPEN_FOR_OFFERS": "Ovaj zadatak više ne prima ponude.",
     "OFFER_ON_OWN_TASK": "Ne možete poslati ponudu za vlastiti zadatak.",
@@ -311,6 +311,13 @@
     },
     "TaskWarning": {
       "DUPLICATE_TASK": "Već ste objavili zadatak na ovoj adresi za ovaj dan."
+    },
+    "TaskCategory": {
+      "GARDEN": "Vrt",
+      "ERRANDS": "Obaveze i nabava",
+      "REPAIRS": "Sitni popravci",
+      "CLEANING": "Čišćenje",
+      "CHECK_IN": "Posjeti"
     }
   },
   "checkout": {
@@ -878,5 +885,46 @@
     "amountLabelHelper": "Dobivate",
     "requestedHelper": "Čeka se da naručitelj oslobodi isplatu od {amount}.",
     "requestedPoster": "Pomagač je zatražio isplatu. Oslobodite je kad ste zadovoljni poslom."
+  },
+  "taskListing": {
+    "title": "Zadatak",
+    "back": "Natrag",
+    "budget": "Budžet {amount}",
+    "noBudget": "Budžet nije naveden",
+    "flexibleDate": "Odgovara bilo koji dan",
+    "window": "{date}, {start}–{end}",
+    "area": "Područje: {area}",
+    "approximateNote": "Prikazano područje je približno. Točnu adresu i upute za ulaz dobiva samo pomagač čija je ponuda prihvaćena i plaćena, i to samo dok je rezervacija aktivna.",
+    "details": "Pojedinosti",
+    "photos": "Fotografije",
+    "photoAlt": "Fotografija zadatka {number}",
+    "seeOffers": "Pogledajte ponude",
+    "loadError": "Zadatak nismo mogli učitati.",
+    "retry": "Pokušajte ponovno",
+    "posted": "Objavljeno {date}"
+  },
+  "taskFeed": {
+    "title": "Otvoreni zadaci",
+    "greeting": "Bok, {name}",
+    "order": "Najnoviji prvi. Svi pomagači vide isti popis istim redoslijedom.",
+    "filterLabel": "Filtrirajte po kategoriji",
+    "all": "Sve",
+    "empty": "Trenutačno nema otvorenih zadataka u Vašim područjima.",
+    "emptyHint": "Novi zadaci pojavljuju se ovdje čim budu objavljeni. Područja birate u svom profilu pomagača.",
+    "loadError": "Zadatke nismo mogli učitati.",
+    "retry": "Pokušajte ponovno",
+    "loadingMore": "Učitavamo još zadataka",
+    "settings": "Postavke"
+  },
+  "browse": {
+    "title": "Otvoreni zadaci",
+    "metaDescription": "Pregledajte otvorene zadatke na TaskBeavu: vrtni radovi, obaveze, sitni popravci, čišćenje i posjeti u aktivnim gradovima u Hrvatskoj.",
+    "intro": "Zadaci se mogu objaviti za mjesta u aktivnim gradovima TaskBeava u Hrvatskoj. Naručitelji mogu rezervirati s bilo kojeg mjesta.",
+    "order": "Najnoviji prvi",
+    "filterLabel": "Kategorija",
+    "all": "Sve",
+    "empty": "Ovdje trenutačno nema otvorenih zadataka.",
+    "more": "Još zadataka",
+    "firstPage": "Natrag na najnovije zadatke"
   }
 }

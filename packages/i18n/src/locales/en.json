@@ -12,7 +12,6 @@
     "backHome": "Back to the home page"
   },
   "linkTarget": {
-    "task": "Task",
     "release": "Release payment",
     "noAccess": "Your helper couldn't get in",
     "conversation": "Messages",
@@ -156,6 +155,7 @@
     "INVALID_TASK_DATES": "Please choose a time that starts from now and ends within the next 60 days, or mark the date as flexible.",
     "BUDGET_BELOW_MINIMUM": "The minimum price for a task is €10.",
     "TASK_NOT_FOUND": "This task isn't available.",
+    "INVALID_CURSOR": "This list has changed. Please load it again from the top.",
     "TASK_NOT_EDITABLE": "This task can't be changed any more.",
     "TASK_NOT_OPEN_FOR_OFFERS": "This task no longer takes offers.",
     "OFFER_ON_OWN_TASK": "You can't send an offer on your own task.",
@@ -311,6 +311,13 @@
     },
     "TaskWarning": {
       "DUPLICATE_TASK": "You already posted a task at this address on this day."
+    },
+    "TaskCategory": {
+      "GARDEN": "Garden",
+      "ERRANDS": "Errands",
+      "REPAIRS": "Small repairs",
+      "CLEANING": "Cleaning",
+      "CHECK_IN": "Check-in visits"
     }
   },
   "checkout": {
@@ -878,5 +885,46 @@
     "amountLabelHelper": "You get",
     "requestedHelper": "Waiting for the poster to release {amount}.",
     "requestedPoster": "Your helper has asked for payment. Release it when you're happy with the job."
+  },
+  "taskListing": {
+    "title": "Task",
+    "back": "Back",
+    "budget": "Budget {amount}",
+    "noBudget": "No budget given",
+    "flexibleDate": "Any day suits",
+    "window": "{date}, {start}–{end}",
+    "area": "Around {area}",
+    "approximateNote": "The area shown is approximate. The exact address and access details go only to the helper whose offer is accepted and paid, and only while the booking is active.",
+    "details": "Details",
+    "photos": "Photos",
+    "photoAlt": "Photo {number} of the task",
+    "seeOffers": "See offers",
+    "loadError": "We couldn't load this task.",
+    "retry": "Try again",
+    "posted": "Posted {date}"
+  },
+  "taskFeed": {
+    "title": "Open tasks",
+    "greeting": "Hi, {name}",
+    "order": "Newest first. Every helper sees the same list in the same order.",
+    "filterLabel": "Filter by category",
+    "all": "All",
+    "empty": "No open tasks in your areas right now.",
+    "emptyHint": "New tasks appear here as soon as they're posted. Your areas are set in your helper profile.",
+    "loadError": "We couldn't load the tasks.",
+    "retry": "Try again",
+    "loadingMore": "Loading more tasks",
+    "settings": "Settings"
+  },
+  "browse": {
+    "title": "Open tasks",
+    "metaDescription": "Browse open tasks on TaskBeavo: garden work, errands, small repairs, cleaning and check-in visits in active cities in Croatia.",
+    "intro": "Tasks can be posted for places in TaskBeavo's active cities in Croatia. Posters can book from anywhere.",
+    "order": "Newest first",
+    "filterLabel": "Category",
+    "all": "All",
+    "empty": "There are no open tasks here right now.",
+    "more": "More tasks",
+    "firstPage": "Back to the newest tasks"
   }
 }
