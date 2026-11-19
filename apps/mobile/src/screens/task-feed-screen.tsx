@@ -32,6 +32,8 @@ export interface TaskFeedScreenProps {
   firstName: string;
   onOpenTask(taskId: string): void;
   onOpenSettings(): void;
+  /** Opens the post-a-task wizard (BEAV-86). */
+  onPostTask?(): void;
   /** Above the feed: the terms banner, which must stay on home (limited mode). */
   banner?: ReactNode;
   /** Under the feed: the account row and language switcher, until the account tab exists. */
@@ -51,6 +53,7 @@ export function TaskFeedScreen({
   firstName,
   onOpenTask,
   onOpenSettings,
+  onPostTask,
   banner,
   account,
 }: TaskFeedScreenProps) {
@@ -206,6 +209,9 @@ export function TaskFeedScreen({
         />
       </View>
       {banner}
+      {onPostTask ? (
+        <Button label={t('postTask.open')} onPress={onPostTask} testID="open-post-task" />
+      ) : null}
       <Text style={[textStyle('h2'), styles.ink]}>{t('taskFeed.title')}</Text>
       <Text style={[textStyle('small'), styles.muted]} testID="feed-order">
         {t('taskFeed.order')}

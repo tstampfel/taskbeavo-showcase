@@ -14,6 +14,8 @@ export interface PhotoUploaderProps {
   purpose: UploadPurpose;
   /** Called with the READY upload; the screen keeps its `id` to attach it (e.g. postTask). */
   onUploaded?: (upload: UploadFieldsFragment) => void;
+  /** Shows the last upload under the buttons; off where the screen lists the photos itself. */
+  preview?: boolean;
 }
 
 // The picker compresses, which also re-encodes HEIC camera photos as JPEG.
@@ -28,7 +30,7 @@ type CameraAccess = 'unknown' | 'explain' | 'denied';
  * refusal links to Settings and never re-prompts. Task, booking and evidence screens
  * (BEAV-86, 87, 116, 125) place it.
  */
-export function PhotoUploader({ purpose, onUploaded }: PhotoUploaderProps) {
+export function PhotoUploader({ purpose, onUploaded, preview = true }: PhotoUploaderProps) {
   const { t } = useTranslation();
   const client = useApolloClient();
   const [state, setState] = useState<PhotoUploadState>({ phase: 'idle' });
@@ -109,7 +111,7 @@ export function PhotoUploader({ purpose, onUploaded }: PhotoUploaderProps) {
       <Text accessibilityLiveRegion="polite" testID="upload-status" style={styles.body}>
         {statusKey ? t(statusKey) : ''}
       </Text>
-      {state.phase === 'done' && state.upload.url ? (
+      {preview && state.phase === 'done' && state.upload.url ? (
         <Image
           accessibilityLabel={t('uploads.photoAlt')}
           source={{ uri: state.upload.url }}

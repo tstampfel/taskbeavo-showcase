@@ -930,5 +930,137 @@
     "empty": "Hier gibt es zurzeit keine offenen Aufgaben.",
     "more": "Weitere Aufgaben",
     "firstPage": "Zurück zu den neuesten Aufgaben"
+  },
+  "postTask": {
+    "open": "Aufgabe posten",
+    "title": "Aufgabe posten",
+    "close": "Schließen. Ihr Entwurf ist gespeichert.",
+    "back": "Zurück",
+    "loading": "Entwurf wird geladen",
+    "progress": "Schritt {step} von {total}",
+    "progressShort": "{step}/{total}",
+    "next": "Weiter",
+    "reviewTask": "Aufgabe prüfen",
+    "backToReview": "Zurück zur Übersicht",
+    "posted": "Ihre Aufgabe ist veröffentlicht.",
+    "resume": {
+      "title": "Mit dem Entwurf weitermachen?",
+      "body": "Sie haben auf diesem Telefon begonnen, „{title}“ zu posten.",
+      "bodyUntitled": "Sie haben auf diesem Telefon begonnen, eine Aufgabe zu posten.",
+      "continue": "Weitermachen",
+      "startAgain": "Neu beginnen"
+    },
+    "what": {
+      "heading": "Wobei brauchen Sie Hilfe?",
+      "categoryLabel": "Kategorie",
+      "titleLabel": "Titel",
+      "titleHint": "Ein paar Worte, zum Beispiel: Einkauf für meine Mutter"
+    },
+    "details": {
+      "heading": "Beschreiben Sie die Aufgabe",
+      "descriptionLabel": "Beschreibung",
+      "descriptionHint": "Bitte hier keine Telefonnummern oder genauen Adressen angeben.",
+      "photosLabel": "Fotos (optional, bis zu {max})",
+      "photoAlt": "Foto {number}",
+      "removePhoto": "Entfernen",
+      "removePhotoLabel": "Foto {number} entfernen",
+      "photosFull": "Sie haben hier die höchste Anzahl an Fotos für eine Aufgabe hinzugefügt."
+    },
+    "where": {
+      "heading": "Wo, und wer ist vor Ort?",
+      "addressLabel": "Adresse",
+      "addressHint": "Straße, Hausnummer und Ort, dann auf Suchen tippen.",
+      "search": "Suchen",
+      "noResults": "Keine Adresse in Kroatien gefunden. Prüfen Sie die Schreibweise oder ergänzen Sie den Ort.",
+      "resultsCount": "{count, plural, one {# Adresse gefunden} other {# Adressen gefunden}}",
+      "searchFailed": "Die Adresssuche ist gerade nicht erreichbar. Ihr Entwurf ist gespeichert, bitte versuchen Sie es erneut.",
+      "retry": "Erneut versuchen",
+      "resultsLabel": "Gefundene Adressen",
+      "picked": "Ausgewählte Adresse",
+      "change": "Adresse ändern",
+      "approximate": "Helfer sehen nur die ungefähre Gegend, bis Sie ein Angebot annehmen.",
+      "contactHeading": "Wen trifft der Helfer?",
+      "noContact": "Mich, ich bin vor Ort",
+      "addContact": "Kontakt vor Ort hinzufügen",
+      "contactsError": "Ihre gespeicherten Kontakte konnten nicht geladen werden.",
+      "accessLabel": "Zugangsdetails (optional)",
+      "accessHint": "Name an der Klingel, Stockwerk oder Wohnung, Tor-Code, wo ein Schlüssel liegt. Nur der gebuchte Helfer sieht das, und nur solange die Buchung aktiv ist."
+    },
+    "contact": {
+      "title": "Kontakt vor Ort hinzufügen",
+      "close": "Schließen ohne zu speichern",
+      "intro": "Die Person, die der Helfer trifft. Nur der gebuchte Helfer sieht diese Nummer, und nur solange die Buchung aktiv ist, damit er von der Tür aus anrufen kann. Ohne Smartphone erhält die Person am Vorabend eine SMS-Erinnerung.",
+      "name": "Name",
+      "phone": "Telefon",
+      "phoneHint": "Handy oder Festnetz, zum Beispiel +385 98 123 4567",
+      "area": "Gegend",
+      "areaHint": "Zum Beispiel: Gruž, Dubrovnik",
+      "language": "Sprache für SMS",
+      "noSmartphone": "Nutzt kein Smartphone",
+      "agreement": "Diese Person ist einverstanden, dass ich ihren Namen und ihre Telefonnummer für TaskBeavo-Buchungen speichere.",
+      "save": "Kontakt speichern",
+      "failed": "Der Kontakt konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+    },
+    "when": {
+      "heading": "Wann soll es stattfinden?",
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "pickDate": "Datum wählen",
+      "flexible": "Flexibel",
+      "flexibleHint": "Jeder Tag passt Ihnen. Eine flexible Aufgabe bleibt 30 Tage offen.",
+      "previousMonth": "Vorheriger Monat",
+      "nextMonth": "Nächster Monat",
+      "windowLabel": "Zeitfenster",
+      "windows": {
+        "MORNING": "Vormittag {start}–{end}",
+        "AFTERNOON": "Nachmittag {start}–{end}",
+        "EVENING": "Abend {start}–{end}"
+      },
+      "limit": "Sie können bis zu 60 Tage im Voraus buchen. Zeiten in kroatischer Zeit."
+    },
+    "budget": {
+      "heading": "Wie hoch ist Ihr Budget?",
+      "label": "Ihr Budget in Euro",
+      "hint": "Sie legen das Budget fest. Helfer schicken ihren eigenen Preis.",
+      "payment": "Sie zahlen erst, wenn Sie ein Angebot annehmen. Die Zahlung wird über Stripe sicher verwahrt, bis Sie sie freigeben."
+    },
+    "review": {
+      "title": "Aufgabe prüfen",
+      "what": "Was",
+      "where": "Wo und wer",
+      "when": "Wann",
+      "budget": "Budget",
+      "photos": "{count, plural, one {# Foto} other {# Fotos}}",
+      "onSite": "Vor Ort: {name}",
+      "edit": "Ändern",
+      "editSection": "{section} ändern",
+      "privacy": "Die genaue Adresse, die Zugangsdetails und die Telefonnummer des Kontakts vor Ort erhält nur der gebuchte Helfer, solange die Buchung aktiv ist.",
+      "post": "Aufgabe posten",
+      "postFailed": "Ihre Aufgabe konnte nicht gepostet werden. Ihr Entwurf ist gespeichert, bitte versuchen Sie es erneut.",
+      "verifyPhone": "Meine Nummer bestätigen",
+      "acceptTerms": "Bedingungen ansehen"
+    },
+    "waitlist": {
+      "heading": "Dort sind wir noch nicht",
+      "city": "Ort",
+      "email": "E-Mail",
+      "consent": "Schicken Sie mir eine einzige E-Mail, wenn TaskBeavo in diesem Ort startet, und sonst nichts.",
+      "join": "Auf die Warteliste",
+      "joined": "Sie stehen auf der Warteliste für {city}. Wir schreiben Ihnen einmal, wenn wir dort starten.",
+      "changeAddress": "Adresse ändern",
+      "failed": "Sie konnten nicht auf die Warteliste gesetzt werden. Bitte versuchen Sie es erneut."
+    },
+    "errors": {
+      "category": "Wählen Sie, wobei Sie Hilfe brauchen.",
+      "title": "Geben Sie Ihrer Aufgabe einen Titel.",
+      "description": "Beschreiben Sie die Aufgabe für die Helfer.",
+      "address": "Suchen Sie die Adresse und wählen Sie sie aus der Liste.",
+      "when": "Wählen Sie einen Tag oder markieren Sie das Datum als flexibel.",
+      "timeWindow": "Wählen Sie ein Zeitfenster.",
+      "windowPassed": "Diese Zeit hat schon begonnen. Bitte wählen Sie eine spätere.",
+      "tooFarAhead": "Bitte wählen Sie einen Tag innerhalb der nächsten 60 Tage.",
+      "budget": "Geben Sie Ihr Budget in Euro ein, nur mit Ziffern.",
+      "budgetTooHigh": "Das Budget darf höchstens 10.000 € betragen."
+    }
   }
 }

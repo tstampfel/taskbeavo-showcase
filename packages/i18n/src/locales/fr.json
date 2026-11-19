@@ -930,5 +930,137 @@
     "empty": "Aucune tâche ouverte ici pour le moment.",
     "more": "Plus de tâches",
     "firstPage": "Retour aux tâches les plus récentes"
+  },
+  "postTask": {
+    "open": "Publier une tâche",
+    "title": "Publier une tâche",
+    "close": "Fermer. Votre brouillon est enregistré.",
+    "back": "Retour",
+    "loading": "Chargement du brouillon",
+    "progress": "Étape {step} sur {total}",
+    "progressShort": "{step}/{total}",
+    "next": "Suivant",
+    "reviewTask": "Vérifier la tâche",
+    "backToReview": "Retour au récapitulatif",
+    "posted": "Votre tâche est publiée.",
+    "resume": {
+      "title": "Reprendre votre brouillon ?",
+      "body": "Vous avez commencé à publier « {title} » sur ce téléphone.",
+      "bodyUntitled": "Vous avez commencé à publier une tâche sur ce téléphone.",
+      "continue": "Reprendre",
+      "startAgain": "Recommencer"
+    },
+    "what": {
+      "heading": "Pour quoi avez-vous besoin d'aide ?",
+      "categoryLabel": "Catégorie",
+      "titleLabel": "Titre",
+      "titleHint": "Quelques mots, par exemple : Courses pour ma mère"
+    },
+    "details": {
+      "heading": "Décrivez la tâche aux aidants",
+      "descriptionLabel": "Description",
+      "descriptionHint": "N'indiquez ici ni numéro de téléphone ni adresse exacte.",
+      "photosLabel": "Photos (facultatif, jusqu'à {max})",
+      "photoAlt": "Photo {number}",
+      "removePhoto": "Retirer",
+      "removePhotoLabel": "Retirer la photo {number}",
+      "photosFull": "Vous avez ajouté le nombre maximal de photos pour une tâche ici."
+    },
+    "where": {
+      "heading": "Où, et qui sera sur place ?",
+      "addressLabel": "Adresse",
+      "addressHint": "Rue, numéro et ville, puis touchez Rechercher.",
+      "search": "Rechercher",
+      "noResults": "Aucune adresse trouvée en Croatie. Vérifiez l'orthographe ou ajoutez la ville.",
+      "resultsCount": "{count, plural, one {# adresse trouvée} other {# adresses trouvées}}",
+      "searchFailed": "La recherche d'adresse est indisponible pour le moment. Votre brouillon est enregistré, veuillez réessayer.",
+      "retry": "Réessayer",
+      "resultsLabel": "Adresses trouvées",
+      "picked": "Adresse choisie",
+      "change": "Changer d'adresse",
+      "approximate": "Les aidants ne voient que la zone approximative tant que vous n'avez pas accepté d'offre.",
+      "contactHeading": "Qui l'aidant va-t-il rencontrer ?",
+      "noContact": "Moi, je serai là",
+      "addContact": "Ajouter un contact sur place",
+      "contactsError": "Vos contacts enregistrés n'ont pas pu être chargés.",
+      "accessLabel": "Informations d'accès (facultatif)",
+      "accessHint": "Nom sur la sonnette, étage ou appartement, code du portail, où se trouve une clé. Seul l'aidant réservé les voit, et seulement tant que la réservation est active."
+    },
+    "contact": {
+      "title": "Ajouter un contact sur place",
+      "close": "Fermer sans enregistrer",
+      "intro": "La personne que l'aidant rencontre. Seul l'aidant réservé voit ce numéro, et seulement tant que la réservation est active, pour pouvoir appeler depuis la porte. Sans smartphone, elle reçoit un SMS de rappel la veille au soir.",
+      "name": "Nom",
+      "phone": "Téléphone",
+      "phoneHint": "Mobile ou fixe, par exemple +385 98 123 4567",
+      "area": "Quartier",
+      "areaHint": "Par exemple : Gruž, Dubrovnik",
+      "language": "Langue des SMS",
+      "noSmartphone": "N'utilise pas de smartphone",
+      "agreement": "Cette personne accepte que j'enregistre son nom et son numéro de téléphone pour les réservations TaskBeavo.",
+      "save": "Enregistrer le contact",
+      "failed": "Le contact n'a pas pu être enregistré. Veuillez réessayer."
+    },
+    "when": {
+      "heading": "Quand faut-il le faire ?",
+      "today": "Aujourd'hui",
+      "tomorrow": "Demain",
+      "pickDate": "Choisir une date",
+      "flexible": "Flexible",
+      "flexibleHint": "N'importe quel jour vous convient. Une tâche flexible reste ouverte 30 jours.",
+      "previousMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "windowLabel": "Créneau",
+      "windows": {
+        "MORNING": "Matin {start}–{end}",
+        "AFTERNOON": "Après-midi {start}–{end}",
+        "EVENING": "Soir {start}–{end}"
+      },
+      "limit": "Vous pouvez réserver jusqu'à 60 jours à l'avance. Les heures sont à l'heure croate."
+    },
+    "budget": {
+      "heading": "Quel est votre budget ?",
+      "label": "Votre budget en euros",
+      "hint": "C'est vous qui fixez le budget. Les aidants envoient leur propre prix.",
+      "payment": "Vous ne payez qu'en acceptant une offre. Le paiement est conservé en sécurité via Stripe jusqu'à ce que vous le libériez."
+    },
+    "review": {
+      "title": "Vérifiez votre tâche",
+      "what": "Quoi",
+      "where": "Où et qui",
+      "when": "Quand",
+      "budget": "Budget",
+      "photos": "{count, plural, one {# photo} other {# photos}}",
+      "onSite": "Sur place : {name}",
+      "edit": "Modifier",
+      "editSection": "Modifier : {section}",
+      "privacy": "L'adresse exacte, les informations d'accès et le téléphone du contact sur place ne sont transmis qu'à l'aidant réservé, tant que la réservation est active.",
+      "post": "Publier la tâche",
+      "postFailed": "Votre tâche n'a pas pu être publiée. Votre brouillon est enregistré, veuillez réessayer.",
+      "verifyPhone": "Vérifier mon numéro",
+      "acceptTerms": "Consulter les conditions"
+    },
+    "waitlist": {
+      "heading": "Nous n'y sommes pas encore",
+      "city": "Ville",
+      "email": "E-mail",
+      "consent": "Envoyez-moi un seul e-mail quand TaskBeavo arrivera dans cette ville, et rien d'autre.",
+      "join": "Rejoindre la liste d'attente",
+      "joined": "Vous êtes sur la liste d'attente pour {city}. Nous vous écrirons une fois à notre arrivée.",
+      "changeAddress": "Changer l'adresse",
+      "failed": "L'inscription sur la liste d'attente a échoué. Veuillez réessayer."
+    },
+    "errors": {
+      "category": "Choisissez pour quoi vous avez besoin d'aide.",
+      "title": "Donnez un titre à votre tâche.",
+      "description": "Décrivez la tâche pour les aidants.",
+      "address": "Recherchez l'adresse et choisissez-la dans la liste.",
+      "when": "Choisissez un jour, ou indiquez que la date est flexible.",
+      "timeWindow": "Choisissez un créneau.",
+      "windowPassed": "Ce créneau a déjà commencé. Veuillez en choisir un plus tard.",
+      "tooFarAhead": "Veuillez choisir un jour dans les 60 prochains jours.",
+      "budget": "Indiquez votre budget en euros, uniquement en chiffres.",
+      "budgetTooHigh": "Le budget ne peut pas dépasser 10 000 €."
+    }
   }
 }

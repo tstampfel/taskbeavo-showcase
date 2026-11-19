@@ -29,6 +29,7 @@ export default function Home() {
         firstName={viewer.firstName}
         onOpenTask={(id) => router.push({ pathname: '/tasks/[id]', params: { id } })}
         onOpenSettings={() => router.push('/settings')}
+        onPostTask={() => router.push('/tasks/new')}
         banner={<TermsBanner />}
         account={
           <>

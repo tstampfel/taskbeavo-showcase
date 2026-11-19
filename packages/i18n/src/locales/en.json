@@ -930,5 +930,137 @@
     "empty": "There are no open tasks here right now.",
     "more": "More tasks",
     "firstPage": "Back to the newest tasks"
+  },
+  "postTask": {
+    "open": "Post a task",
+    "title": "Post a task",
+    "close": "Close. Your draft is saved.",
+    "back": "Back",
+    "loading": "Loading your draft",
+    "progress": "Step {step} of {total}",
+    "progressShort": "{step}/{total}",
+    "next": "Next",
+    "reviewTask": "Review task",
+    "backToReview": "Back to review",
+    "posted": "Your task is posted.",
+    "resume": {
+      "title": "Continue your draft?",
+      "body": "You started posting “{title}” on this phone.",
+      "bodyUntitled": "You started posting a task on this phone.",
+      "continue": "Continue",
+      "startAgain": "Start again"
+    },
+    "what": {
+      "heading": "What do you need help with?",
+      "categoryLabel": "Category",
+      "titleLabel": "Title",
+      "titleHint": "A few words, for example: Grocery run for my mum"
+    },
+    "details": {
+      "heading": "Tell helpers the details",
+      "descriptionLabel": "Description",
+      "descriptionHint": "Don't include phone numbers or exact addresses here.",
+      "photosLabel": "Photos (optional, up to {max})",
+      "photoAlt": "Photo {number}",
+      "removePhoto": "Remove",
+      "removePhotoLabel": "Remove photo {number}",
+      "photosFull": "You've added the most photos a task can have here."
+    },
+    "where": {
+      "heading": "Where, and who's there?",
+      "addressLabel": "Address",
+      "addressHint": "Street, house number and town, then tap Search.",
+      "search": "Search",
+      "noResults": "No address found in Croatia. Check the spelling or add the town.",
+      "resultsCount": "{count, plural, one {# address found} other {# addresses found}}",
+      "searchFailed": "The address search can't be reached right now. Your draft is saved, so please try again.",
+      "retry": "Try again",
+      "resultsLabel": "Addresses found",
+      "picked": "Selected address",
+      "change": "Change address",
+      "approximate": "Helpers only see the approximate area until you accept an offer.",
+      "contactHeading": "Who will the helper meet?",
+      "noContact": "Me, I'll be there",
+      "addContact": "Add on-site contact",
+      "contactsError": "Your saved contacts couldn't be loaded.",
+      "accessLabel": "Access details (optional)",
+      "accessHint": "Name on the doorbell, floor or flat, gate code, where a key is kept. Only the helper you book sees this, and only while the booking is active."
+    },
+    "contact": {
+      "title": "Add on-site contact",
+      "close": "Close without saving",
+      "intro": "The person the helper meets. Only the helper you book sees this number, and only while the booking is active, so they can call from the door. Without a smartphone, they get one SMS reminder the evening before.",
+      "name": "Name",
+      "phone": "Phone",
+      "phoneHint": "Mobile or landline, for example +385 98 123 4567",
+      "area": "Area",
+      "areaHint": "For example: Gruž, Dubrovnik",
+      "language": "Language for text messages",
+      "noSmartphone": "Doesn't use a smartphone",
+      "agreement": "This person agrees to me saving their name and phone number for TaskBeavo bookings.",
+      "save": "Save contact",
+      "failed": "The contact couldn't be saved. Please try again."
+    },
+    "when": {
+      "heading": "When should it happen?",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "pickDate": "Pick a date",
+      "flexible": "Flexible",
+      "flexibleHint": "Any day suits you. A flexible task stays open for 30 days.",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "windowLabel": "Time window",
+      "windows": {
+        "MORNING": "Morning {start}–{end}",
+        "AFTERNOON": "Afternoon {start}–{end}",
+        "EVENING": "Evening {start}–{end}"
+      },
+      "limit": "You can book up to 60 days ahead. Times are Croatian time."
+    },
+    "budget": {
+      "heading": "What's your budget?",
+      "label": "Your budget in euros",
+      "hint": "You set the budget. Helpers send their own price.",
+      "payment": "You pay only when you accept an offer. Payment is held securely via Stripe until you release it."
+    },
+    "review": {
+      "title": "Review your task",
+      "what": "What",
+      "where": "Where and who",
+      "when": "When",
+      "budget": "Budget",
+      "photos": "{count, plural, one {# photo} other {# photos}}",
+      "onSite": "On site: {name}",
+      "edit": "Edit",
+      "editSection": "Edit {section}",
+      "privacy": "The exact address, access details and the on-site contact's phone go only to the helper you book, while the booking is active.",
+      "post": "Post task",
+      "postFailed": "Your task couldn't be posted. Your draft is saved, so please try again.",
+      "verifyPhone": "Verify my number",
+      "acceptTerms": "Review the terms"
+    },
+    "waitlist": {
+      "heading": "We're not there yet",
+      "city": "Town",
+      "email": "Email",
+      "consent": "Send me one email when TaskBeavo starts in this town, and nothing else.",
+      "join": "Join the waitlist",
+      "joined": "You're on the waitlist for {city}. We'll email you once when we arrive.",
+      "changeAddress": "Change the address",
+      "failed": "You couldn't be added to the waitlist. Please try again."
+    },
+    "errors": {
+      "category": "Choose what you need help with.",
+      "title": "Give your task a title.",
+      "description": "Describe the task for helpers.",
+      "address": "Search for the address and pick it from the list.",
+      "when": "Choose a day, or mark the date as flexible.",
+      "timeWindow": "Choose a time window.",
+      "windowPassed": "This time has already started. Please choose a later one.",
+      "tooFarAhead": "Please choose a day within the next 60 days.",
+      "budget": "Enter your budget in euros, in numbers only.",
+      "budgetTooHigh": "The budget can be at most €10,000."
+    }
   }
 }
