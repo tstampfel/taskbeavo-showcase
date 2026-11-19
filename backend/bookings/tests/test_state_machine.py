@@ -241,14 +241,21 @@ def test_every_client_move_in_the_table_works(source: S, target: S, kind: A) -> 
         requester = kind if target == S.FUNDS_HELD else other
         Booking.objects.filter(pk=booking.pk).update(cancel_requested_by=requester)
 
+    # After a payment request only the no-show "No" or the late free cancel (review R1-1).
+    data = (
+        {"reason": "NO_SHOW"}
+        if (source, target) == (S.PAYMENT_REQUESTED, S.CANCEL_REQUESTED)
+        else {}
+    )
+
     moved = state_machine.transition(
-        booking.pk, target, actor_kind=kind, actor=actor_for(booking, kind)
+        booking.pk, target, actor_kind=kind, actor=actor_for(booking, kind), data=data or None
     )
 
     assert moved.status == target
     event = events(booking)[-1]
     assert (event.type, event.actor_kind) == (target.lower(), kind)
-    assert event.data == {"from": source.value, "to": target.value}
+    assert event.data == {"from": source.value, "to": target.value, **data}
     assert updates(booking)[-1].payload == {"booking_id": str(booking.pk), "status": target.value}
 
 

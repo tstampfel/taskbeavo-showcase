@@ -11,7 +11,7 @@ from django.test import Client
 from django.utils import timezone
 
 from accounts.tests.test_schema import error_codes, gql
-from bookings import arrival, cancel, no_fault, state_machine
+from bookings import arrival, cancel, no_fault, payment_request, state_machine
 from bookings.arrival import Step
 from bookings.cancel import PosterCancelReason
 from bookings.cancellation import NoFaultReason
@@ -23,6 +23,7 @@ from bookings.models import (
     HelperFault,
     HelperReviewItem,
     NoFaultRequest,
+    PaymentRequest,
 )
 from bookings.tests.fakes import FakeGateway
 from bookings.tests.test_checkout import (  # noqa: F401 (fixtures)
@@ -945,3 +946,92 @@ def test_a_second_late_report_cannot_shorten_the_answer_window(
     record = arrival_of(booking)
     assert record.late_answer_until == start + 135 * M
     assert arrival.can_answer_late(booking, record, start + 100 * M)
+
+
+# --- A payment request doesn't end the poster's route (review R1-1, BEAV-116). ---
+
+
+def test_a_no_show_helper_who_requested_payment_still_gets_the_posters_no(
+    client: Client, gateway: FakeGateway
+) -> None:
+    booking, start = booked(client)
+    payment_request.request_payment(helper(booking), booking.pk, note="Done", now=start)
+
+    # Still asked "Did … come?", and "No" still works once it is due.
+    assert arrival.run_timeline(start + 60 * M) >= 1
+    assert "ASK_POSTER" in steps(booking)
+    with pytest.raises(ApiError):
+        arrival.confirm_helper_came(poster(booking), booking.pk, came=False, now=start + 59 * M)
+    said = arrival.confirm_helper_came(poster(booking), booking.pk, came=False, now=start + H)
+    assert (said.status, said.cancel_reason) == (S.CANCEL_REQUESTED, "NO_SHOW")
+
+    assert arrival.settle_uncontested_no_shows(start + H + D) == 1
+    s = CancellationSettlement.objects.get(booking=booking)
+    assert (s.case, s.refund_cents, s.poster_credit_cents) == (
+        "HELPER_CANCEL",
+        booking.amount_cents + booking.fee_cents,
+        500,
+    )
+    assert HelperFault.objects.get(booking=booking).kind == HelperFault.Kind.NO_SHOW
+    # The request and its note stay, as evidence for the helper's 24 h contest.
+    assert PaymentRequest.objects.get(booking=booking).note == "Done"
+
+
+def test_the_free_cancel_after_running_late_survives_a_payment_request(
+    client: Client, gateway: FakeGateway
+) -> None:
+    booking, start = booked(client)
+    arrival.running_late(helper(booking), booking.pk, 25, now=start + 15 * M)
+    payment_request.request_payment(helper(booking), booking.pk, now=start + 20 * M)
+
+    cancelled = arrival.respond_to_late(poster(booking), booking.pk, keep=False, now=start + 21 * M)
+
+    assert cancelled.status == S.CANCEL_REQUESTED
+    s = CancellationSettlement.objects.get(booking=booking)
+    assert (s.case, s.refund_cents) == ("NO_FAULT", booking.amount_cents + booking.fee_cents)
+    assert not HelperFault.objects.filter(booking=booking).exists()
+    assert PaymentRequest.objects.filter(booking=booking).exists()
+
+
+def test_after_yes_they_came_a_payment_request_is_final(
+    client: Client, gateway: FakeGateway
+) -> None:
+    booking, start = booked(client)
+    payment_request.request_payment(helper(booking), booking.pk, now=start + 5 * M)
+    arrival.confirm_helper_came(poster(booking), booking.pk, came=True, now=start + 10 * M)
+
+    booking.refresh_from_db()
+    assert booking.status == S.PAYMENT_REQUESTED
+    assert not arrival.can_confirm_no_show(booking, arrival_of(booking), start + 2 * H)
+    with pytest.raises(ApiError):
+        arrival.confirm_helper_came(poster(booking), booking.pk, came=False, now=start + 2 * H)
+    # Any other cancel is still not a cancellation once payment was requested.
+    with pytest.raises(ApiError) as refused:
+        state_machine.transition(
+            booking.pk,
+            S.CANCEL_REQUESTED,
+            actor_kind=ActorKind.POSTER,
+            actor=poster(booking),
+            data={"reason": "PLAN_CHANGED"},
+            now=start + 2 * H,
+        )
+    assert code(refused) == ErrorCode.BOOKING_ACTION_NOT_ALLOWED.value
+
+
+def test_a_rejected_no_show_goes_back_to_the_payment_request(
+    client: Client, gateway: FakeGateway
+) -> None:
+    booking, start = booked(client)
+    payment_request.request_payment(helper(booking), booking.pk, now=start)
+    requested_at = Booking.objects.get(pk=booking.pk).payment_requested_at
+    arrival.confirm_helper_came(poster(booking), booking.pk, came=False, now=start + H)
+    arrival.contest_no_show(helper(booking), booking.pk, now=start + 2 * H)
+
+    kept = arrival.decide_no_show(
+        make_staff(Role.SUPPORT), booking.pk, uphold=False, now=start + 3 * H
+    )
+
+    assert (kept.status, kept.cancel_reason) == (S.PAYMENT_REQUESTED, "")
+    assert kept.payment_requested_at == requested_at
+    assert kept.cancel_requested_at is None
+    assert not arrival.can_confirm_no_show(kept, arrival_of(booking), start + 4 * H)

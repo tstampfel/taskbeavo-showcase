@@ -60,7 +60,14 @@ from bookings import cancel, cancellation, helper_cancel, no_fault, state_machin
 from bookings.alerts import money_alert
 from bookings.cancel import _pk, helper_is_trader
 from bookings.cancellation import NotACancellation, Outcome, Party
-from bookings.models import Booking, BookingArrival, BookingEvent, HelperFault, NoFaultRequest
+from bookings.models import (
+    Booking,
+    BookingArrival,
+    BookingEvent,
+    HelperFault,
+    NoFaultRequest,
+    PaymentRequest,
+)
 from core.errors import ApiError, ErrorCode
 from core.models import ActorKind
 from core.outbox import enqueue
@@ -162,6 +169,20 @@ def _arrival(booking: Booking) -> BookingArrival:
 def _held(booking: Booking) -> bool:
     """The money is held for a job that can still happen."""
     return booking.status == S.FUNDS_HELD and booking.task_reopened_at is None
+
+
+def _poster_route_open(booking: Booking, arrival: BookingArrival | None) -> bool:
+    """The poster's no-show "No" and late free cancel may apply: the money is held, or the
+    helper requested payment and the poster hasn't said "Yes, they came" (review R1-1,
+    owner decision 2026-11-19). A request is the helper's word, like "I've arrived": it
+    never ends the poster's route on its own (PLAN.md, helper no-show and late arrival)."""
+    if _held(booking):
+        return True
+    return (
+        booking.status == S.PAYMENT_REQUESTED
+        and booking.task_reopened_at is None
+        and (arrival is None or arrival.poster_confirmed_came_at is None)
+    )
 
 
 def _here(arrival: BookingArrival) -> bool:
@@ -317,7 +338,7 @@ def can_answer_late(
     and the no-show question is the poster's route."""
     return (
         arrival is not None
-        and _held(booking)
+        and _poster_route_open(booking, arrival)
         and arrival.late_reported_at is not None
         and arrival.late_accepted_at is None
         and arrival.late_answer_until is not None
@@ -378,7 +399,7 @@ def can_confirm_came(
 ) -> bool:
     """The poster may say "Yes, they're here" from the start until they said so."""
     return (
-        _held(booking)
+        _poster_route_open(booking, arrival)
         and _now(now) >= booking.slot_start
         and (arrival is None or arrival.poster_confirmed_came_at is None)
     )
@@ -388,7 +409,7 @@ def can_confirm_no_show(
     booking: Booking, arrival: BookingArrival | None, now: dt.datetime | None = None
 ) -> bool:
     due = no_show_due(booking, arrival)
-    return _held(booking) and due is not None and _now(now) >= due
+    return _poster_route_open(booking, arrival) and due is not None and _now(now) >= due
 
 
 def confirm_helper_came(
@@ -655,9 +676,12 @@ def decide_no_show(
             return booking
         booking.cancel_reason = ""
         booking.save(update_fields=["cancel_reason", "updated_at"])
+        # A no-show reported after a payment request (review R1-1) goes back to the
+        # request, which stands: the helper was there.
+        requested = PaymentRequest.objects.filter(booking=booking).exists()
         booking = state_machine.transition(
             booking.pk,
-            S.FUNDS_HELD,
+            S.PAYMENT_REQUESTED if requested else S.FUNDS_HELD,
             actor_kind=ActorKind.ADMIN,
             actor=staff,
             data={"reason": "no_show_rejected"},
@@ -832,7 +856,8 @@ def run_timeline(now: dt.datetime | None = None) -> int:
     now = _now(now)
     candidates = list(
         Booking.objects.filter(
-            status=S.FUNDS_HELD,
+            # A payment request doesn't end the poster's no-show question (review R1-1).
+            status__in=(S.FUNDS_HELD, S.PAYMENT_REQUESTED),
             task_reopened_at__isnull=True,
             slot_start__lte=now + REMINDER_EARLY,
             slot_start__gt=now - dt.timedelta(days=1),
@@ -850,9 +875,9 @@ def run_timeline(now: dt.datetime | None = None) -> int:
         try:
             with transaction.atomic():
                 booking = Booking.objects.select_for_update().get(pk=pk)
-                if not _held(booking):
-                    continue
                 arrival = _arrival(booking)
+                if not _poster_route_open(booking, arrival):
+                    continue
                 step = _due_step(booking, arrival, now)
                 if step is None:
                     continue
@@ -886,6 +911,7 @@ def _due_step(booking: Booking, arrival: BookingArrival, now: dt.datetime) -> St
         return None
     if (
         not on_the_way
+        and booking.status == S.FUNDS_HELD
         and arrival.on_the_way_prompt_sent_at is None
         and now >= booking.slot_start + PROMPT_AFTER_START
     ):

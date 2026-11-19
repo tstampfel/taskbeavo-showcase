@@ -21,6 +21,11 @@ A registered business (the helper type the poster contracted on at checkout,
 CIS or any government service (owner decision 2026-11-14). A private helper skips this
 step and may not add an invoice, unless they have registered a business since checkout
 (their current `HelperProfile`): they may then add the invoice they now owe.
+`HelperProfile.issues_fiscalized_invoices` is deliberately not used: it is the trader's
+onboarding promise, not an exemption (PLAN.md; review R1-2).
+
+A request doesn't end the poster's no-show "No" or the free cancel after "Running late"
+until the poster said "Yes, they came" (bookings/arrival.py, review R1-1).
 
 `REQUESTED_TOPIC` tells the poster: a push and an email (`booking.payment_requested`,
 always emailed, in their language). The live event to both sides is the state machine's
