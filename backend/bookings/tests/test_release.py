@@ -246,6 +246,69 @@ def test_a_refused_payout_goes_to_support(
     assert payouts.unsent(now=timezone.now() + dt.timedelta(hours=1)) == []
 
 
+def test_a_payout_of_a_disputed_booking_is_held_for_support_not_sent(
+    client: Client, gateway: FakeGateway, stripe: FakePayoutStripe
+) -> None:
+    booking = requested(client)
+    release.release_payment(poster(booking), booking.pk)
+    # A chargeback (TODO(BEAV-127)) moves the booking to DISPUTED before the payout left.
+    Booking.objects.filter(pk=booking.pk).update(status=S.DISPUTED)
+
+    payouts.pay_out(payout_of(booking).pk)
+    payouts.pay_out(payout_of(booking).pk)
+
+    assert stripe.payouts == [] and stripe.lookups == []
+    payout = payout_of(booking)
+    assert payout.refused_at is not None and payout.payout_id == ""
+    held = BookingEvent.objects.get(booking=booking, type=payouts.HELD)
+    assert held.data == {
+        "kind": "RELEASE",
+        "amount_cents": 3_000,
+        "reason": "disputed",
+        "sent": False,
+    }
+    flags = BookingEvent.objects.filter(booking=booking, type=state_machine.SUPPORT_FLAG)
+    assert [f.data["reason"] for f in flags] == [payouts.HELD]
+    assert payouts.unsent(now=timezone.now() + dt.timedelta(hours=1)) == []
+
+
+def test_a_payout_sent_before_a_dispute_is_recorded_not_held(
+    client: Client, gateway: FakeGateway, stripe: FakePayoutStripe
+) -> None:
+    booking = requested(client)
+    release.release_payment(poster(booking), booking.pk)
+    stripe.fail_with = StripeRequestError("payouts.create", http_status=500)
+    stripe.fail_after_work = True
+    with pytest.raises(StripeRequestError):
+        payouts.pay_out(payout_of(booking).pk)
+    Booking.objects.filter(pk=booking.pk).update(status=S.DISPUTED)
+
+    payouts.pay_out(payout_of(booking).pk)
+
+    # Stripe already has it: support mustn't be asked to pay it again.
+    payout = payout_of(booking)
+    assert payout.payout_id == "po_test1" and payout.refused_at is None
+    assert not BookingEvent.objects.filter(booking=booking, type=payouts.HELD).exists()
+
+
+def test_a_payout_sent_without_an_answer_that_stripe_lacks_is_held_when_disputed(
+    client: Client, gateway: FakeGateway, stripe: FakePayoutStripe
+) -> None:
+    booking = requested(client)
+    release.release_payment(poster(booking), booking.pk)
+    stripe.fail_with = StripeRequestError("payouts.create", http_status=500)
+    with pytest.raises(StripeRequestError):
+        payouts.pay_out(payout_of(booking).pk)
+    Booking.objects.filter(pk=booking.pk).update(status=S.DISPUTED)
+
+    payouts.pay_out(payout_of(booking).pk)
+
+    assert len(stripe.lookups) == 1 and len(stripe.payouts) == 1
+    assert payout_of(booking).refused_at is not None
+    [held] = BookingEvent.objects.filter(booking=booking, type=payouts.HELD)
+    assert held.data["sent"] is True
+
+
 def test_releasing_twice_releases_once(
     client: Client, gateway: FakeGateway, stripe: FakePayoutStripe
 ) -> None:
@@ -601,6 +664,29 @@ def test_a_partial_release_reconciles_to_the_cent_and_pays_out_c(
     assert stripe.payouts[0]["idempotency_key"] == f"booking:{booking.pk}:payout:release:v1"
 
 
+def test_a_settlement_confirmed_while_disputed_holds_the_payout_of_c(
+    client: Client, gateway: FakeGateway, stripe: FakePayoutStripe
+) -> None:
+    booking = accepted(client)
+    settlement.settle(booking.pk, gateway=FakeSettlementStripe())  # pyright: ignore[reportArgumentType]
+    # A chargeback (TODO(BEAV-127)) lands while the refund is on its way.
+    Booking.objects.filter(pk=booking.pk).update(status=S.DISPUTED)
+
+    assert post_event(client, refunded_event(booking, 1_120)) == 200
+
+    booking.refresh_from_db()
+    assert booking.status == S.PARTIALLY_SETTLED
+    payout = payout_of(booking)
+    assert payout.amount_cents == 2_000 and payout.refused_at is not None
+    [held] = BookingEvent.objects.filter(booking=booking, type=payouts.HELD)
+    assert held.data["sent"] is False
+    assert BookingEvent.objects.filter(
+        booking=booking, type=state_machine.SUPPORT_FLAG, data__reason=payouts.HELD
+    ).exists()
+    payouts.pay_out(payout.pk)
+    assert stripe.payouts == []
+
+
 def test_a_used_credit_comes_back_in_full_on_a_partial_release(
     client: Client, gateway: FakeGateway, stripe: FakePayoutStripe
 ) -> None:
@@ -699,6 +785,99 @@ def test_a_tip_is_its_own_fee_less_charge_and_counts_only_once_stripe_confirms(
     payouts.pay_out(tip_payout.pk)
     assert stripe.payouts[-1]["kind"] == "tip"
     assert stripe.payouts[-1]["idempotency_key"] == f"booking:{booking.pk}:payout:tip:v1"
+
+
+def test_a_tip_that_answered_500_is_looked_up_then_sent_under_a_new_key(
+    client: Client, gateway: FakeGateway, stripe: FakePayoutStripe
+) -> None:
+    booking = released(client)
+    stripe.tip_error = StripeRequestError("payment_intents.create", http_status=500)
+
+    with pytest.raises(ApiError) as exc:
+        tips.add_tip(poster(booking), booking.pk, 500)
+    assert code(exc) == ErrorCode.PAYMENT_UNAVAILABLE.value
+    assert Tip.objects.get(booking=booking).key_version == 2
+
+    session = tips.add_tip(poster(booking), booking.pk, 500)
+
+    # Stripe made nothing under v1, so the lookup finds nothing and v2 is sent; the
+    # 5xx stored under v1 isn't replayed for a day.
+    assert stripe.tip_lookups == [str(booking.pk)]
+    assert [call["idempotency_key"] for call in stripe.tips] == [
+        f"booking:{booking.pk}:tip:v1",
+        f"booking:{booking.pk}:tip:v2",
+    ]
+    assert session.tip.payment_intent_id == stripe.tip_made[str(booking.pk)].id
+    assert session.client_secret.endswith("_secret_tip")
+
+
+def test_a_tip_that_went_through_but_answered_500_is_looked_up_not_resent(
+    client: Client, gateway: FakeGateway, stripe: FakePayoutStripe
+) -> None:
+    booking = released(client)
+    stripe.tip_error = StripeRequestError("payment_intents.create", http_status=502)
+    stripe.tip_fail_after_work = True
+
+    with pytest.raises(ApiError):
+        tips.add_tip(poster(booking), booking.pk, 500)
+    made = stripe.tip_made[str(booking.pk)]
+
+    session = tips.add_tip(poster(booking), booking.pk, 500)
+    again = tips.add_tip(poster(booking), booking.pk, 500)
+
+    assert len(stripe.tips) == 1
+    assert session.tip.payment_intent_id == made.id
+    assert session.client_secret == made.client_secret
+    # Once the tip records its PaymentIntent, it is read back by ID: nothing is sent
+    # under v2, which Stripe never saw.
+    assert stripe.tip_lookups == [str(booking.pk), made.id]
+    assert again.tip.payment_intent_id == made.id
+    assert again.client_secret == made.client_secret
+
+
+def test_a_parallel_tip_call_hands_out_only_the_recorded_payment_intent(
+    client: Client, gateway: FakeGateway, stripe: FakePayoutStripe, monkeypatch: Any
+) -> None:
+    booking = released(client)
+    stripe.tip_error = StripeRequestError("payment_intents.create", http_status=500)
+    with pytest.raises(ApiError):
+        tips.add_tip(poster(booking), booking.pk, 500)
+    # Stripe made one under v1 after all, which its search doesn't show yet, and a
+    # parallel call records it while this one sends v2.
+    other = stripe.create_tip_charge(
+        booking_id=str(booking.pk),
+        amount_cents=500,
+        destination_account=helper_account(booking),
+        idempotency_key=f"booking:{booking.pk}:tip:v1",
+    )
+
+    def lagging_search(*, booking_id: str) -> None:
+        Tip.objects.filter(booking=booking).update(payment_intent_id=other.id)
+
+    monkeypatch.setattr(stripe, "find_tip_payment_intent", lagging_search)
+
+    session = tips.add_tip(poster(booking), booking.pk, 500)
+
+    assert stripe.tips[-1]["idempotency_key"] == f"booking:{booking.pk}:tip:v2"
+    assert session.tip.payment_intent_id == other.id
+    assert session.client_secret == other.client_secret
+
+
+def test_a_lost_connection_bumps_the_tip_key_but_a_refusal_doesnt(
+    client: Client, gateway: FakeGateway, stripe: FakePayoutStripe
+) -> None:
+    booking = released(client)
+    stripe.tip_error = StripeRequestError(
+        "payment_intents.create", code="card_declined", http_status=402
+    )
+    with pytest.raises(ApiError):
+        tips.add_tip(poster(booking), booking.pk, 500)
+    assert Tip.objects.get(booking=booking).key_version == 1
+
+    stripe.tip_error = StripeRequestError("payment_intents.create")
+    with pytest.raises(ApiError):
+        tips.add_tip(poster(booking), booking.pk, 500)
+    assert Tip.objects.get(booking=booking).key_version == 2
 
 
 def test_a_tip_waits_for_the_release(client: Client, gateway: FakeGateway) -> None:

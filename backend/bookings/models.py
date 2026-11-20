@@ -801,7 +801,8 @@ class BookingPayout(models.Model):
     payout_id = models.CharField(max_length=255, blank=True)
     sent_at = models.DateTimeField(null=True, blank=True)
     key_version = models.PositiveSmallIntegerField(default=1)
-    # Stripe refused it for good, or it waited too long: support pays it out by hand.
+    # Stripe refused it for good, or it came due while the booking was DISPUTED (held):
+    # support pays it out by hand.
     refused_at = models.DateTimeField(null=True, blank=True)
     paid_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField()
@@ -823,7 +824,8 @@ class BookingPayout(models.Model):
 class Tip(models.Model):
     """The poster's tip after a full release (BEAV-117; PLAN.md, "taps Release payment and
     can add a tip"): a separate destination charge on behalf of the helper with no
-    application fee (hard rule b), keyed `booking:{id}:tip:v1`. It counts only once Stripe's
+    application fee (hard rule b), keyed `booking:{id}:tip:v{n}` (`key_version`, bumped after
+    a 5xx or a lost answer, which Stripe would replay for 24 hours). It counts only once Stripe's
     payment_intent.succeeded confirms it (hard rule a, bookings/tips.py); then the helper is
     told and it is paid out (`BookingPayout` TIP). One per booking. IDs, cents and times."""
 
@@ -835,6 +837,7 @@ class Tip(models.Model):
     amount_cents = models.PositiveIntegerField()
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     payment_intent_id = models.CharField(max_length=255, blank=True)
+    key_version = models.PositiveSmallIntegerField(default=1)
     created_at = models.DateTimeField()
     succeeded_at = models.DateTimeField(null=True, blank=True)
 

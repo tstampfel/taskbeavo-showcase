@@ -134,6 +134,36 @@ def test_a_payout_queues_payout_paid_for_the_connected_account(
     assert event.payload["data"]["object"]["metadata"]["action"] == "payout_release"
 
 
+def test_a_tip_is_found_by_its_metadata_and_a_checkout_isnt(
+    gateway: stripe_client.StripeGateway,
+) -> None:
+    booking_id = "0b6a8c1e-1f7c-4a4e-9a51-6a8b1e0c2d3f"
+    account = gateway.create_express_account(
+        helper_profile_id=1, idempotency_key="helper:1:express-account:v1"
+    )
+    gateway.create_destination_charge(
+        booking_id=booking_id,
+        amount_cents=3_360,
+        application_fee_cents=360,
+        destination_account=account.id,
+        idempotency_key=f"booking:{booking_id}:payment_intent:v1",
+    )
+    assert gateway.find_tip_payment_intent(booking_id=booking_id) is None
+
+    tip = gateway.create_tip_charge(
+        booking_id=booking_id,
+        amount_cents=500,
+        destination_account=account.id,
+        idempotency_key=f"booking:{booking_id}:tip:v1",
+    )
+
+    assert gateway.find_tip_payment_intent(booking_id=booking_id) == {
+        "id": tip.id,
+        "client_secret": tip.client_secret,
+    }
+    assert len(gateway.find_booking_payment_intents(booking_id=booking_id)) == 2
+
+
 def test_the_confirm_route_is_mounted_only_with_demo_payments() -> None:
     try:
         with override_settings(DEMO_PAYMENTS=False):

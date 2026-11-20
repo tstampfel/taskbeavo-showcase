@@ -21,6 +21,17 @@ the helper's balance yet) are retried by Celery and by the sweep (`unsent`); a r
 retry can fix, or a payout still unsent after `SEND_PATIENCE`, goes to support
 (`refused_at`, a support flag and a money alert).
 
+No payout opens or leaves while the booking is DISPUTED (a chargeback, or a dispute
+support hasn't decided): `pay_out` holds it, and so does a settlement Stripe confirms
+while the booking is disputed (bookings/settlement.py). A held payout is marked
+`refused_at` with a `payout_held` BookingEvent and a support flag, so support pays it out
+by hand once the dispute is decided. A payout sent before without an answer is looked
+up first: one Stripe already has is recorded, not held. TODO(BEAV-127): the chargeback
+handler decides what happens to a held payout when the chargeback closes; that a
+settlement confirmed while disputed moves the booking on to PARTIALLY_SETTLED (so later
+checks no longer see the dispute); and that the helper's "payment released" notice still
+goes out when C is held.
+
 `payout.paid` (`record_payout_paid`, connected-account webhook) sets `paid_at`, and moves a
 RELEASED booking to PAID_OUT (hard rule a: only the webhook confirms it). A partially
 settled booking keeps its status.
@@ -84,6 +95,7 @@ OPENED_TOPIC = "booking.payout_opened"
 CREATED = "payout_created"
 PAID = "payout_paid"
 REFUSED = "payout_refused"
+HELD = "payout_held"
 # Stripe codes worth sending again later: the money isn't available in the helper's
 # balance yet (a fresh charge, or Stripe's payout delay for new accounts), too many
 # requests, a request with the same key still running, a locked object.
@@ -141,11 +153,15 @@ def pay_out(payout_pk: int, *, gateway: StripeGateway | None = None) -> BookingP
     booking_id = str(payout.booking_id)
     try:
         if payout.sent_at is not None:
+            # Sent before without an answer: if Stripe has it, it already left, disputed
+            # or not, so record it rather than hold it (support mustn't pay it again).
             found = gateway.find_payout(booking_id=booking_id, connected_account=account, kind=kind)
             if found:
                 return _created(payout, found, looked_up=True)
-        else:
-            payout = _save(payout, sent_at=timezone.now())
+        claimed = _claim(payout)
+        if claimed is None:
+            return BookingPayout.objects.select_related("booking").get(pk=payout.pk)
+        payout = claimed
         result = gateway.create_payout(
             booking_id=booking_id,
             connected_account=account,
@@ -166,6 +182,23 @@ def pay_out(payout_pk: int, *, gateway: StripeGateway | None = None) -> BookingP
         _refuse(payout, exc.code or "refused")
         return payout
     return _created(payout, result.id, looked_up=False)
+
+
+def _claim(payout: BookingPayout) -> BookingPayout | None:
+    """Under the booking's lock: hold the payout if the booking is DISPUTED (None), else
+    mark it sent. The Stripe call follows outside the lock, so a chargeback committed in
+    between still lets it leave; TODO(BEAV-127) covers that window."""
+    with locked_for_update(Booking.objects, payout.booking_id) as booking:
+        locked = BookingPayout.objects.select_for_update().get(pk=payout.pk)
+        if locked.payout_id or locked.refused_at:
+            return None
+        if booking.status == S.DISPUTED:
+            hold(booking, locked)
+            return None
+        if locked.sent_at is None:
+            locked.sent_at = timezone.now()
+            locked.save(update_fields=["sent_at", "updated_at"])
+    return BookingPayout.objects.select_related("booking").get(pk=payout.pk)
 
 
 def _worth_waiting(exc: StripeRequestError) -> bool:
@@ -228,6 +261,30 @@ def _refuse(payout: BookingPayout, code: str, *, keep_trying: bool = False) -> N
             data={"kind": locked.kind, "stripe_code": data_code, "retrying": keep_trying},
         )
         state_machine.flag_for_support(booking, REFUSED, {"kind": locked.kind})
+
+
+def hold(booking: Booking, payout: BookingPayout) -> None:
+    """Keep a payout of a DISPUTED booking from leaving (module docstring). `booking` and
+    `payout` are locked by the caller; a payout already sent or refused is left alone."""
+    if payout.refused_at or payout.payout_id:
+        return
+    payout.refused_at = timezone.now()
+    payout.save(update_fields=["refused_at", "updated_at"])
+    BookingEvent.objects.create(
+        booking=booking,
+        type=HELD,
+        actor_kind=ActorKind.SYSTEM,
+        data={
+            "kind": payout.kind,
+            "amount_cents": payout.amount_cents,
+            "reason": "disputed",
+            # Sent before: Stripe may still make it, so support checks Stripe first.
+            "sent": payout.sent_at is not None,
+        },
+    )
+    state_machine.flag_for_support(
+        booking, HELD, {"kind": payout.kind, "sent": payout.sent_at is not None}
+    )
 
 
 def unsent(

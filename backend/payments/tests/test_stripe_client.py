@@ -115,6 +115,7 @@ READS: dict[str, dict[str, Any]] = {
     "find_transfer_reversal": {"booking_id": 42, "transfer": "tr_1TestTransfer"},
     "find_poster_refund": {"booking_id": 42, "payment_intent": "pi_3TestDestinationCharge"},
     "find_payout": {"booking_id": 42, "connected_account": HELPER, "kind": "release"},
+    "find_tip_payment_intent": {"booking_id": "0b6a8c1e-1f7c-4a4e-9a51-6a8b1e0c2d3f"},
 }
 
 
@@ -548,6 +549,50 @@ def test_finding_a_bookings_payment_intents_searches_its_metadata() -> None:
     assert "booking_id" in request.url
     with pytest.raises(ValueError):
         gw.find_booking_payment_intents(booking_id="1' OR metadata['x']:'y")
+
+
+def test_finding_a_bookings_tip_searches_its_metadata_for_the_tip_action() -> None:
+    gw, http = gateway(
+        {
+            "object": "search_result",
+            "data": [
+                {
+                    "id": "pi_3TestTip",
+                    "object": "payment_intent",
+                    "client_secret": "pi_3TestTip_secret_x",
+                    "metadata": {
+                        "booking_id": READS["find_tip_payment_intent"]["booking_id"],
+                        "action": "tip",
+                    },
+                }
+            ],
+            "has_more": False,
+            "url": "/v1/payment_intents/search",
+        }
+    )
+
+    found = gw.find_tip_payment_intent(**READS["find_tip_payment_intent"])
+
+    assert found == {"id": "pi_3TestTip", "client_secret": "pi_3TestTip_secret_x"}
+    [request] = http.requests
+    assert request.method == "get"
+    assert "/v1/payment_intents/search" in request.url
+    assert "action" in request.url and "tip" in request.url
+    with pytest.raises(ValueError):
+        gw.find_tip_payment_intent(booking_id="1' OR metadata['x']:'y")
+
+
+def test_a_tip_lookup_ignores_a_payment_intent_that_isnt_a_tip() -> None:
+    gw, _ = gateway(
+        {
+            "object": "search_result",
+            "data": [{"id": "pi_3TestCheckout", "object": "payment_intent", "metadata": {}}],
+            "has_more": False,
+            "url": "/v1/payment_intents/search",
+        }
+    )
+
+    assert gw.find_tip_payment_intent(**READS["find_tip_payment_intent"]) is None
 
 
 def test_the_settlement_steps_move_exactly_the_given_amounts() -> None:

@@ -28,7 +28,8 @@ TaskBeavo takes, each shaped so the wrong pattern can't be written:
   `metadata.booking_id` and `metadata.action` (`payout_release`, `payout_tip`), and
   `find_payout` looks one up by them before it is sent again under a new key.
 - `create_tip_charge` charges the poster's tip as its own destination charge on behalf of
-  the helper with no application fee (BEAV-117).
+  the helper with no application fee (BEAV-117), and `find_tip_payment_intent` looks one
+  up by metadata before the tip is sent again under a new key.
 - `create_express_account` opens a helper's Express account with manual payouts, and
   `create_onboarding_link` sends them to Stripe's hosted onboarding (identity, IBAN).
   `retrieve_account` reads an account back, a GET that takes no idempotency key.
@@ -299,6 +300,28 @@ class StripeGateway:
             except stripe.StripeError as exc:
                 raise _request_error("payment_intents.search", exc) from None
             return [{"id": intent.id, "status": intent.status} for intent in found.data]
+
+    def find_tip_payment_intent(self, *, booking_id: int | str) -> dict[str, str] | None:
+        """The booking's tip PaymentIntent (`metadata.action` `tip`) if Stripe has one, as
+        `{"id", "client_secret"}`: one created before without an answer saved (a 5xx or a
+        lost connection), looked up before the tip is sent again under a new key. A read
+        (Stripe's search API, which can lag behind by a minute), so no idempotency key."""
+        query = (
+            f"metadata['booking_id']:'{uuid.UUID(str(booking_id))}' "
+            f"AND metadata['action']:'{TIP_ACTION}'"
+        )
+        with tracer.start_as_current_span("stripe.payment_intents.search") as span:
+            span.set_attribute("booking.id", str(booking_id))
+            try:
+                found = self._client.v1.payment_intents.search({"query": query})
+            except stripe.StripeError as exc:
+                raise _request_error("payment_intents.search", exc) from None
+            for intent in found.data:
+                metadata = intent.to_dict().get("metadata") or {}
+                if metadata.get("action") == TIP_ACTION:
+                    span.set_attribute("stripe.object_id", intent.id)
+                    return {"id": intent.id, "client_secret": str(intent.client_secret or "")}
+            return None
 
     def create_full_refund(
         self, *, booking_id: int | str, payment_intent: str, idempotency_key: str

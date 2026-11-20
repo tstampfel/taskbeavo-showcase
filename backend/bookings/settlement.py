@@ -586,6 +586,7 @@ def _complete(
 ) -> Booking:
     """Settle the locked booking once Stripe confirmed its settlement's last step."""
     target = S.REFUNDED if outcome_of(settlement).is_full_refund else S.PARTIALLY_SETTLED
+    disputed = booking.status == S.DISPUTED
     moved = state_machine.apply_stripe_transition(
         booking.pk, target, stripe_event_id=stripe_event_id, data=data
     )
@@ -612,8 +613,14 @@ def _complete(
     if settlement.poster_credit_cents:
         _grant_credit(moved, settlement)
     if settlement.helper_compensation_cents:
-        # The helper's share C is theirs now: pay it out (manual payouts, hard rule b).
-        payouts.open_payout(moved, BookingPayout.Kind.RELEASE, settlement.helper_compensation_cents)
+        # The helper's share C is theirs now: pay it out (manual payouts, hard rule b),
+        # unless the booking was disputed when Stripe confirmed it (a chargeback): then
+        # support decides (bookings/payouts.py, `hold`).
+        payout = payouts.open_payout(
+            moved, BookingPayout.Kind.RELEASE, settlement.helper_compensation_cents
+        )
+        if disputed:
+            payouts.hold(moved, payout)
     # The whole credit comes back, in the same transaction as the outcome (rule g, user
     # decision 2026-11-07): where K is kept, TaskBeavo took it in cash in the reversal.
     credit.restore(

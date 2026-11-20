@@ -347,12 +347,17 @@ def _cancel_payment_intent(intent_id: str) -> dict[str, Any]:
 
 
 def _search_payment_intents(params: dict[str, Any]) -> dict[str, Any]:
-    match = re.fullmatch(r"metadata\['booking_id'\]:'([0-9a-f-]+)'", params.get("query", ""))
-    booking_id = match.group(1) if match else None
+    match = re.fullmatch(
+        r"metadata\['booking_id'\]:'([0-9a-f-]+)'(?: AND metadata\['action'\]:'([a-z_]+)')?",
+        params.get("query", ""),
+    )
+    booking_id, action = (match.group(1), match.group(2)) if match else (None, None)
     found = [
         row.data
         for row in DemoStripeObject.objects.filter(object="payment_intent").order_by("created_at")
-        if booking_id and (row.data.get("metadata") or {}).get("booking_id") == booking_id
+        if booking_id
+        and (row.data.get("metadata") or {}).get("booking_id") == booking_id
+        and (action is None or (row.data.get("metadata") or {}).get("action") == action)
     ]
     return {"object": "search_result", "data": found, "has_more": False, "url": "/v1/search"}
 

@@ -7,10 +7,18 @@ separate destination charge on behalf of the helper with no application fee: Tas
 takes nothing from it, and as on every destination charge pays Stripe's card fee
 (an open launch question: a tip brings no fee to cover it). The `Tip` row
 is written in a transaction under the booking's lock, then the PaymentIntent is created
-outside it with the key `booking:{id}:tip:v1` (metadata `action=tip`), and the client
+outside it with the key `booking:{id}:tip:v{n}` (metadata `action=tip`), and the client
 secret goes back to the poster's payment sheet. Calling again with the same amount
-returns the same PaymentIntent (the key replays it); another amount is refused while the
-first is pending, since Stripe refuses a reused key with new parameters.
+returns the same PaymentIntent (read back by its ID once the tip records it); another
+amount is refused while the first is pending.
+
+A 5xx or a lost answer (no HTTP status) is stored by Stripe under the key and replayed for
+24 hours, so it bumps `Tip.key_version`, like payouts (bookings/payouts.py). The next call
+first looks the tip's PaymentIntent up by metadata (`find_tip_payment_intent`) and only
+sends under the new version when Stripe has none. Stripe's search can lag by a minute, so
+a lookup can miss one just made; a second PaymentIntent then waits unpaid, since the
+poster only ever gets the client secret of the PaymentIntent the tip records, the one
+`confirm_tip` counts.
 
 Nothing counts until Stripe says so (hard rule a): `confirm_tip`, on
 payment_intent.succeeded for a PaymentIntent whose metadata says it is a tip, marks the tip
@@ -39,7 +47,7 @@ from core.outbox import enqueue
 from core.transitions import locked_for_update
 from payments.idempotency import idempotency_key
 from payments.models import ConnectedAccount
-from payments.stripe_client import TIP_ACTION, StripeRequestError, get_gateway
+from payments.stripe_client import TIP_ACTION, StripeGateway, StripeRequestError, get_gateway
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +74,8 @@ def is_tip_intent(intent: dict[str, Any]) -> bool:
     return isinstance(metadata, dict) and metadata.get("action") == TIP_ACTION
 
 
-def tip_key(booking_id: Any) -> str:
-    return idempotency_key("booking", str(booking_id), "tip")
+def tip_key(tip: Tip) -> str:
+    return idempotency_key("booking", str(tip.booking_id), "tip", version=tip.key_version)
 
 
 def add_tip(
@@ -110,14 +118,39 @@ def add_tip(
                 data={"amount_cents": amount_cents},
             )
         account = _destination(booking)
+    gateway = get_gateway()
     try:
-        intent = get_gateway().create_tip_charge(
-            booking_id=str(booking.pk),
-            amount_cents=amount_cents,
-            destination_account=account,
-            idempotency_key=tip_key(booking.pk),
-        )
+        if tip.payment_intent_id:
+            # Stripe has it: read it back rather than send a key it may never have seen.
+            intent_id, client_secret = _recorded(gateway, tip)
+        else:
+            found = (
+                gateway.find_tip_payment_intent(booking_id=str(booking.pk))
+                if tip.key_version > 1
+                else None
+            )
+            if found:
+                intent_id, client_secret = found["id"], found["client_secret"]
+            else:
+                intent = gateway.create_tip_charge(
+                    booking_id=str(booking.pk),
+                    amount_cents=amount_cents,
+                    destination_account=account,
+                    idempotency_key=tip_key(tip),
+                )
+                intent_id, client_secret = intent.id, str(intent.client_secret or "")
+            Tip.objects.filter(pk=tip.pk, payment_intent_id="").update(payment_intent_id=intent_id)
+            tip.refresh_from_db()
+            if tip.payment_intent_id != intent_id:
+                # A parallel call recorded another PaymentIntent first: the poster only
+                # ever gets the secret of the recorded one, which `confirm_tip` counts.
+                intent_id, client_secret = _recorded(gateway, tip)
     except StripeRequestError as exc:
+        if exc.http_status is None or exc.http_status >= 500:
+            # Stripe may have stored this answer under the key (module docstring).
+            Tip.objects.filter(pk=tip.pk, key_version=tip.key_version, payment_intent_id="").update(
+                key_version=tip.key_version + 1
+            )
         logger.warning(
             "bookings: the tip's PaymentIntent couldn't be created",
             extra={"booking.id": str(booking.pk), "stripe.error_code": exc.code},
@@ -128,10 +161,15 @@ def add_tip(
             else ErrorCode.PAYMENT_UNAVAILABLE
         )
         raise ApiError(code, "The tip can't be paid right now.") from None
-    if not tip.payment_intent_id:
-        Tip.objects.filter(pk=tip.pk, payment_intent_id="").update(payment_intent_id=intent.id)
-        tip.refresh_from_db()
-    return TipSession(booking=booking, tip=tip, client_secret=str(intent.client_secret or ""))
+    return TipSession(booking=booking, tip=tip, client_secret=client_secret)
+
+
+def _recorded(gateway: StripeGateway, tip: Tip) -> tuple[str, str]:
+    """The ID and client secret of the PaymentIntent the tip records, read from Stripe."""
+    intent = gateway.retrieve_payment_intent(
+        booking_id=str(tip.booking_id), payment_intent=tip.payment_intent_id
+    )
+    return intent.id, str(intent.client_secret or "")
 
 
 def _destination(booking: Booking) -> str:
