@@ -952,7 +952,9 @@
       "body": "Vous avez commencé à publier « {title} » sur ce téléphone.",
       "bodyUntitled": "Vous avez commencé à publier une tâche sur ce téléphone.",
       "continue": "Reprendre",
-      "startAgain": "Recommencer"
+      "startAgain": "Recommencer",
+      "bodyWeb": "Vous avez commencé à publier « {title} » dans ce navigateur.",
+      "bodyUntitledWeb": "Vous avez commencé à publier une tâche dans ce navigateur."
     },
     "what": {
       "heading": "Pour quoi avez-vous besoin d'aide ?",
@@ -988,7 +990,9 @@
       "addContact": "Ajouter un contact sur place",
       "contactsError": "Vos contacts enregistrés n'ont pas pu être chargés.",
       "accessLabel": "Informations d'accès (facultatif)",
-      "accessHint": "Nom sur la sonnette, étage ou appartement, code du portail, où se trouve une clé. Seul l'aidant réservé les voit, et seulement tant que la réservation est active."
+      "accessHint": "Nom sur la sonnette, étage ou appartement, code du portail, où se trouve une clé. Seul l'aidant réservé les voit, et seulement tant que la réservation est active.",
+      "addressHintWeb": "Rue, numéro et ville, puis choisissez Rechercher.",
+      "accessNotSaved": "Pour protéger votre vie privée, les informations d’accès ne sont pas gardées dans le brouillon. Saisissez-les à nouveau si vous revenez plus tard."
     },
     "contact": {
       "title": "Ajouter un contact sur place",
@@ -1067,7 +1071,9 @@
       "tooFarAhead": "Veuillez choisir un jour dans les 60 prochains jours.",
       "budget": "Indiquez votre budget en euros, uniquement en chiffres.",
       "budgetTooHigh": "Le budget ne peut pas dépasser 10 000 €."
-    }
+    },
+    "signInNeeded": "Connectez-vous pour publier une tâche.",
+    "signIn": "Se connecter"
   },
   "requestPayment": {
     "title": "Demander le paiement",

@@ -907,6 +907,8 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 - `postTask.contact.agreement`: the poster confirms the on-site contact agreed to their name and phone being saved (`hasTheirAgreement`).
 - `postTask.waitlist.consent`: the consent to one launch email only; keep it that narrow in every language.
 - `postTask.where.accessHint`, `postTask.contact.intro`, `postTask.review.privacy`: restate hard rule e (exact address, access details and the contact's phone only for the booked helper while the booking is active).
+- `postTask.resume.bodyWeb`, `postTask.resume.bodyUntitledWeb`, `postTask.where.addressHintWeb`, `postTask.signInNeeded`, `postTask.signIn` (BEAV-87): the web wizard's own wording ("in this browser", "choose Search").
+- `postTask.where.accessNotSaved` (BEAV-87): the web draft never keeps the access details (hard rule e); the text must not promise they're saved.
 
 ## Request payment (BEAV-116)
 
