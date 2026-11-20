@@ -14,7 +14,8 @@ handler queues `pay_out` (Celery) after commit:
 `pay_out` sends `stripe.Payout.create` on the helper's account with the key
 `booking:{id}:payout:{kind}:v{n}` and `metadata.action` `payout_release`/`payout_tip`. A
 payout sent before without an answer saved is looked up first (`find_payout`), so a bumped
-key version (after a 5xx, which Stripe stores under the key) never pays twice. Network
+key version (after a 5xx or `balance_insufficient`, which Stripe stores under the key and
+replays for 24 hours) never pays twice. Network
 errors, 5xx, rate limits and `balance_insufficient` (the charge's money isn't available in
 the helper's balance yet) are retried by Celery and by the sweep (`unsent`); a refusal no
 retry can fix, or a payout still unsent after `SEND_PATIENCE`, goes to support
@@ -86,6 +87,8 @@ REFUSED = "payout_refused"
 # Stripe codes worth sending again later: the money isn't available in the helper's
 # balance yet (a fresh charge, or Stripe's payout delay for new accounts), too many
 # requests, a request with the same key still running, a locked object.
+# Money not yet available on the helper's account: Stripe stores this answer under the key.
+UNAVAILABLE = "balance_insufficient"
 WAIT_CODES = frozenset(
     {"balance_insufficient", "rate_limit", "lock_timeout", "idempotency_key_in_use"}
 )
@@ -151,8 +154,10 @@ def pay_out(payout_pk: int, *, gateway: StripeGateway | None = None) -> BookingP
             idempotency_key=payout_key(payout),
         )
     except StripeRequestError as exc:
-        if exc.http_status is not None and exc.http_status >= 500:
-            # Stripe stored this failure under the key: look it up, then a new version.
+        if (exc.http_status is not None and exc.http_status >= 500) or exc.code == UNAVAILABLE:
+            # Stripe stored this answer under the key and would replay it for 24 hours
+            # (a 5xx, or money not yet available on the helper's account): look the payout
+            # up before the next send, then send under a new version.
             payout = _save(payout, key_version=payout.key_version + 1)
         if _worth_waiting(exc):
             if timezone.now() - payout.created_at >= SEND_PATIENCE:

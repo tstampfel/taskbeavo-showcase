@@ -703,6 +703,8 @@ GRAPHQL_MUTATION_RATE_LIMIT_OVERRIDES: dict[str, int] = {
     "updateHelperProfile": 10,
     # Each call makes a Stripe request for a new onboarding link.
     "startPayoutOnboarding": 5,
+    # Each call may make a Stripe request for the tip's PaymentIntent (BEAV-117).
+    "addTip": 5,
     # Public and unauthenticated: each call stores a CONSENT row (the web cookie banner).
     "setConsent": 10,
     # Public and unauthenticated: each call stores an email address.

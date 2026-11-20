@@ -194,9 +194,16 @@ def test_money_not_yet_available_waits_for_the_retry(
 
     payout = payout_of(booking)
     assert payout.refused_at is None and payout.payout_id == ""
+    # Stripe would replay the stored balance_insufficient under v1 for 24 hours.
+    assert payout.key_version == 2
     assert payouts.unsent(now=timezone.now() + dt.timedelta(hours=1)) == [payout.pk]
     payouts.pay_out(payout.pk)
     assert payout_of(booking).payout_id == "po_test1"
+    assert len(stripe.lookups) == 1
+    assert [c["idempotency_key"] for c in stripe.payouts] == [
+        f"booking:{booking.pk}:payout:release:v1",
+        f"booking:{booking.pk}:payout:release:v2",
+    ]
 
 
 def test_a_payout_waiting_over_a_week_is_flagged_once_and_still_retried(

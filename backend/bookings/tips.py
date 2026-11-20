@@ -4,7 +4,8 @@ BEAV-117).
 `add_tip` (the addTip mutation): after a full release (RELEASED or PAID_OUT), the booking's
 poster tips the helper once, at least `MIN_TIP_CENTS` and at most the task price. It is a
 separate destination charge on behalf of the helper with no application fee: TaskBeavo
-takes nothing from it, and with `fees.payer=application` pays its card fee. The `Tip` row
+takes nothing from it, and as on every destination charge pays Stripe's card fee
+(an open launch question: a tip brings no fee to cover it). The `Tip` row
 is written in a transaction under the booking's lock, then the PaymentIntent is created
 outside it with the key `booking:{id}:tip:v1` (metadata `action=tip`), and the client
 secret goes back to the poster's payment sheet. Calling again with the same amount
