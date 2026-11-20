@@ -10,7 +10,7 @@ ships. A chargeback on a RELEASED or PAID_OUT booking is flagged for support by
 import logging
 from typing import Any
 
-from bookings import checkout, payouts, settlement
+from bookings import checkout, payouts, settlement, tips
 from payments.webhooks import stripe_webhook_handler
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,14 @@ def on_payment_intent_succeeded(event: dict[str, Any]) -> None:
     """A checkout's payment succeeded: FUNDS_HELD, or a full refund if the checkout had
     already failed (bookings/checkout.py, `confirm_payment`)."""
     intent = event["data"]["object"]
+    if tips.is_tip_intent(intent):
+        # A tip (bookings/tips.py), never a checkout: it changes no booking status.
+        if tips.confirm_tip(intent, stripe_event_id=event["id"]) is None:
+            logger.warning(
+                "stripe webhook: no booking for the tip",
+                extra={"stripe.event_id": event["id"], "stripe.object_id": intent.get("id")},
+            )
+        return
     if checkout.confirm_payment(intent, stripe_event_id=event["id"]) is None:
         # Not a booking's PaymentIntent (another platform object): nothing to do.
         logger.warning(
@@ -34,6 +42,8 @@ def on_payment_intent_payment_failed(event: dict[str, Any]) -> None:
     """A card was declined or 3D Secure failed: the checkout stays open for another card
     (bookings/checkout.py, `record_failed_attempt`)."""
     intent = event["data"]["object"]
+    if tips.is_tip_intent(intent):
+        return  # A declined tip stays pending for another card; the poster sees it at once.
     if checkout.record_failed_attempt(intent, stripe_event_id=event["id"]) is None:
         logger.warning(
             "stripe webhook: no booking for the PaymentIntent",
@@ -46,6 +56,8 @@ def on_payment_intent_requires_action(event: dict[str, Any]) -> None:
     """A 3D Secure or bank-app confirmation started: it restarts the checkout's 30 minutes
     (bookings/checkout.py, `record_action_required`)."""
     intent = event["data"]["object"]
+    if tips.is_tip_intent(intent):
+        return  # A tip has no checkout timer to restart.
     if checkout.record_action_required(intent, stripe_event_id=event["id"]) is None:
         logger.warning(
             "stripe webhook: no booking for the PaymentIntent",
@@ -59,6 +71,17 @@ def on_payout_failed(event: dict[str, Any]) -> None:
     if payouts.record_payout_failure(event) is None:
         logger.info(
             "stripe webhook: the failed payout isn't a booking's",
+            extra={"stripe.event_id": event["id"]},
+        )
+
+
+@stripe_webhook_handler("payout.paid")
+def on_payout_paid(event: dict[str, Any]) -> None:
+    """A payout reached the helper's bank: a released booking is PAID_OUT
+    (bookings/payouts.py, `record_payout_paid`)."""
+    if payouts.record_payout_paid(event) is None:
+        logger.info(
+            "stripe webhook: the paid payout isn't a booking's",
             extra={"stripe.event_id": event["id"]},
         )
 

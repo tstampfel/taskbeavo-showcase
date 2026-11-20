@@ -76,6 +76,82 @@ class FakeGateway:
 _HEX_DIGITS_TO_LETTERS = str.maketrans("0123456789", "ghijklmnop")
 
 
+@dataclass
+class FakePayoutStripe:
+    """Stripe for payouts and tips (bookings/payouts.py, bookings/tips.py). A reused key
+    returns the first result; `fail_with` makes the next payout raise once, after doing
+    the work when `fail_after_work` (a lost answer)."""
+
+    payouts: list[dict[str, Any]] = field(default_factory=list)
+    lookups: list[dict[str, Any]] = field(default_factory=list)
+    tips: list[dict[str, Any]] = field(default_factory=list)
+    by_key: dict[str, str] = field(default_factory=dict)
+    # (booking_id, kind) -> payout ID: what Stripe holds.
+    made: dict[tuple[str, str], str] = field(default_factory=dict)
+    fail_with: StripeRequestError | None = None
+    fail_after_work: bool = False
+    tip_error: StripeRequestError | None = None
+    # Make the tip PaymentIntent, then raise `tip_error` (a lost answer).
+    tip_fail_after_work: bool = False
+    # booking_id -> the tip PaymentIntent Stripe holds; key -> the one it made.
+    tip_made: dict[str, SimpleNamespace] = field(default_factory=dict)
+    tip_by_key: dict[str, SimpleNamespace] = field(default_factory=dict)
+    tip_lookups: list[str] = field(default_factory=list)
+
+    def create_payout(self, **kwargs: Any) -> SimpleNamespace:
+        self.payouts.append(kwargs)
+        key = kwargs["idempotency_key"]
+        if key in self.by_key:
+            return SimpleNamespace(id=self.by_key[key])
+        failing, self.fail_with = self.fail_with, None
+        if failing is not None and not self.fail_after_work:
+            raise failing
+        payout_id = f"po_test{len(self.by_key) + 1}"
+        self.by_key[key] = payout_id
+        self.made[(kwargs["booking_id"], kwargs["kind"])] = payout_id
+        if failing is not None:
+            raise failing
+        return SimpleNamespace(id=payout_id)
+
+    def find_payout(self, **kwargs: Any) -> str | None:
+        self.lookups.append(kwargs)
+        return self.made.get((kwargs["booking_id"], kwargs["kind"]))
+
+    def create_tip_charge(self, **kwargs: Any) -> SimpleNamespace:
+        self.tips.append(kwargs)
+        key = kwargs["idempotency_key"]
+        if key in self.tip_by_key:
+            return self.tip_by_key[key]
+        failing, self.tip_error = self.tip_error, None
+        if failing is not None and not self.tip_fail_after_work:
+            raise failing
+        pk = (
+            "pi_testtip"
+            + kwargs["booking_id"].replace("-", "")[:12].translate(_HEX_DIGITS_TO_LETTERS)
+            + "v"
+            + key.rsplit(":v", 1)[1]
+        )
+        intent = SimpleNamespace(id=pk, client_secret=f"{pk}_secret_tip")
+        self.tip_by_key[key] = intent
+        self.tip_made[kwargs["booking_id"]] = intent
+        if failing is not None:
+            raise failing
+        return intent
+
+    def retrieve_payment_intent(self, *, booking_id: str, payment_intent: str) -> SimpleNamespace:
+        self.tip_lookups.append(payment_intent)
+        [intent] = [i for i in self.tip_by_key.values() if i.id == payment_intent]
+        return intent
+
+    def find_tip_payment_intent(self, *, booking_id: str) -> dict[str, str] | None:
+        self.tip_lookups.append(booking_id)
+        intent = self.tip_made.get(booking_id)
+        return intent and {"id": intent.id, "client_secret": intent.client_secret}
+
+    def sent(self) -> int:
+        return len(self.by_key)
+
+
 def intent_id(booking_id: str) -> str:
     return "pi_test" + booking_id.replace("-", "")[:20].translate(_HEX_DIGITS_TO_LETTERS)
 

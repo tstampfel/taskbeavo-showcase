@@ -24,7 +24,12 @@ TaskBeavo takes, each shaped so the wrong pattern can't be written:
   `find_fee_refund`, `find_transfer_reversal` and `find_poster_refund` look a step up by
   them before it is sent again under a new key (.reviews/BEAV-106-partial-refund-handoff.md,
   R3-1). `retrieve_charge_parts` reads the charge's transfer and application fee IDs.
-- `create_payout` pays out from the helper's own account (manual payouts).
+- `create_payout` pays out from the helper's own account (manual payouts), with
+  `metadata.booking_id` and `metadata.action` (`payout_release`, `payout_tip`), and
+  `find_payout` looks one up by them before it is sent again under a new key.
+- `create_tip_charge` charges the poster's tip as its own destination charge on behalf of
+  the helper with no application fee (BEAV-117), and `find_tip_payment_intent` looks one
+  up by metadata before the tip is sent again under a new key.
 - `create_express_account` opens a helper's Express account with manual payouts, and
   `create_onboarding_link` sends them to Stripe's hosted onboarding (identity, IBAN).
   `retrieve_account` reads an account back, a GET that takes no idempotency key.
@@ -81,6 +86,10 @@ _TRANSFER_REVERSAL = re.compile(r"trr_[A-Za-z0-9]+")
 FEE_REFUND_ACTION = "fee_refund"
 TRANSFER_REVERSAL_ACTION = "transfer_reversal"
 POSTER_REFUND_ACTION = "partial_refund"
+# `metadata.action` of a tip's charge (bookings/tips.py) and of a booking's payouts
+# (bookings/payouts.py): `payout_release` or `payout_tip`.
+TIP_ACTION = "tip"
+PAYOUT_ACTION_PREFIX = "payout_"
 
 T = TypeVar("T", bound=stripe.StripeObject)
 
@@ -292,6 +301,28 @@ class StripeGateway:
                 raise _request_error("payment_intents.search", exc) from None
             return [{"id": intent.id, "status": intent.status} for intent in found.data]
 
+    def find_tip_payment_intent(self, *, booking_id: int | str) -> dict[str, str] | None:
+        """The booking's tip PaymentIntent (`metadata.action` `tip`) if Stripe has one, as
+        `{"id", "client_secret"}`: one created before without an answer saved (a 5xx or a
+        lost connection), looked up before the tip is sent again under a new key. A read
+        (Stripe's search API, which can lag behind by a minute), so no idempotency key."""
+        query = (
+            f"metadata['booking_id']:'{uuid.UUID(str(booking_id))}' "
+            f"AND metadata['action']:'{TIP_ACTION}'"
+        )
+        with tracer.start_as_current_span("stripe.payment_intents.search") as span:
+            span.set_attribute("booking.id", str(booking_id))
+            try:
+                found = self._client.v1.payment_intents.search({"query": query})
+            except stripe.StripeError as exc:
+                raise _request_error("payment_intents.search", exc) from None
+            for intent in found.data:
+                metadata = intent.to_dict().get("metadata") or {}
+                if metadata.get("action") == TIP_ACTION:
+                    span.set_attribute("stripe.object_id", intent.id)
+                    return {"id": intent.id, "client_secret": str(intent.client_secret or "")}
+            return None
+
     def create_full_refund(
         self, *, booking_id: int | str, payment_intent: str, idempotency_key: str
     ) -> stripe.Refund:
@@ -468,12 +499,14 @@ class StripeGateway:
     def create_payout(
         self,
         *,
-        booking_id: int,
+        booking_id: int | str,
         connected_account: str,
         amount_cents: int,
+        kind: str,
         idempotency_key: str,
     ) -> stripe.Payout:
-        """Pay out from the helper's Stripe balance to their bank ("Release payment")."""
+        """Pay out from the helper's Stripe balance to their bank ("Release payment", or a
+        confirmed tip). `kind` is the payout's kind (`release`, `tip`), in its metadata."""
         _check_cents(amount_cents, "amount_cents")
         _check_account(connected_account)
         return self._post(
@@ -482,12 +515,56 @@ class StripeGateway:
             {
                 "amount": amount_cents,
                 "currency": CURRENCY,
-                "metadata": {"booking_id": str(booking_id)},
+                "metadata": _metadata(booking_id, payout_action(kind)),
             },
             idempotency_key=idempotency_key,
             stripe_account=connected_account,
             span_attributes={"booking.id": str(booking_id), "amount.cents": amount_cents},
         )
+
+    def find_payout(
+        self, *, booking_id: int | str, connected_account: str, kind: str
+    ) -> str | None:
+        """The booking's payout of `kind` if Stripe has it on the helper's account (one
+        sent before without an answer saved): a read, no key."""
+        _check_account(connected_account)
+        return self._find(
+            "payouts.list",
+            lambda: self._client.v1.payouts.list(
+                {"limit": 100}, {"stripe_account": connected_account}
+            ).auto_paging_iter(),
+            booking_id,
+            payout_action(kind),
+        )
+
+    def create_tip_charge(
+        self,
+        *,
+        booking_id: int | str,
+        amount_cents: int,
+        destination_account: str,
+        idempotency_key: str,
+    ) -> stripe.PaymentIntent:
+        """The poster's tip: a PaymentIntent of its own, charged on behalf of the helper,
+        who receives all of it. No application fee (hard rule b, BEAV-117)."""
+        _check_cents(amount_cents, "amount_cents")
+        _check_account(destination_account)
+        intent = self._post(
+            "payment_intents.create",
+            self._client.v1.payment_intents.create,
+            {
+                "amount": amount_cents,
+                "currency": CURRENCY,
+                "on_behalf_of": destination_account,
+                "transfer_data": {"destination": destination_account},
+                "automatic_payment_methods": {"enabled": True},
+                "metadata": _metadata(booking_id, TIP_ACTION),
+            },
+            idempotency_key=idempotency_key,
+            span_attributes={"booking.id": str(booking_id), "amount.cents": amount_cents},
+        )
+        _warn_if_link_offered(booking_id, intent)
+        return intent
 
     def create_express_account(
         self, *, helper_profile_id: int, idempotency_key: str
@@ -644,6 +721,13 @@ def _request_error(operation: str, exc: stripe.StripeError) -> StripeRequestErro
         http_status=exc.http_status,
         payment_intent_status=getattr(intent, "status", None) or "",
     )
+
+
+def payout_action(kind: str) -> str:
+    """`metadata.action` of a booking's payout of `kind` (`release`, `tip`)."""
+    if kind not in ("release", "tip"):
+        raise ValueError("A payout is a release or a tip.")
+    return f"{PAYOUT_ACTION_PREFIX}{kind}"
 
 
 def _metadata(booking_id: int | str, action: str) -> dict[str, str]:

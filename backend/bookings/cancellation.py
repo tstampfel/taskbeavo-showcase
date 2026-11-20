@@ -43,6 +43,13 @@ is recorded and support enters the share of the work already done; the split for
 share is `pro_rata_withdrawal_outcome` (`WITHDRAWAL_PRO_RATA`): the helper keeps that
 percentage of the price, TaskBeavo the booking's fee rate of it, the poster gets the rest.
 
+The poster's partial release (`partial_release_outcome`, BEAV-117; PLAN.md, state machine:
+"Poster releases part, rest refunded with transfer reversal") isn't a cancellation, but its
+money moves exactly like one, so its amounts live here too: the helper gets the part the
+poster released (C, 1 cent up to 1 cent under the price), TaskBeavo keeps K of it, the
+poster gets the rest back (`PARTIAL_RELEASE`). A full release moves no refund and is
+not computed here: the helper keeps P and TaskBeavo F (bookings/release.py).
+
 The no-access call-out (`no_access_call_out`) is 25% of the price, at least €5, at most
 €15, with no trader exception (PLAN.md: a risk to raise with the lawyer). Rescheduling
 moves no money and a disputed call-out is decided by support, so neither is computed here.
@@ -170,6 +177,9 @@ class Case(StrEnum):
     WITHDRAWAL = "WITHDRAWAL"
     # ... at or after the start: support entered the share of the work already done.
     WITHDRAWAL_PRO_RATA = "WITHDRAWAL_PRO_RATA"
+    # Not a cancellation: the poster released part of the price after the helper requested
+    # payment (BEAV-117); the rest is refunded like a cancellation's.
+    PARTIAL_RELEASE = "PARTIAL_RELEASE"
 
 
 class NotACancellationReason(StrEnum):
@@ -241,7 +251,9 @@ class Outcome:
         if (self.case == Case.WITHDRAWAL_PRO_RATA) != (self.work_done_percent is not None):
             raise ValueError("Only a pro rata withdrawal has a share of the work done.")
         c, k = self.helper_compensation_cents, self.kept_fee_cents
-        if c != _compensation(self.case, self.amount_cents, self.work_done_percent):
+        if self.case == Case.PARTIAL_RELEASE:
+            _check_released_cents(c, self.amount_cents)
+        elif c != _compensation(self.case, self.amount_cents, self.work_done_percent):
             raise ValueError("The compensation doesn't match the case.")
         if self.poster_credit_cents and (
             self.case != Case.HELPER_CANCEL
@@ -400,6 +412,19 @@ def pro_rata_withdrawal_outcome(
     )
 
 
+def partial_release_outcome(
+    *, amount_cents: int, fee_cents: int, fee_percent: int, released_cents: int
+) -> Outcome:
+    """The poster releases `released_cents` of the price, less than all of it (BEAV-117).
+    The helper keeps exactly that, TaskBeavo the booking's fee rate of it (K, as for every
+    compensation; the €2.50 minimum is the full fee's only), and the poster gets the rest
+    of the charge back with a transfer reversal. Raises ValueError for an amount outside
+    1 cent to 1 cent under the price."""
+    _check_price_and_fee(amount_cents, fee_cents)
+    _check_released_cents(released_cents, amount_cents)
+    return _outcome(Case.PARTIAL_RELEASE, amount_cents, fee_cents, fee_percent, released_cents)
+
+
 def charged_cents(amount_cents: int, fee_cents: int) -> int:
     """What the poster paid for a held booking: A = P + F."""
     return amount_cents + fee_cents
@@ -528,6 +553,11 @@ def _check_fee_percent(value: object) -> None:
 def _check_work_done_percent(value: object) -> None:
     if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < 100:
         raise ValueError("The share of the work done is a whole percent from 0 to 99.")
+
+
+def _check_released_cents(value: object, amount_cents: int) -> None:
+    if not isinstance(value, int) or isinstance(value, bool) or not 0 < value < amount_cents:
+        raise ValueError("A partial release is 1 cent up to 1 cent under the task price.")
 
 
 def _check_aware(**moments: dt.datetime) -> None:

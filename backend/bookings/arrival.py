@@ -462,6 +462,28 @@ def confirm_helper_came(
     return booking
 
 
+def record_came_on_release(booking: Booking, poster: User, now: dt.datetime) -> None:
+    """The poster released the payment (or proposed releasing less) without having said
+    "Yes, they came": releasing says it, so the no-show route closes (bookings/release.py,
+    BEAV-117). Call with `booking` locked in the release transaction."""
+    if not transaction.get_connection().in_atomic_block:
+        raise RuntimeError("Recorded inside the locked release transaction.")
+    arrival = _arrival(booking)
+    if arrival.poster_confirmed_came_at is not None:
+        return
+    arrival.poster_confirmed_came_at = now
+    _record(
+        booking,
+        arrival,
+        Step.CAME_CONFIRMED,
+        ["poster_confirmed_came_at"],
+        actor_kind=ActorKind.POSTER,
+        actor=poster,
+        now=now,
+        data={"by_release": True},
+    )
+
+
 def _no_show_outcome(booking: Booking, said_at: dt.datetime) -> Outcome:
     """The helper cancellation as of when the poster said the helper didn't come: a full
     refund, and the EUR 5 credit if that was under the late window (bookings/cancellation.py)."""

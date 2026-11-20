@@ -193,7 +193,9 @@
     "CONSENT_UNAVAILABLE": "Analytics and news can't be switched on right now. Please try again later.",
     "PAYMENT_REQUEST_TOO_EARLY": "You can request payment once the job has started.",
     "INVOICE_REQUIRED": "Add your fiscalized invoice first: a photo or scan, or its JIR.",
-    "INVALID_PAYMENT_REQUEST": "Something in the request isn't right. Check the note, the photos and the JIR, then try again."
+    "INVALID_PAYMENT_REQUEST": "Something in the request isn't right. Check the note, the photos and the JIR, then try again.",
+    "INVALID_RELEASE_AMOUNT": "Enter an amount above €0 and below the task price.",
+    "INVALID_TIP_AMOUNT": "A tip is at least €1 and at most the task price. If you started a tip, finish it with the same amount."
   },
   "uploads": {
     "choosePhoto": "Choose photo",

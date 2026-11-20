@@ -740,3 +740,112 @@ class PaymentRequestPhoto(models.Model):
 
     def __str__(self) -> str:
         return f"PaymentRequestPhoto {self.pk}"
+
+
+class ReleaseProposal(models.Model):
+    """The poster's proposal to release less than the price (BEAV-117; owner decision
+    2026-11-20, replacing a poster-only partial release). Nothing moves at Stripe while it
+    is OPEN: only the helper's acceptance opens the settlement (bookings/release.py,
+    `CancellationSettlement` with case PARTIAL_RELEASE). The helper may decline, the poster
+    may withdraw it; leaving PAYMENT_REQUESTED any other way (a full release, a dispute, a
+    no-show) closes it. There is no deadline: with no answer nothing moves, and the poster
+    still releases in full or disputes. An accounting record: IDs, cents and enum keys."""
+
+    class Status(models.TextChoices):
+        OPEN = "OPEN"
+        ACCEPTED = "ACCEPTED"
+        DECLINED = "DECLINED"
+        WITHDRAWN = "WITHDRAWN"
+        # The booking left PAYMENT_REQUESTED before an answer.
+        CLOSED = "CLOSED"
+
+    booking = models.ForeignKey(Booking, on_delete=models.PROTECT, related_name="release_proposals")
+    released_cents = models.PositiveIntegerField()
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.OPEN)
+    created_at = models.DateTimeField()
+    answered_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "booking_release_proposals"
+        ordering: ClassVar = ["-created_at"]
+        constraints: ClassVar = [
+            models.UniqueConstraint(
+                fields=["booking"],
+                condition=models.Q(status="OPEN"),
+                name="release_proposal_one_open",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(released_cents__gt=0), name="release_proposal_positive"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"ReleaseProposal {self.pk} {self.status}"
+
+
+class BookingPayout(models.Model):
+    """A manual payout from the helper's Stripe balance to their bank (hard rule b;
+    bookings/payouts.py). RELEASE pays the helper's share once: the price on a full release,
+    the compensation C once Stripe confirmed a partial release or a cancellation's
+    settlement. TIP pays a tip once Stripe confirmed its charge. Created in the transaction
+    that made it due; the Stripe call runs afterwards, keyed `booking:{id}:payout:{kind}:v{n}`.
+    An accounting record: IDs, cents and times."""
+
+    class Kind(models.TextChoices):
+        RELEASE = "RELEASE"
+        TIP = "TIP"
+
+    booking = models.ForeignKey(Booking, on_delete=models.PROTECT, related_name="payouts")
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    amount_cents = models.PositiveIntegerField()
+    payout_id = models.CharField(max_length=255, blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    key_version = models.PositiveSmallIntegerField(default=1)
+    # Stripe refused it for good, or it came due while the booking was DISPUTED (held):
+    # support pays it out by hand.
+    refused_at = models.DateTimeField(null=True, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "booking_payouts"
+        constraints: ClassVar = [
+            models.UniqueConstraint(fields=["booking", "kind"], name="booking_payout_once"),
+            models.CheckConstraint(
+                condition=models.Q(amount_cents__gt=0), name="booking_payout_positive"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"BookingPayout {self.pk} {self.kind}"
+
+
+class Tip(models.Model):
+    """The poster's tip after a full release (BEAV-117; PLAN.md, "taps Release payment and
+    can add a tip"): a separate destination charge on behalf of the helper with no
+    application fee (hard rule b), keyed `booking:{id}:tip:v{n}` (`key_version`, bumped after
+    a 5xx or a lost answer, which Stripe would replay for 24 hours). It counts only once Stripe's
+    payment_intent.succeeded confirms it (hard rule a, bookings/tips.py); then the helper is
+    told and it is paid out (`BookingPayout` TIP). One per booking. IDs, cents and times."""
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING"
+        SUCCEEDED = "SUCCEEDED"
+
+    booking = models.OneToOneField(Booking, on_delete=models.PROTECT, related_name="tip")
+    amount_cents = models.PositiveIntegerField()
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    payment_intent_id = models.CharField(max_length=255, blank=True)
+    key_version = models.PositiveSmallIntegerField(default=1)
+    created_at = models.DateTimeField()
+    succeeded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "booking_tips"
+        constraints: ClassVar = [
+            models.CheckConstraint(condition=models.Q(amount_cents__gt=0), name="tip_positive"),
+        ]
+
+    def __str__(self) -> str:
+        return f"Tip {self.pk} {self.status}"

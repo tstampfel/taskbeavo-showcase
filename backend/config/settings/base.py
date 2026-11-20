@@ -149,6 +149,11 @@ CELERY_BEAT_SCHEDULE: dict[str, dict[str, object]] = {
         "task": "bookings.arrival.settle_uncontested_no_shows",
         "schedule": 15 * 60.0,
     },
+    # Re-sends payouts to helpers that Stripe hasn't got yet (bookings/payouts.py).
+    "bookings-payouts-sweep": {
+        "task": "bookings.payouts.sweep",
+        "schedule": 15 * 60.0,
+    },
     # Ends checkouts nobody paid within CHECKOUT_ABANDON_AFTER_MINUTES (bookings/checkout.py).
     "bookings-checkout-expire-abandoned": {
         "task": "bookings.checkout.expire_abandoned",
@@ -698,6 +703,8 @@ GRAPHQL_MUTATION_RATE_LIMIT_OVERRIDES: dict[str, int] = {
     "updateHelperProfile": 10,
     # Each call makes a Stripe request for a new onboarding link.
     "startPayoutOnboarding": 5,
+    # Each call may make a Stripe request for the tip's PaymentIntent (BEAV-117).
+    "addTip": 5,
     # Public and unauthenticated: each call stores a CONSENT row (the web cookie banner).
     "setConsent": 10,
     # Public and unauthenticated: each call stores an email address.

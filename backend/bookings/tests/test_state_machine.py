@@ -15,7 +15,7 @@ from accounts.models import User
 from accounts.tests.factories import make_user
 from areas.models import ServiceArea
 from bookings import queries, state_machine
-from bookings.models import Booking, BookingEvent
+from bookings.models import Booking, BookingEvent, BookingPayout
 from bookings.state_machine import MONEY_CONFIRMED, TRANSITIONS, apply_stripe_transition
 from bookings.tests.factories import book, make_booking, stripe_event
 from core import outbox
@@ -697,8 +697,10 @@ def test_two_release_taps_release_once() -> None:
     assert sorted(results) == [ErrorCode.BOOKING_ACTION_NOT_ALLOWED.name, "released"]
     booking.refresh_from_db()
     assert booking.status == S.RELEASED
-    assert [e.type for e in events(booking)] == ["awaiting_payment", "released"]
+    # BEAV-117: the release's payout ran (Celery is eager in tests), once.
+    assert [e.type for e in events(booking)] == ["awaiting_payment", "released", "payout_created"]
     assert [r.payload["status"] for r in updates(booking)] == ["AWAITING_PAYMENT", "RELEASED"]
+    assert BookingPayout.objects.filter(booking=booking).count() == 1
 
 
 @pytest.mark.django_db(transaction=True)

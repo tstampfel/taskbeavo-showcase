@@ -920,3 +920,11 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 - `bookingDetail.links.requestPayment`: the helper's button on the booking detail screen.
 - `errors.PAYMENT_REQUEST_TOO_EARLY`, `errors.INVOICE_REQUIRED`, `errors.INVALID_PAYMENT_REQUEST`: the new API error codes.
 - hr `requestPayment.photosAdded` uses one/few/other.
+
+## Release payment, partial release and tips (BEAV-117)
+
+DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check. None of it is legal text.
+
+- `errors.INVALID_RELEASE_AMOUNT`: the poster proposed releasing nothing, or the full price or more, instead of a lower amount.
+- `errors.INVALID_TIP_AMOUNT`: a tip under €1 or over the task price, or a different amount from the tip already started.
+- The backend push and email texts of the five new notification kinds (`booking.release_proposed`, `booking.release_proposal_accepted`, `booking.release_proposal_declined`, `booking.partial_release_refunded`, `booking.tip_received`) are in `backend/locale/*/LC_MESSAGES/django.po`, drafted the same way.

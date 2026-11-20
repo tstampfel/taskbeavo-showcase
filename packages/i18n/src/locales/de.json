@@ -193,7 +193,9 @@
     "CONSENT_UNAVAILABLE": "Analyse und Neuigkeiten können gerade nicht eingeschaltet werden. Bitte versuchen Sie es später erneut.",
     "PAYMENT_REQUEST_TOO_EARLY": "Sie können die Zahlung anfordern, sobald der Auftrag begonnen hat.",
     "INVOICE_REQUIRED": "Fügen Sie zuerst Ihre fiskalisierte Rechnung hinzu: ein Foto oder einen Scan oder ihre JIR.",
-    "INVALID_PAYMENT_REQUEST": "Etwas an der Anfrage stimmt nicht. Prüfen Sie die Notiz, die Fotos und die JIR und versuchen Sie es erneut."
+    "INVALID_PAYMENT_REQUEST": "Etwas an der Anfrage stimmt nicht. Prüfen Sie die Notiz, die Fotos und die JIR und versuchen Sie es erneut.",
+    "INVALID_RELEASE_AMOUNT": "Geben Sie einen Betrag über 0 € und unter dem Preis der Aufgabe ein.",
+    "INVALID_TIP_AMOUNT": "Ein Trinkgeld beträgt mindestens 1 € und höchstens den Preis der Aufgabe. Wenn Sie ein Trinkgeld begonnen haben, schließen Sie es mit demselben Betrag ab."
   },
   "uploads": {
     "choosePhoto": "Foto auswählen",

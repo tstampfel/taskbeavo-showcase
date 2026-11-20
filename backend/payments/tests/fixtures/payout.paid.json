@@ -1,0 +1,24 @@
+{
+  "id": "evt_1TestPayoutPaid",
+  "object": "event",
+  "account": "acct_1TestHelperExpress",
+  "api_version": "2026-09-30.endive",
+  "created": 1793520000,
+  "data": {
+    "object": {
+      "id": "po_1TestPayout",
+      "object": "payout",
+      "amount": 3000,
+      "currency": "eur",
+      "livemode": false,
+      "metadata": {"booking_id": "42", "action": "payout_release"},
+      "method": "standard",
+      "status": "paid",
+      "type": "bank_account"
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {"id": null, "idempotency_key": null},
+  "type": "payout.paid"
+}

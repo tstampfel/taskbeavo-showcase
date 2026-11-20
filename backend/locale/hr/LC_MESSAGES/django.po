@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: taskbeavo-backend\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 15:50+0100\n"
+"POT-Creation-Date: 2026-11-20 08:20+0100\n"
 "Language: hr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -492,7 +492,7 @@ msgstr "Vaša se uplata sigurno čuva dok je ne oslobodite."
 #: core/templates/email/withdrawal_confirmation/body.html:5
 #: core/templates/email/withdrawal_confirmation/body.txt:3
 #: core/templates/email/withdrawal_confirmation/subject.txt:1
-#: notifications/kinds.py:266
+#: notifications/kinds.py:327
 msgid "Withdrawal received"
 msgstr "Odustanak zaprimljen"
 
@@ -668,7 +668,7 @@ msgid "The other side asked to cancel a booking. Open TaskBeavo to respond."
 msgstr ""
 "Druga strana želi otkazati rezervaciju. Otvorite TaskBeavo i odgovorite."
 
-#: notifications/kinds.py:147 notifications/kinds.py:490
+#: notifications/kinds.py:147 notifications/kinds.py:551
 msgid "Booking cancelled"
 msgstr "Rezervacija otkazana"
 
@@ -760,15 +760,59 @@ msgstr ""
 "Vaša je banka vratila isplatu. Ažurirajte bankovne podatke u Stripeu; novac "
 "ćemo poslati ponovno kada ih ispravite."
 
-#: notifications/kinds.py:267
+#: notifications/kinds.py:264
+msgid "New payment proposal"
+msgstr "Novi prijedlog plaćanja"
+
+#: notifications/kinds.py:266
+msgid ""
+"The poster proposed releasing a different amount for your task. Open "
+"TaskBeavo to accept or decline it."
+msgstr "Naručitelj je predložio oslobađanje drugačijeg iznosa za Vaš zadatak. Otvorite TaskBeavo i prihvatite ili odbijte prijedlog."
+
+#: notifications/kinds.py:275
+msgid "Proposal accepted"
+msgstr "Prijedlog prihvaćen"
+
+#: notifications/kinds.py:277
+msgid ""
+"Your helper accepted the amount you proposed. The rest of your payment will "
+"be refunded to your card."
+msgstr "Vaš pomagač je prihvatio iznos koji ste predložili. Ostatak plaćanja bit će vraćen na Vašu karticu."
+
+#: notifications/kinds.py:286
+msgid "Proposal declined"
+msgstr "Prijedlog odbijen"
+
+#: notifications/kinds.py:288
+msgid ""
+"Your helper declined the amount you proposed. Open TaskBeavo to release the "
+"payment or get help."
+msgstr "Vaš pomagač je odbio iznos koji ste predložili. Otvorite TaskBeavo i oslobodite plaćanje ili zatražite pomoć."
+
+#: notifications/kinds.py:298 notifications/kinds.py:337
+msgid "Refund on its way"
+msgstr "Povrat novca je na putu"
+
+#: notifications/kinds.py:300
+msgid ""
+"The agreed amount went to your helper and the rest of your payment is on its "
+"way back to your card. It can take a few days to reach your account."
+msgstr "Dogovoreni iznos otišao je Vašem pomagaču, a ostatak plaćanja vraća se na Vašu karticu. Može proći nekoliko dana dok ne stigne na Vaš račun."
+
+#: notifications/kinds.py:310
+msgid "You received a tip"
+msgstr "Dobili ste napojnicu"
+
+#: notifications/kinds.py:311
+msgid "The poster sent you a tip. It is on its way to your bank account."
+msgstr "Naručitelj Vam je poslao napojnicu. Novac je na putu prema Vašem bankovnom računu."
+
+#: notifications/kinds.py:328
 msgid "Your withdrawal from the contract is recorded."
 msgstr "Vaš raskid ugovora je zabilježen."
 
-#: notifications/kinds.py:276
-msgid "Refund on its way"
-msgstr "Povrat je na putu"
-
-#: notifications/kinds.py:278
+#: notifications/kinds.py:339
 msgid ""
 "Your cancellation is complete and your refund is on its way. It can take a "
 "few days to reach your account."
@@ -776,21 +820,21 @@ msgstr ""
 "Vaše otkazivanje je završeno, a povrat novca je na putu. Može potrajati "
 "nekoliko dana dok ne stigne na Vaš račun."
 
-#: notifications/kinds.py:295
+#: notifications/kinds.py:356
 msgid "Cancellation under review"
 msgstr "Otkazivanje se pregledava"
 
-#: notifications/kinds.py:296
+#: notifications/kinds.py:357
 msgid ""
 "Our team is reviewing your cancellation request. We'll let you know the "
 "outcome."
 msgstr "Naš tim pregledava vaš zahtjev za otkazivanje. Javit ćemo vam ishod."
 
-#: notifications/kinds.py:305
+#: notifications/kinds.py:366
 msgid "Booking cancelled, no one's fault"
 msgstr "Rezervacija otkazana bez ničije krivnje"
 
-#: notifications/kinds.py:307
+#: notifications/kinds.py:368
 msgid ""
 "The no-fault cancellation stands. The booking is cancelled and the poster "
 "gets a full refund."
@@ -798,11 +842,11 @@ msgstr ""
 "Otkazivanje bez krivnje vrijedi. Rezervacija je otkazana, a naručitelj "
 "dobiva puni povrat novca."
 
-#: notifications/kinds.py:317
+#: notifications/kinds.py:378
 msgid "No-fault cancellation accepted"
 msgstr "Otkazivanje bez krivnje prihvaćeno"
 
-#: notifications/kinds.py:319
+#: notifications/kinds.py:380
 msgid ""
 "Our team accepted the no-fault reason. The booking is cancelled and the "
 "poster gets a full refund."
@@ -810,11 +854,11 @@ msgstr ""
 "Naš tim prihvatio je razlog bez krivnje. Rezervacija je otkazana i "
 "naručitelj dobiva puni povrat."
 
-#: notifications/kinds.py:330
+#: notifications/kinds.py:391
 msgid "No-fault reason not accepted"
 msgstr "Razlog bez krivnje nije prihvaćen"
 
-#: notifications/kinds.py:332
+#: notifications/kinds.py:393
 msgid ""
 "Our team didn't accept the no-fault reason, so the usual cancellation policy "
 "applies. Open TaskBeavo to see what happens next."
@@ -822,11 +866,11 @@ msgstr ""
 "Naš tim nije prihvatio razlog bez krivnje pa vrijede uobičajena pravila "
 "otkazivanja. Otvorite TaskBeavo da vidite što slijedi."
 
-#: notifications/kinds.py:343
+#: notifications/kinds.py:404
 msgid "A task is open again"
 msgstr "Zadatak je ponovno otvoren"
 
-#: notifications/kinds.py:344
+#: notifications/kinds.py:405
 msgid ""
 "A task you offered on is open again and your offer is back. Open TaskBeavo "
 "to see it."
@@ -834,33 +878,33 @@ msgstr ""
 "Zadatak za koji ste poslali ponudu ponovno je otvoren i vaša ponuda opet "
 "vrijedi. Otvorite TaskBeavo."
 
-#: notifications/kinds.py:359
+#: notifications/kinds.py:420
 msgid "Your task starts in 2 hours"
 msgstr "Vaš zadatak počinje za 2 sata"
 
-#: notifications/kinds.py:360
+#: notifications/kinds.py:421
 msgid ""
 "A booked task starts in about 2 hours. Open TaskBeavo to see the details."
 msgstr ""
 "Rezervirani zadatak počinje za otprilike 2 sata. Otvorite TaskBeavo za "
 "pojedinosti."
 
-#: notifications/kinds.py:367
+#: notifications/kinds.py:428
 msgid "Your task starts in 30 minutes"
 msgstr "Vaš zadatak počinje za 30 minuta"
 
-#: notifications/kinds.py:368
+#: notifications/kinds.py:429
 msgid ""
 "A booked task starts in about 30 minutes. Tap On my way when you set off."
 msgstr ""
 "Rezervirani zadatak počinje za otprilike 30 minuta. Kad krenete, dodirnite "
 "Na putu sam."
 
-#: notifications/kinds.py:375
+#: notifications/kinds.py:436
 msgid "Are you on your way?"
 msgstr "Jeste li na putu?"
 
-#: notifications/kinds.py:377
+#: notifications/kinds.py:438
 msgid ""
 "Your booked task started 15 minutes ago. Let the poster know if you're "
 "running late, have arrived or can't come."
@@ -868,30 +912,30 @@ msgstr ""
 "Vaš rezervirani zadatak počeo je prije 15 minuta. Javite naručitelju kasnite "
 "li, jeste li stigli ili ne možete doći."
 
-#: notifications/kinds.py:386
+#: notifications/kinds.py:447
 msgid "Did your helper come?"
 msgstr "Je li pomagač došao?"
 
-#: notifications/kinds.py:387
+#: notifications/kinds.py:448
 msgid ""
 "Your helper should be there by now. Open TaskBeavo to tell us whether they "
 "came."
 msgstr ""
 "Pomagač je već trebao stići. Otvorite TaskBeavo i javite nam je li došao."
 
-#: notifications/kinds.py:394
+#: notifications/kinds.py:455
 msgid "Your helper is on the way"
 msgstr "Pomagač je na putu"
 
-#: notifications/kinds.py:395
+#: notifications/kinds.py:456
 msgid "Your helper set off. Open TaskBeavo to follow their arrival."
 msgstr "Pomagač je krenuo. Otvorite TaskBeavo da pratite njegov dolazak."
 
-#: notifications/kinds.py:402
+#: notifications/kinds.py:463
 msgid "Your helper is running late"
 msgstr "Pomagač kasni"
 
-#: notifications/kinds.py:404
+#: notifications/kinds.py:465
 msgid ""
 "Your helper sent a new arrival time. Open TaskBeavo to keep the booking or "
 "cancel for free."
@@ -899,27 +943,27 @@ msgstr ""
 "Pomagač je poslao novo vrijeme dolaska. Otvorite TaskBeavo da zadržite "
 "rezervaciju ili je besplatno otkažete."
 
-#: notifications/kinds.py:413
+#: notifications/kinds.py:474
 msgid "Your helper has arrived"
 msgstr "Pomagač je stigao"
 
-#: notifications/kinds.py:414
+#: notifications/kinds.py:475
 msgid "Your helper says they have arrived."
 msgstr "Pomagač javlja da je stigao."
 
-#: notifications/kinds.py:421
+#: notifications/kinds.py:482
 msgid "Your new time is fine"
 msgstr "Novo vrijeme odgovara"
 
-#: notifications/kinds.py:422
+#: notifications/kinds.py:483
 msgid "The poster is fine with your new arrival time."
 msgstr "Naručitelju odgovara vaše novo vrijeme dolaska."
 
-#: notifications/kinds.py:431
+#: notifications/kinds.py:492
 msgid "Were you there?"
 msgstr "Jeste li bili tamo?"
 
-#: notifications/kinds.py:433
+#: notifications/kinds.py:494
 msgid ""
 "The poster says you didn't come. If you were there, tap I was there within "
 "24 hours and our team will review it. Otherwise the poster gets a full "
@@ -929,11 +973,11 @@ msgstr ""
 "dodirnite Bio/la sam tamo i naš tim će to provjeriti. Inače naručitelj "
 "dobiva puni povrat."
 
-#: notifications/kinds.py:442
+#: notifications/kinds.py:503
 msgid "Your helper says they came"
 msgstr "Pomagač kaže da je došao"
 
-#: notifications/kinds.py:444
+#: notifications/kinds.py:505
 msgid ""
 "Your helper says they were there. Our team will review it and let you both "
 "know the outcome."
@@ -941,11 +985,11 @@ msgstr ""
 "Pomagač kaže da je bio tamo. Naš tim će to provjeriti i javiti vam oboma "
 "ishod."
 
-#: notifications/kinds.py:454
+#: notifications/kinds.py:515
 msgid "Your refund is on its way"
 msgstr "Povrat je na putu"
 
-#: notifications/kinds.py:456
+#: notifications/kinds.py:517
 msgid ""
 "Your helper didn't answer within 24 hours, so the booking is cancelled and "
 "you get a full refund."
@@ -953,11 +997,11 @@ msgstr ""
 "Pomagač nije odgovorio u roku od 24 sata, pa je rezervacija otkazana i "
 "dobivate puni povrat."
 
-#: notifications/kinds.py:466
+#: notifications/kinds.py:527
 msgid "No-show confirmed"
 msgstr "Nedolazak potvrđen"
 
-#: notifications/kinds.py:468
+#: notifications/kinds.py:529
 msgid ""
 "Our team reviewed it and found the helper didn't come, so the booking is "
 "cancelled and the poster gets a full refund. The helper pays nothing."
@@ -965,11 +1009,11 @@ msgstr ""
 "Naš tim je provjerio i utvrdio da pomagač nije došao, pa je rezervacija "
 "otkazana i naručitelj dobiva puni povrat. Pomagač ništa ne plaća."
 
-#: notifications/kinds.py:478
+#: notifications/kinds.py:539
 msgid "The booking continues"
 msgstr "Rezervacija se nastavlja"
 
-#: notifications/kinds.py:480
+#: notifications/kinds.py:541
 msgid ""
 "Our team reviewed it and found the helper was there, so the booking "
 "continues. Open TaskBeavo to see what happens next."
@@ -977,7 +1021,7 @@ msgstr ""
 "Naš tim je provjerio i utvrdio da je pomagač bio tamo, pa se rezervacija "
 "nastavlja. Otvorite TaskBeavo da vidite što slijedi."
 
-#: notifications/kinds.py:492
+#: notifications/kinds.py:553
 msgid ""
 "The poster said you didn't come, so the booking is cancelled and the poster "
 "gets a full refund. You pay nothing. Open TaskBeavo to see the booking."
@@ -986,11 +1030,11 @@ msgstr ""
 "dobiva puni povrat. Vi ništa ne plaćate. Otvorite TaskBeavo da vidite "
 "rezervaciju."
 
-#: notifications/kinds.py:501
+#: notifications/kinds.py:562
 msgid "Your helper can start now"
 msgstr "Pomagač može početi odmah"
 
-#: notifications/kinds.py:503
+#: notifications/kinds.py:564
 msgid ""
 "Your helper is there early and asks to start now. Open TaskBeavo to confirm "
 "or keep the booked time."
@@ -998,19 +1042,19 @@ msgstr ""
 "Pomagač je stigao ranije i pita može li početi odmah. Otvorite TaskBeavo da "
 "potvrdite ili zadržite dogovoreno vrijeme."
 
-#: notifications/kinds.py:512
+#: notifications/kinds.py:573
 msgid "You can start now"
 msgstr "Možete početi odmah"
 
-#: notifications/kinds.py:513
+#: notifications/kinds.py:574
 msgid "The poster confirmed an early start. The job starts now."
 msgstr "Naručitelj je potvrdio raniji početak. Posao počinje sada."
 
-#: notifications/kinds.py:520
+#: notifications/kinds.py:581
 msgid "Start at the booked time"
 msgstr "Počnite u dogovoreno vrijeme"
 
-#: notifications/kinds.py:521
+#: notifications/kinds.py:582
 msgid "The poster would like to keep the booked start time."
 msgstr "Naručitelj želi zadržati dogovoreno vrijeme početka."
 
