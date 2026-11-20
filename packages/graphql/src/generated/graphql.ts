@@ -211,10 +211,14 @@ export type ErrorCode =
   | 'INVALID_PROVIDER_TOKEN'
   /** The push token isn't an Expo push token, or is still registered to another signed-in account. */
   | 'INVALID_PUSH_TOKEN'
+  /** A proposal to release less must be more than nothing and less than the task price, in whole cents; to pay everything, release the payment instead. */
+  | 'INVALID_RELEASE_AMOUNT'
   /** The task's time window must start from now, end after it starts and end within 60 days; a task without a flexible date needs one. */
   | 'INVALID_TASK_DATES'
   /** A required task field is missing (category, title, description, address, budget), a text is too long, the coordinates are invalid or there are more than 10 photos. */
   | 'INVALID_TASK_DETAILS'
+  /** A tip is at least EUR 1 and at most the task price, in whole cents, and can't change once its payment started. */
+  | 'INVALID_TIP_AMOUNT'
   /** The VAT ID isn't a valid EU VAT number (a Croatian one is HR and the OIB). */
   | 'INVALID_VAT_ID'
   /** The city is missing or too long, or the country code isn't two letters. */

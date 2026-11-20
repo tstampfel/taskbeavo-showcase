@@ -47,6 +47,8 @@ export const NOT_PERSISTED: Readonly<Record<string, readonly string[] | 'all'>> 
   // Its `clientSecret` lets anyone holding it confirm the payment; the booking is cached
   // on its own.
   CheckoutSession: 'all',
+  // The same for the poster's tip (BEAV-117): its `clientSecret` confirms the tip payment.
+  TipSession: 'all',
   // Sign-up results: their `ticket` creates the account and a session, no code needed.
   AccountDetailsRequired: 'all',
   ProviderLinkRequired: 'all',

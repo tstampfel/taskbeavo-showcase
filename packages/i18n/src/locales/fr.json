@@ -193,7 +193,9 @@
     "CONSENT_UNAVAILABLE": "Les statistiques et les actualités ne peuvent pas être activées pour le moment. Veuillez réessayer plus tard.",
     "PAYMENT_REQUEST_TOO_EARLY": "Vous pourrez demander le paiement une fois la mission commencée.",
     "INVOICE_REQUIRED": "Ajoutez d’abord votre facture fiscalisée : une photo ou un scan, ou son JIR.",
-    "INVALID_PAYMENT_REQUEST": "Quelque chose ne va pas dans la demande. Vérifiez la note, les photos et le JIR, puis réessayez."
+    "INVALID_PAYMENT_REQUEST": "Quelque chose ne va pas dans la demande. Vérifiez la note, les photos et le JIR, puis réessayez.",
+    "INVALID_RELEASE_AMOUNT": "Saisissez un montant supérieur à 0 € et inférieur au prix de la tâche.",
+    "INVALID_TIP_AMOUNT": "Un pourboire est d’au moins 1 € et d’au plus le prix de la tâche. Si vous avez commencé un pourboire, terminez-le avec le même montant."
   },
   "uploads": {
     "choosePhoto": "Choisir une photo",

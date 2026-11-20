@@ -282,7 +282,7 @@ stateDiagram-v2
     IncidentPaused --> Disputed: Support settles after review
     FundsHeld --> CancelRequested: Helper no-show confirmed by poster or no reply
     PaymentRequested --> Released: Poster taps Release payment (optional tip)
-    PaymentRequested --> PartiallySettled: Poster releases part, rest refunded with transfer reversal
+    PaymentRequested --> PartiallySettled: Helper accepts the poster's lower amount, rest refunded with transfer reversal
     PaymentRequested --> Released: Support releases on poster's behalf after chasing
     PaymentRequested --> Disputed: Poster reports a problem before release
     PaymentRequested --> Refunded: 30 days with no release and no dispute
@@ -305,6 +305,7 @@ stateDiagram-v2
 - The same log proves TaskBeavo showed withdrawal information and recorded the poster's express request to start early. Under the Consumer Protection Act (ZZP), the trader carries the burden of proving that ([Informator](https://informator.hr/strucni-clanci/sklapanje-ugovora-na-daljinu-s-posebnim-naglaskom-na-mogucnost-raskida?hls=)).
 - Any refund of a fee that has already been fiscalized gets its own fiscalized storno (reversal) receipt. Whether a partial refund is a partial storno or a full storno plus a new receipt is open with the tax adviser (BEAV-30, BEAV-131).
 - Celery Beat sends the reminders and flags bookings that need support follow-up.
+- Releasing part (owner decision 2026-11-20, BEAV-117): the poster proposes a lower amount and the booking stays PaymentRequested; nothing moves at Stripe until the helper accepts. On acceptance the rest is refunded (fee refund, transfer reversal, poster refund) and the agreed part is paid out; TaskBeavo keeps its fee rate of the agreed part, and a TaskBeavo credit the booking used comes back in full. The helper may decline, and the poster may withdraw the proposal before an answer. With no answer nothing moves automatically: the poster releases in full or disputes.
 
 ### Money flow: destination charges keep TaskBeavo out of possession of funds
 

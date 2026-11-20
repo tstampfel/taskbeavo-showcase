@@ -193,7 +193,9 @@
     "CONSENT_UNAVAILABLE": "Analitiku i novosti trenutačno nije moguće uključiti. Pokušajte ponovno kasnije.",
     "PAYMENT_REQUEST_TOO_EARLY": "Isplatu možete zatražiti kad posao započne.",
     "INVOICE_REQUIRED": "Najprije dodajte svoj fiskalizirani račun: fotografiju ili sken, ili njegov JIR.",
-    "INVALID_PAYMENT_REQUEST": "Nešto u zahtjevu nije u redu. Provjerite napomenu, fotografije i JIR pa pokušajte ponovno."
+    "INVALID_PAYMENT_REQUEST": "Nešto u zahtjevu nije u redu. Provjerite napomenu, fotografije i JIR pa pokušajte ponovno.",
+    "INVALID_RELEASE_AMOUNT": "Unesite iznos veći od 0 € i manji od cijene zadatka.",
+    "INVALID_TIP_AMOUNT": "Napojnica iznosi najmanje 1 €, a najviše koliko i cijena zadatka. Ako ste započeli napojnicu, dovršite je s istim iznosom."
   },
   "uploads": {
     "choosePhoto": "Odaberi fotografiju",
