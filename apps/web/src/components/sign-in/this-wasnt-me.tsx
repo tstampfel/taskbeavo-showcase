@@ -8,6 +8,7 @@ import { Link } from '../../i18n/navigation';
 import { Button, Card } from '../ui';
 import { errorMessage } from './error-message';
 import styles from './sign-in.module.css';
+import { browserTaskDraftStore } from '../post-task/task-draft-store';
 
 /** Confirm "This wasn't me": logs the account of the email's link out of all devices. */
 export function ThisWasntMe({ token }: { token: string | null }) {
@@ -60,6 +61,7 @@ export function ThisWasntMe({ token }: { token: string | null }) {
                 }
                 // This browser may have been signed in to the account too.
                 await client.resetStore().catch(() => undefined);
+                browserTaskDraftStore.clear();
                 setDone(true);
               }}
             >

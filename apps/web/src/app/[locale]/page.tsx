@@ -5,7 +5,9 @@ import { setRequestLocale } from 'next-intl/server';
 import { use } from 'react';
 import { ApiStatus } from '../../components/api-status';
 import { SiteHeader } from '../../components/shell/site-header';
+import taskStyles from '../../components/tasks/tasks.module.css';
 import { localeAlternates } from '../../i18n/metadata';
+import { Link } from '../../i18n/navigation';
 import { routing } from '../../i18n/routing';
 
 export async function generateMetadata({ params }: PageProps<'/[locale]'>): Promise<Metadata> {
@@ -31,6 +33,11 @@ export default function HomePage({ params }: PageProps<'/[locale]'>) {
         </h1>
         <p data-testid="home-tagline" style={{ fontSize: '1.25rem', fontWeight: 600 }}>
           {t('common.tagline')}
+        </p>
+        <p>
+          <Link href="/tasks/new" className={taskStyles.primaryLink} data-testid="post-task-link">
+            {t('postTask.open')}
+          </Link>
         </p>
         <p>{t('home.comingSoon')}</p>
         <ApiStatus />
