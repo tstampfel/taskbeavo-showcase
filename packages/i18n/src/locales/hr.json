@@ -952,7 +952,9 @@
       "body": "Na ovom ste telefonu počeli objavljivati „{title}”.",
       "bodyUntitled": "Na ovom ste telefonu počeli objavljivati zadatak.",
       "continue": "Nastavi",
-      "startAgain": "Počni ispočetka"
+      "startAgain": "Počni ispočetka",
+      "bodyWeb": "U ovom ste pregledniku počeli objavljivati „{title}”.",
+      "bodyUntitledWeb": "U ovom ste pregledniku počeli objavljivati zadatak."
     },
     "what": {
       "heading": "U čemu Vam treba pomoć?",
@@ -988,7 +990,10 @@
       "addContact": "Dodaj osobu na mjestu",
       "contactsError": "Spremljene kontakte nije bilo moguće učitati.",
       "accessLabel": "Upute za pristup (neobavezno)",
-      "accessHint": "Ime na zvonu, kat ili stan, šifra ulaza, gdje je ključ. Vidi ih samo pomagač kojeg rezervirate i samo dok je rezervacija aktivna."
+      "accessHint": "Ime na zvonu, kat ili stan, šifra ulaza, gdje je ključ. Vidi ih samo pomagač kojeg rezervirate i samo dok je rezervacija aktivna.",
+      "addressHintWeb": "Ulica, kućni broj i mjesto, zatim odaberite Traži.",
+      "accessNotSaved": "Radi Vaše privatnosti podaci za pristup ne spremaju se u nacrt. Ako se vratite kasnije, upišite ih ponovno.",
+      "attribution": "© OpenStreetMap suradnici"
     },
     "contact": {
       "title": "Dodaj osobu na mjestu",
@@ -1044,7 +1049,8 @@
       "post": "Objavi zadatak",
       "postFailed": "Zadatak nije bilo moguće objaviti. Nacrt je spremljen, pa pokušajte ponovno.",
       "verifyPhone": "Potvrdi moj broj",
-      "acceptTerms": "Pregledaj uvjete"
+      "acceptTerms": "Pregledaj uvjete",
+      "onSiteSaved": "Na mjestu: Vaš spremljeni kontakt"
     },
     "waitlist": {
       "heading": "Još nismo ondje",
@@ -1067,7 +1073,10 @@
       "tooFarAhead": "Odaberite dan unutar sljedećih 60 dana.",
       "budget": "Upišite budžet u eurima, samo brojkama.",
       "budgetTooHigh": "Budžet može biti najviše 10.000 €."
-    }
+    },
+    "signInNeeded": "Prijavite se kako biste objavili zadatak.",
+    "signIn": "Prijava",
+    "loadFailed": "Trenutačno ne možemo provjeriti Vaš račun. Pokušajte ponovno."
   },
   "requestPayment": {
     "title": "Zatraži isplatu",

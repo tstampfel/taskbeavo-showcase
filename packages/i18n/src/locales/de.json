@@ -952,7 +952,9 @@
       "body": "Sie haben auf diesem Telefon begonnen, „{title}“ zu posten.",
       "bodyUntitled": "Sie haben auf diesem Telefon begonnen, eine Aufgabe zu posten.",
       "continue": "Weitermachen",
-      "startAgain": "Neu beginnen"
+      "startAgain": "Neu beginnen",
+      "bodyWeb": "Sie haben in diesem Browser begonnen, „{title}“ zu posten.",
+      "bodyUntitledWeb": "Sie haben in diesem Browser begonnen, eine Aufgabe zu posten."
     },
     "what": {
       "heading": "Wobei brauchen Sie Hilfe?",
@@ -988,7 +990,10 @@
       "addContact": "Kontakt vor Ort hinzufügen",
       "contactsError": "Ihre gespeicherten Kontakte konnten nicht geladen werden.",
       "accessLabel": "Zugangsdetails (optional)",
-      "accessHint": "Name an der Klingel, Stockwerk oder Wohnung, Tor-Code, wo ein Schlüssel liegt. Nur der gebuchte Helfer sieht das, und nur solange die Buchung aktiv ist."
+      "accessHint": "Name an der Klingel, Stockwerk oder Wohnung, Tor-Code, wo ein Schlüssel liegt. Nur der gebuchte Helfer sieht das, und nur solange die Buchung aktiv ist.",
+      "addressHintWeb": "Straße, Hausnummer und Ort, dann Suchen wählen.",
+      "accessNotSaved": "Zum Schutz Ihrer Privatsphäre werden Zugangsdaten nicht im Entwurf gespeichert. Geben Sie sie erneut ein, wenn Sie später zurückkommen.",
+      "attribution": "© OpenStreetMap-Mitwirkende"
     },
     "contact": {
       "title": "Kontakt vor Ort hinzufügen",
@@ -1044,7 +1049,8 @@
       "post": "Aufgabe posten",
       "postFailed": "Ihre Aufgabe konnte nicht gepostet werden. Ihr Entwurf ist gespeichert, bitte versuchen Sie es erneut.",
       "verifyPhone": "Meine Nummer bestätigen",
-      "acceptTerms": "Bedingungen ansehen"
+      "acceptTerms": "Bedingungen ansehen",
+      "onSiteSaved": "Vor Ort: Ihr gespeicherter Kontakt"
     },
     "waitlist": {
       "heading": "Dort sind wir noch nicht",
@@ -1067,7 +1073,10 @@
       "tooFarAhead": "Bitte wählen Sie einen Tag innerhalb der nächsten 60 Tage.",
       "budget": "Geben Sie Ihr Budget in Euro ein, nur mit Ziffern.",
       "budgetTooHigh": "Das Budget darf höchstens 10.000 € betragen."
-    }
+    },
+    "signInNeeded": "Melden Sie sich an, um eine Aufgabe zu posten.",
+    "signIn": "Anmelden",
+    "loadFailed": "Wir können Ihr Konto gerade nicht prüfen. Bitte versuchen Sie es erneut."
   },
   "requestPayment": {
     "title": "Zahlung anfordern",

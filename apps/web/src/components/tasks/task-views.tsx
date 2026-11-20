@@ -43,6 +43,9 @@ export function BrowseView({
     <main className={styles.main} data-testid="browse">
       <h1 className={styles.title}>{t('browse.title')}</h1>
       <p className={styles.muted}>{t('browse.intro')}</p>
+      <Link href="/tasks/new" className={styles.primaryLink} data-testid="post-task-link">
+        {t('postTask.open')}
+      </Link>
       <nav aria-label={t('browse.filterLabel')}>
         <ul className={styles.filters}>
           {[undefined, ...CATEGORIES].map((category) => (

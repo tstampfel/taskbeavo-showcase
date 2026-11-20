@@ -952,7 +952,9 @@
       "body": "You started posting “{title}” on this phone.",
       "bodyUntitled": "You started posting a task on this phone.",
       "continue": "Continue",
-      "startAgain": "Start again"
+      "startAgain": "Start again",
+      "bodyWeb": "You started posting “{title}” in this browser.",
+      "bodyUntitledWeb": "You started posting a task in this browser."
     },
     "what": {
       "heading": "What do you need help with?",
@@ -988,7 +990,10 @@
       "addContact": "Add on-site contact",
       "contactsError": "Your saved contacts couldn't be loaded.",
       "accessLabel": "Access details (optional)",
-      "accessHint": "Name on the doorbell, floor or flat, gate code, where a key is kept. Only the helper you book sees this, and only while the booking is active."
+      "accessHint": "Name on the doorbell, floor or flat, gate code, where a key is kept. Only the helper you book sees this, and only while the booking is active.",
+      "addressHintWeb": "Street, house number and town, then choose Search.",
+      "accessNotSaved": "For your privacy, access details aren’t kept in the saved draft. Add them again if you come back later.",
+      "attribution": "© OpenStreetMap contributors"
     },
     "contact": {
       "title": "Add on-site contact",
@@ -1044,7 +1049,8 @@
       "post": "Post task",
       "postFailed": "Your task couldn't be posted. Your draft is saved, so please try again.",
       "verifyPhone": "Verify my number",
-      "acceptTerms": "Review the terms"
+      "acceptTerms": "Review the terms",
+      "onSiteSaved": "On site: your saved contact"
     },
     "waitlist": {
       "heading": "We're not there yet",
@@ -1067,7 +1073,10 @@
       "tooFarAhead": "Please choose a day within the next 60 days.",
       "budget": "Enter your budget in euros, in numbers only.",
       "budgetTooHigh": "The budget can be at most €10,000."
-    }
+    },
+    "signInNeeded": "Sign in to post a task.",
+    "signIn": "Sign in",
+    "loadFailed": "We couldn’t check your account right now. Please try again."
   },
   "requestPayment": {
     "title": "Request payment",

@@ -7,6 +7,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { createAuthClient } from '../auth/auth-client';
 import { Link, usePathname, useRouter } from '../i18n/navigation';
 import { LanguageSwitcher } from './language-switcher';
+import { browserTaskDraftStore } from './post-task/task-draft-store';
 import styles from './shell/shell.module.css';
 import { Button } from './ui';
 
@@ -84,6 +85,8 @@ export function AccountMenu({ withLanguage = false }: AccountMenuProps) {
   async function signedOut() {
     // Nothing of the account stays in this tab; the viewer query refetches signed out.
     await client.resetStore().catch(() => undefined);
+    // Nor a half-written task (BEAV-87): the next person at this browser starts clean.
+    browserTaskDraftStore.clear();
     setBusy(false);
     setOpen(false);
     router.replace('/');

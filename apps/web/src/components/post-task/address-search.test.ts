@@ -1,0 +1,131 @@
+import { expect, it, vi } from 'vitest';
+import { MIN_REQUEST_INTERVAL_MS, nominatimSearch, type Clock } from './address-search';
+
+function answer(body: unknown, ok = true) {
+  return vi.fn(async () => ({ ok, status: ok ? 200 : 503, json: async () => body }) as Response);
+}
+
+it('searches Croatia only, in the page language, sending nothing personal', async () => {
+  const request = answer([
+    {
+      place_id: 7,
+      lat: '42.6583',
+      lon: '18.0861',
+      display_name: 'Ulica Ante Starčevića 1, Dubrovnik, Hrvatska',
+      address: { town: 'Dubrovnik', country_code: 'hr' },
+    },
+    { place_id: 8, lat: 'x', lon: '18', display_name: 'Broken' },
+  ]);
+
+  const results = await nominatimSearch(request).search(' Starčevića 1 ', 'de');
+
+  expect(results).toEqual([
+    {
+      id: '7',
+      address: 'Ulica Ante Starčevića 1, Dubrovnik, Hrvatska',
+      lat: 42.6583,
+      lng: 18.0861,
+      city: 'Dubrovnik',
+    },
+  ]);
+  const [url, init] = request.mock.calls[0] as unknown as [string, RequestInit];
+  expect(url).toContain('https://nominatim.openstreetmap.org/search?q=Star%C4%8Devi%C4%87a%201');
+  expect(url).toContain('countrycodes=hr');
+  expect(url).toContain('format=jsonv2');
+  expect(url).toContain('limit=5');
+  expect(url).toContain('accept-language=de');
+  // Browsers can't set User-Agent; the Referer is the site's origin only, and no cookies go.
+  expect(init.headers).not.toHaveProperty('User-Agent');
+  expect(init.referrerPolicy).toBe('strict-origin-when-cross-origin');
+  expect(init.credentials).toBe('omit');
+});
+
+it('sends nothing for a query too short to search', async () => {
+  const request = answer([]);
+  expect(await nominatimSearch(request).search('ab', 'en')).toEqual([]);
+  expect(request).not.toHaveBeenCalled();
+});
+
+it('throws when the service fails, so the wizard can offer a retry', async () => {
+  await expect(nominatimSearch(answer({}, false)).search('Gruž', 'hr')).rejects.toThrow();
+});
+
+it('keeps at least a second between requests, as Nominatim asks', async () => {
+  let time = 10_000;
+  const sent: number[] = [];
+  const slept: number[] = [];
+  const clock: Clock = {
+    now: () => time,
+    sleep: async (ms) => {
+      slept.push(ms);
+      time += ms;
+    },
+  };
+  const request = vi.fn(async () => {
+    sent.push(time);
+    time += 200; // the answer takes 200 ms
+    return { ok: true, status: 200, json: async () => [] } as unknown as Response;
+  });
+  const search = nominatimSearch(request, clock);
+
+  await search.search('Gruž', 'hr');
+  await search.search('Gruž 1', 'hr');
+  time += 5_000;
+  await search.search('Lapad', 'hr');
+
+  expect(sent).toEqual([10_000, 11_000, 16_200]);
+  expect(slept).toEqual([MIN_REQUEST_INTERVAL_MS - 200]);
+});
+
+it('queues taps that come at the same time instead of sending them together', async () => {
+  let time = 0;
+  const sent: number[] = [];
+  const clock: Clock = {
+    now: () => time,
+    sleep: async (ms) => {
+      time += ms;
+    },
+  };
+  const request = vi.fn(async () => {
+    sent.push(time);
+    return { ok: true, status: 200, json: async () => [] } as unknown as Response;
+  });
+  const search = nominatimSearch(request, clock);
+
+  await Promise.all([search.search('Gruž', 'hr'), search.search('Lapad', 'hr')]);
+
+  expect(sent).toEqual([0, MIN_REQUEST_INTERVAL_MS]);
+});
+
+it('sends one request at a time: the next waits for the answer to the one before', async () => {
+  let time = 0;
+  const clock: Clock = {
+    now: () => time,
+    sleep: async (ms) => {
+      time += ms;
+    },
+  };
+  const sent: string[] = [];
+  let answerFirst!: () => void;
+  const request = vi.fn(async (url: string) => {
+    sent.push(url);
+    if (sent.length === 1) {
+      await new Promise<void>((resolve) => {
+        answerFirst = resolve;
+      });
+      time += 5_000; // a slow answer
+    }
+    return { ok: true, status: 200, json: async () => [] } as unknown as Response;
+  });
+  const search = nominatimSearch(request as unknown as typeof fetch, clock);
+
+  const first = search.search('Gruž', 'hr');
+  const second = search.search('Lapad', 'hr');
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(sent).toHaveLength(1);
+
+  answerFirst();
+  await Promise.all([first, second]);
+  expect(sent).toHaveLength(2);
+  expect(sent[1]).toContain('Lapad');
+});
