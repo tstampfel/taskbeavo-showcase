@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import {
   MAX_PHOTOS,
   addDays,
@@ -11,7 +12,7 @@ import {
   zagrebDay,
   zagrebInstant,
   type TaskDraft,
-} from '../src/tasks/post-task-model';
+} from './post-task';
 
 // Thursday 19 November 2026, 10:00 in Zagreb (CET, UTC+1).
 const NOW = new Date('2026-11-19T09:00:00Z');
