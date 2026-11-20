@@ -49,6 +49,7 @@ from bookings.models import (
     CancellationSettlement,
     NoFaultRequest,
     PaymentRequest,
+    ReleaseProposal,
 )
 from bookings.money import fee_schedule_at
 from bookings.queries import active, task_is_booked
@@ -619,6 +620,16 @@ def _check_actor(booking: Booking, target: S, actor_kind: A, actor: User | None)
         raise ApiError(
             ErrorCode.BOOKING_ACTION_NOT_ALLOWED, "This cancellation is already being settled."
         )
+    # A partial release the helper accepted is being settled at Stripe (bookings/release.py):
+    # only its webhook moves the booking on now (a chargeback included).
+    if (
+        booking.status == S.PAYMENT_REQUESTED
+        and actor_kind != A.STRIPE_WEBHOOK
+        and CancellationSettlement.objects.filter(booking=booking).exists()
+    ):
+        raise ApiError(
+            ErrorCode.BOOKING_ACTION_NOT_ALLOWED, "This release is already being settled."
+        )
     # "Other side disagrees" (plan): the requester withdraws instead of disputing.
     disputing = booking.status == S.CANCEL_REQUESTED and target == S.DISPUTED
     if disputing and booking.cancel_requested_by == actor_kind:
@@ -685,6 +696,18 @@ def _apply(
         # request still open is moot: close it, or it would wait for support forever and
         # keep the helper's access to the place (models.Booking.is_active).
         NoFaultRequest.objects.filter(booking=booking, closed_at__isnull=True).update(closed_at=now)
+    if source == S.PAYMENT_REQUESTED:
+        # A proposal to release less waiting for the helper is moot once the booking moved
+        # on (a full release, a dispute, a no-show, a settlement): close it.
+        ReleaseProposal.objects.filter(booking=booking, status=ReleaseProposal.Status.OPEN).update(
+            status=ReleaseProposal.Status.CLOSED, answered_at=now
+        )
+    if target == S.RELEASED:
+        # The helper's payout of the price, sent after commit (bookings/payouts.py). The
+        # credit the booking used stays spent (rule g).
+        from bookings import payouts  # bookings.payouts imports this module
+
+        payouts.open_payout(booking, payouts.BookingPayout.Kind.RELEASE, booking.amount_cents)
     if target == S.PAYMENT_FAILED:
         _reopen_offers(booking, now)
         credit.restore(booking, now, reason="checkout_failed")

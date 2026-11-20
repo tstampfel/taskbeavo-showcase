@@ -1,6 +1,6 @@
 from celery import shared_task
 
-from bookings import arrival, cancel, checkout, no_fault, settlement
+from bookings import arrival, cancel, checkout, no_fault, payouts, settlement
 
 
 @shared_task(
@@ -86,3 +86,25 @@ def settle_uncontested_no_shows_task() -> int:
     """Beat task (every 15 minutes): no-shows the helper didn't contest within 24 hours
     become the helper cancellation (bookings/arrival.py)."""
     return arrival.settle_uncontested_no_shows()
+
+
+@shared_task(
+    name="bookings.payouts.pay_out",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    max_retries=8,
+)
+def pay_out_task(payout_pk: int) -> None:
+    """Send a due payout to Stripe (bookings/payouts.py). Idempotent: a payout sent before
+    without an answer is looked up before it is sent again."""
+    payouts.pay_out(payout_pk)
+
+
+@shared_task(name="bookings.payouts.sweep")
+def sweep_unsent_payouts_task() -> int:
+    """Beat task (every 15 minutes): payouts whose own task gave up, or whose money wasn't
+    available in the helper's balance yet."""
+    pending = payouts.unsent()
+    for payout_pk in pending:
+        pay_out_task.delay(payout_pk)
+    return len(pending)

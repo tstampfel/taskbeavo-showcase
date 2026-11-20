@@ -123,3 +123,53 @@ def test_a_cancellation_is_refunded_and_confirmed_by_charge_refunded(client: Cli
     assert charge["amount_refunded"] == booking.amount_cents + booking.fee_cents
     assert StripeEvent.objects.get(type="charge.refunded").processed_at is not None
     assert demo_stripe.deliver_events() == 0
+
+
+def test_a_partial_release_reconciles_at_stripe_to_the_cent(
+    client: Client, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """BEAV-117 on the demo stand-in: the poster proposes EUR 20 of EUR 30, the helper
+    accepts, and Stripe's objects end up with the helper's C, TaskBeavo's K and the poster's
+    R, every cent of the charge; the payout of C confirms with payout.paid."""
+    from bookings import payouts, release
+    from bookings.models import BookingPayout
+    from bookings.tests.test_poster_cancel import helper
+
+    monkeypatch.setattr(payouts, "get_gateway", stripe_client.get_gateway)
+    session = accept(demo_offer())
+    booking = Booking.objects.get(pk=session.booking.pk)
+    confirm(client, booking, session.client_secret)
+    deliver()
+    Booking.objects.filter(pk=booking.pk).update(status=S.PAYMENT_REQUESTED)
+
+    release.propose_partial_release(booking.poster, booking.pk, 2_000)
+    release.respond_to_partial_release(helper(booking), booking.pk, accept=True)
+    settlement.settle(str(booking.pk))
+    deliver()
+
+    booking.refresh_from_db()
+    assert booking.status == S.PARTIALLY_SETTLED
+    charge = DemoStripeObject.objects.get(object="charge").data
+    transfer = DemoStripeObject.objects.get(object="transfer").data
+    fee = DemoStripeObject.objects.get(object="application_fee").data
+    refunded, reversed_, fee_back = (
+        charge["amount_refunded"],
+        transfer["amount_reversed"],
+        fee["amount_refunded"],
+    )
+    # EUR 33.60 = 30.00 + 3.60 fee. A destination charge with an application fee
+    # transfers all of it to the helper and takes the fee back, so the helper's net is the
+    # transfer less its reversal and less the fee TaskBeavo kept. Back to the card 11.20,
+    # the helper keeps 20.00, TaskBeavo 12% of it, 2.40.
+    kept = fee["amount"] - fee_back
+    helper_net = transfer["amount"] - reversed_ - kept
+    assert (refunded, helper_net, kept) == (1_120, 2_000, 240)
+    assert refunded + helper_net + kept == charge["amount"]
+
+    payouts.pay_out(BookingPayout.objects.get(booking=booking).pk)
+    deliver()
+    payout = DemoStripeObject.objects.get(object="payout").data
+    assert payout["amount"] == 2_000
+    assert BookingPayout.objects.get(booking=booking).paid_at is not None
+    booking.refresh_from_db()
+    assert booking.status == S.PARTIALLY_SETTLED

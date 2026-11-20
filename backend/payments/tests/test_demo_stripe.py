@@ -122,14 +122,16 @@ def test_a_payout_queues_payout_paid_for_the_connected_account(
         booking_id=5,
         connected_account=account.id,
         amount_cents=3_000,
-        idempotency_key="booking:5:release:v1",
+        kind="release",
+        idempotency_key="booking:5:payout:release:v1",
     )
 
     deliver()
     event = StripeEvent.objects.get(type="payout.paid")
     assert event.payload["account"] == account.id
     assert event.payload["data"]["object"]["id"] == payout.id
-    assert event.payload["request"]["idempotency_key"] == "booking:5:release:v1"
+    assert event.payload["request"]["idempotency_key"] == "booking:5:payout:release:v1"
+    assert event.payload["data"]["object"]["metadata"]["action"] == "payout_release"
 
 
 def test_the_confirm_route_is_mounted_only_with_demo_payments() -> None:

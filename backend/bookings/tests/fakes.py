@@ -76,6 +76,54 @@ class FakeGateway:
 _HEX_DIGITS_TO_LETTERS = str.maketrans("0123456789", "ghijklmnop")
 
 
+@dataclass
+class FakePayoutStripe:
+    """Stripe for payouts and tips (bookings/payouts.py, bookings/tips.py). A reused key
+    returns the first result; `fail_with` makes the next payout raise once, after doing
+    the work when `fail_after_work` (a lost answer)."""
+
+    payouts: list[dict[str, Any]] = field(default_factory=list)
+    lookups: list[dict[str, Any]] = field(default_factory=list)
+    tips: list[dict[str, Any]] = field(default_factory=list)
+    by_key: dict[str, str] = field(default_factory=dict)
+    # (booking_id, kind) -> payout ID: what Stripe holds.
+    made: dict[tuple[str, str], str] = field(default_factory=dict)
+    fail_with: StripeRequestError | None = None
+    fail_after_work: bool = False
+    tip_error: StripeRequestError | None = None
+
+    def create_payout(self, **kwargs: Any) -> SimpleNamespace:
+        self.payouts.append(kwargs)
+        key = kwargs["idempotency_key"]
+        if key in self.by_key:
+            return SimpleNamespace(id=self.by_key[key])
+        failing, self.fail_with = self.fail_with, None
+        if failing is not None and not self.fail_after_work:
+            raise failing
+        payout_id = f"po_test{len(self.by_key) + 1}"
+        self.by_key[key] = payout_id
+        self.made[(kwargs["booking_id"], kwargs["kind"])] = payout_id
+        if failing is not None:
+            raise failing
+        return SimpleNamespace(id=payout_id)
+
+    def find_payout(self, **kwargs: Any) -> str | None:
+        self.lookups.append(kwargs)
+        return self.made.get((kwargs["booking_id"], kwargs["kind"]))
+
+    def create_tip_charge(self, **kwargs: Any) -> SimpleNamespace:
+        self.tips.append(kwargs)
+        if self.tip_error is not None:
+            raise self.tip_error
+        pk = "pi_testtip" + kwargs["booking_id"].replace("-", "")[:12].translate(
+            _HEX_DIGITS_TO_LETTERS
+        )
+        return SimpleNamespace(id=pk, client_secret=f"{pk}_secret_tip")
+
+    def sent(self) -> int:
+        return len(self.by_key)
+
+
 def intent_id(booking_id: str) -> str:
     return "pi_test" + booking_id.replace("-", "")[:20].translate(_HEX_DIGITS_TO_LETTERS)
 

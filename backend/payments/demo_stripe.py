@@ -24,7 +24,9 @@ payment_intent.succeeded event goes through the webhook handler.
 Event types sent: payment_intent.succeeded and payment_intent.payment_failed (the demo
 card form), charge.refunded (a refund), transfer.reversed (a transfer reversal),
 account.updated (a new account, enabled at once: there is no onboarding to do) and
-payout.paid (a payout, stored until its handler exists, as Stripe's would be).
+payout.paid (a payout: "Release payment" and a confirmed tip, BEAV-117). A tip is a
+PaymentIntent like the checkout's, without an application fee, and the demo card form
+confirms it the same way.
 """
 
 import hmac
@@ -190,6 +192,9 @@ def _route(
         return _list("transfer_reversal", lambda data: data["transfer"] == object_id)
     if route == ("POST", "payouts", False, ""):
         return _create_payout(params, account, key)
+    if route == ("GET", "payouts", False, ""):
+        _account(account, "Stripe-Account")
+        return _list("payout", lambda data: data.get("account") == account)
     if route == ("POST", "accounts", False, ""):
         return _create_account(params)
     if route == ("GET", "accounts", True, ""):
@@ -474,6 +479,8 @@ def _create_payout(params: dict[str, Any], account: str, key: str) -> dict[str, 
             "currency": params.get("currency", "eur"),
             "status": "paid",
             "method": "standard",
+            # Not a field of Stripe's payout: the demo's note of whose balance it left.
+            "account": account,
             "metadata": params.get("metadata") or {},
         }
     )

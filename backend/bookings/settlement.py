@@ -49,8 +49,12 @@ Either way the booking becomes REFUNDED (a full refund) or PARTIALLY_SETTLED thr
 `apply_stripe_transition`, and the settlement gets `confirmed_at`, a
 `settlement_confirmed` BookingEvent, the poster's EUR 5 credit when the settlement
 carries one (a helper's late cancel, `PosterCredit`, funded by TaskBeavo), the share of a
-spent credit that comes back, and a `booking.cancellation_settled` outbox row (for
-BEAV-117's payout of C, and the poster's and helper's notifications).
+spent credit that comes back, the helper's payout of C when C > 0 (bookings/payouts.py,
+BEAV-117), and a `booking.cancellation_settled` outbox row (the poster's and helper's
+notifications).
+
+A partial release the helper accepted (bookings/release.py, case PARTIAL_RELEASE) is
+settled the same way from PAYMENT_REQUESTED.
 """
 
 import datetime as dt
@@ -65,10 +69,16 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from bookings import cancellation, credit, state_machine
+from bookings import cancellation, credit, payouts, state_machine
 from bookings.alerts import money_alert
 from bookings.cancellation import Case, Outcome
-from bookings.models import Booking, BookingEvent, CancellationSettlement, PosterCredit
+from bookings.models import (
+    Booking,
+    BookingEvent,
+    BookingPayout,
+    CancellationSettlement,
+    PosterCredit,
+)
 from core.models import ActorKind
 from core.outbox import enqueue
 from core.transitions import locked_for_update
@@ -86,8 +96,21 @@ logger = logging.getLogger(__name__)
 
 S = Booking.Status
 
-# Statuses whose money is still held at Stripe, from which a settlement may run.
+# Statuses whose money is still held at Stripe, from which a cancellation's settlement may
+# run. A partial release the helper accepted (bookings/release.py) runs only from
+# PAYMENT_REQUESTED, and a cancellation never does (`settling_statuses`).
 SETTLING = frozenset({S.CANCEL_REQUESTED, S.NO_ACCESS_REPORTED})
+PARTIAL_RELEASE_SETTLING = frozenset({S.PAYMENT_REQUESTED})
+# The sweeps' filter: a settlement whose booking is in a status it may run from.
+_IN_SETTLING_STATUS = Q(booking__status__in=SETTLING) & ~Q(case=Case.PARTIAL_RELEASE) | Q(
+    booking__status__in=PARTIAL_RELEASE_SETTLING, case=Case.PARTIAL_RELEASE
+)
+
+
+def settling_statuses(case: str) -> frozenset[str]:
+    """The statuses a settlement of `case` may run from."""
+    return PARTIAL_RELEASE_SETTLING if case == Case.PARTIAL_RELEASE else SETTLING
+
 
 OPENED_TOPIC = "booking.settlement_opened"
 SETTLED_TOPIC = "booking.cancellation_settled"
@@ -107,7 +130,9 @@ CONFIRMATION_PATIENCE = dt.timedelta(hours=24)
 def open_settlement(booking: Booking, outcome: Outcome) -> CancellationSettlement:
     """Record the settlement of `outcome` for `booking`, locked in this transaction and
     already moved to a `SETTLING` status, and queue it. No Stripe call here."""
-    if not transaction.get_connection().in_atomic_block or booking.status not in SETTLING:
+    if not transaction.get_connection().in_atomic_block or booking.status not in (
+        settling_statuses(outcome.case)
+    ):
         raise RuntimeError("A settlement opens inside the locked cancel transaction.")
     if outcome.case == Case.NOT_CHARGED:
         raise ValueError("Nothing was charged, so nothing is settled.")
@@ -198,7 +223,8 @@ def settle(
     if _all_sent(settlement, _split(outcome_of(settlement))):
         return settlement
     booking = settlement.booking
-    if booking.status not in SETTLING or not booking.payment_intent_id:
+    statuses = settling_statuses(settlement.case)
+    if booking.status not in statuses or not booking.payment_intent_id:
         _not_settleable(settlement)
         return settlement
     split = _split(outcome_of(settlement))
@@ -222,7 +248,7 @@ def settle(
             # A chargeback or support decision may have moved the booking since.
             if (
                 Booking.objects.filter(pk=booking.pk).values_list("status", flat=True).get()
-                not in SETTLING
+                not in statuses
             ):
                 _not_settleable(settlement)
                 return settlement
@@ -585,6 +611,9 @@ def _complete(
     )
     if settlement.poster_credit_cents:
         _grant_credit(moved, settlement)
+    if settlement.helper_compensation_cents:
+        # The helper's share C is theirs now: pay it out (manual payouts, hard rule b).
+        payouts.open_payout(moved, BookingPayout.Kind.RELEASE, settlement.helper_compensation_cents)
     # The whole credit comes back, in the same transaction as the outcome (rule g, user
     # decision 2026-11-07): where K is kept, TaskBeavo took it in cash in the reversal.
     credit.restore(
@@ -625,11 +654,11 @@ def unsettled(
     cutoff = (now or timezone.now()) - grace
     return list(
         CancellationSettlement.objects.filter(
+            _IN_SETTLING_STATUS,
             confirmed_at__isnull=True,
             refused_at__isnull=True,
             refund_id="",
             created_at__lt=cutoff,
-            booking__status__in=SETTLING,
         )
         # R = 0: the transfer reversal is the last step, transfer.reversed confirms it.
         .exclude(refund_cents=0, transfer_reversal_id__gt="")
@@ -649,9 +678,9 @@ def flag_unconfirmed(now: dt.datetime | None = None) -> int:
             # without success shows up here too).
             Q(refund_cents__gt=0, refund_sent_at__lte=cutoff)
             | Q(refund_cents=0, transfer_reversal_sent_at__lte=cutoff),
+            _IN_SETTLING_STATUS,
             confirmed_at__isnull=True,
             refused_at__isnull=True,
-            booking__status__in=SETTLING,
         )
         .exclude(
             booking__events__type=state_machine.SUPPORT_FLAG,
@@ -672,7 +701,7 @@ def flag_unconfirmed(now: dt.datetime | None = None) -> int:
                     seen
                     or settlement.confirmed_at
                     or settlement.refused_at
-                    or booking.status not in SETTLING
+                    or booking.status not in settling_statuses(settlement.case)
                 ):
                     continue
                 last = "refund" if refund_cents else "transfer_reversal"

@@ -93,7 +93,14 @@ CALLS: dict[str, dict[str, Any]] = {
         "booking_id": 42,
         "connected_account": HELPER,
         "amount_cents": 3000,
-        "idempotency_key": idempotency_key("booking", 42, "release"),
+        "kind": "release",
+        "idempotency_key": idempotency_key("booking", 42, "payout", "release"),
+    },
+    "create_tip_charge": {
+        "booking_id": 42,
+        "amount_cents": 500,
+        "destination_account": HELPER,
+        "idempotency_key": idempotency_key("booking", 42, "tip"),
     },
 }
 
@@ -107,6 +114,7 @@ READS: dict[str, dict[str, Any]] = {
     "find_fee_refund": {"booking_id": 42, "application_fee": "fee_1TestFee"},
     "find_transfer_reversal": {"booking_id": 42, "transfer": "tr_1TestTransfer"},
     "find_poster_refund": {"booking_id": 42, "payment_intent": "pi_3TestDestinationCharge"},
+    "find_payout": {"booking_id": 42, "connected_account": HELPER, "kind": "release"},
 }
 
 
@@ -376,7 +384,62 @@ def test_a_payout_is_made_from_the_helpers_own_account() -> None:
         "amount": ["3000"],
         "currency": ["eur"],
         "metadata[booking_id]": ["42"],
+        "metadata[action]": ["payout_release"],
     }
+
+
+def test_a_payout_is_a_release_or_a_tip() -> None:
+    gw, http = gateway({"id": "po_test_1", "object": "payout"})
+
+    with pytest.raises(ValueError):
+        gw.create_payout(**{**CALLS["create_payout"], "kind": "bonus"})
+
+    assert http.requests == []
+
+
+def test_a_tip_is_its_own_destination_charge_with_no_fee() -> None:
+    gw, http = gateway({"id": "pi_3TestTip", "object": "payment_intent"})
+
+    gw.create_tip_charge(**CALLS["create_tip_charge"])
+
+    request = http.requests[0]
+    assert request.url.endswith("/v1/payment_intents")
+    assert request.params == {
+        "amount": ["500"],
+        "currency": ["eur"],
+        "on_behalf_of": [HELPER],
+        "transfer_data[destination]": [HELPER],
+        "automatic_payment_methods[enabled]": ["true"],
+        "metadata[booking_id]": ["42"],
+        "metadata[action]": ["tip"],
+    }
+    assert "application_fee_amount" not in request.params
+
+
+def test_a_payout_is_looked_up_on_the_helpers_account() -> None:
+    gw, http = gateway(
+        {
+            "object": "list",
+            "url": "/v1/payouts",
+            "has_more": False,
+            "data": [
+                {"id": "po_other", "object": "payout", "metadata": {"booking_id": "41"}},
+                {
+                    "id": "po_tip",
+                    "object": "payout",
+                    "metadata": {"booking_id": "42", "action": "payout_tip"},
+                },
+                {
+                    "id": "po_ours",
+                    "object": "payout",
+                    "metadata": {"booking_id": "42", "action": "payout_release"},
+                },
+            ],
+        }
+    )
+
+    assert gw.find_payout(**READS["find_payout"]) == "po_ours"
+    assert http.requests[0].headers["Stripe-Account"] == HELPER
 
 
 def test_an_express_account_takes_destination_charges_and_pays_out_manually() -> None:

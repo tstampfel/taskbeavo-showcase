@@ -254,6 +254,67 @@ _PAYMENT_KINDS = (
 KINDS.update({kind.key: kind for kind in _PAYMENT_KINDS})
 
 
+# Release kinds added by BEAV-117 (bookings/release.py, bookings/tips.py).
+_RELEASE_KINDS = (
+    Kind(
+        # The poster proposed releasing less than the price: the helper answers.
+        "booking.release_proposed",
+        Category.PAYMENT,
+        EmailRule.ALWAYS,
+        _("New payment proposal"),
+        _(
+            "The poster proposed releasing a different amount for your task. Open TaskBeavo "
+            "to accept or decline it."
+        ),
+        "/bookings/{id}",
+    ),
+    Kind(
+        "booking.release_proposal_accepted",
+        Category.PAYMENT,
+        EmailRule.ALWAYS,
+        _("Proposal accepted"),
+        _(
+            "Your helper accepted the amount you proposed. The rest of your payment will be "
+            "refunded to your card."
+        ),
+        "/bookings/{id}",
+    ),
+    Kind(
+        "booking.release_proposal_declined",
+        Category.PAYMENT,
+        EmailRule.ALWAYS,
+        _("Proposal declined"),
+        _(
+            "Your helper declined the amount you proposed. Open TaskBeavo to release the "
+            "payment or get help."
+        ),
+        "/bookings/{id}/release",
+    ),
+    Kind(
+        # Stripe confirmed the refund of a partial release the helper accepted.
+        "booking.partial_release_refunded",
+        Category.PAYMENT,
+        EmailRule.ALWAYS,
+        _("Refund on its way"),
+        _(
+            "The agreed amount went to your helper and the rest of your payment is on its "
+            "way back to your card. It can take a few days to reach your account."
+        ),
+        "/bookings/{id}",
+    ),
+    Kind(
+        # Stripe confirmed the poster's tip.
+        "booking.tip_received",
+        Category.PAYMENT,
+        EmailRule.ALWAYS,
+        _("You received a tip"),
+        _("The poster sent you a tip. It is on its way to your bank account."),
+        "/bookings/{id}",
+    ),
+)
+KINDS.update({kind.key: kind for kind in _RELEASE_KINDS})
+
+
 # Cancellation kinds added by BEAV-122.
 _CANCELLATION_KINDS = (
     Kind(

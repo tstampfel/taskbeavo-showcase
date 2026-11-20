@@ -149,6 +149,11 @@ CELERY_BEAT_SCHEDULE: dict[str, dict[str, object]] = {
         "task": "bookings.arrival.settle_uncontested_no_shows",
         "schedule": 15 * 60.0,
     },
+    # Re-sends payouts to helpers that Stripe hasn't got yet (bookings/payouts.py).
+    "bookings-payouts-sweep": {
+        "task": "bookings.payouts.sweep",
+        "schedule": 15 * 60.0,
+    },
     # Ends checkouts nobody paid within CHECKOUT_ABANDON_AFTER_MINUTES (bookings/checkout.py).
     "bookings-checkout-expire-abandoned": {
         "task": "bookings.checkout.expire_abandoned",
