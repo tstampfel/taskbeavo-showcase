@@ -992,7 +992,8 @@
       "accessLabel": "Zugangsdetails (optional)",
       "accessHint": "Name an der Klingel, Stockwerk oder Wohnung, Tor-Code, wo ein Schlüssel liegt. Nur der gebuchte Helfer sieht das, und nur solange die Buchung aktiv ist.",
       "addressHintWeb": "Straße, Hausnummer und Ort, dann Suchen wählen.",
-      "accessNotSaved": "Zum Schutz Ihrer Privatsphäre werden Zugangsdaten nicht im Entwurf gespeichert. Geben Sie sie erneut ein, wenn Sie später zurückkommen."
+      "accessNotSaved": "Zum Schutz Ihrer Privatsphäre werden Zugangsdaten nicht im Entwurf gespeichert. Geben Sie sie erneut ein, wenn Sie später zurückkommen.",
+      "attribution": "© OpenStreetMap-Mitwirkende"
     },
     "contact": {
       "title": "Kontakt vor Ort hinzufügen",
@@ -1048,7 +1049,8 @@
       "post": "Aufgabe posten",
       "postFailed": "Ihre Aufgabe konnte nicht gepostet werden. Ihr Entwurf ist gespeichert, bitte versuchen Sie es erneut.",
       "verifyPhone": "Meine Nummer bestätigen",
-      "acceptTerms": "Bedingungen ansehen"
+      "acceptTerms": "Bedingungen ansehen",
+      "onSiteSaved": "Vor Ort: Ihr gespeicherter Kontakt"
     },
     "waitlist": {
       "heading": "Dort sind wir noch nicht",
@@ -1073,7 +1075,8 @@
       "budgetTooHigh": "Das Budget darf höchstens 10.000 € betragen."
     },
     "signInNeeded": "Melden Sie sich an, um eine Aufgabe zu posten.",
-    "signIn": "Anmelden"
+    "signIn": "Anmelden",
+    "loadFailed": "Wir können Ihr Konto gerade nicht prüfen. Bitte versuchen Sie es erneut."
   },
   "requestPayment": {
     "title": "Zahlung anfordern",

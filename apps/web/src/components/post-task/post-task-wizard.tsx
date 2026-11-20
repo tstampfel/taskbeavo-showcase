@@ -67,16 +67,20 @@ export function PostTaskWizard({
   const moved = useRef(false);
   const [post, { loading: posting }] = useMutation(PostTaskDocument);
 
-  // The draft lives in this browser only, so it's read after the first render.
+  const viewerId = viewer.data?.viewer?.id ?? null;
+
+  // The draft lives in this browser only and belongs to one account, so it's read once the
+  // viewer is known (review R1-2).
   useEffect(() => {
-    const saved = draftStore.load();
+    if (!viewerId) return;
+    const saved = draftStore.load(viewerId);
     setPhase(saved && !isDraftEmpty(saved) ? { name: 'resume', saved } : { name: 'editing' });
-  }, [draftStore]);
+  }, [draftStore, viewerId]);
 
   useEffect(() => {
-    if (phase.name !== 'editing' || finished.current) return;
-    draftStore.save(draft);
-  }, [draft, phase.name, draftStore]);
+    if (phase.name !== 'editing' || finished.current || !viewerId) return;
+    draftStore.save(draft, viewerId);
+  }, [draft, phase.name, draftStore, viewerId]);
 
   // A new step announces itself: focus goes to its heading (not on the first one shown).
   useEffect(() => {
@@ -84,8 +88,26 @@ export function PostTaskWizard({
     if (moved.current) heading.current?.focus();
   }, [draft.step, phase.name]);
 
-  if (phase.name === 'loading' || (viewer.loading && !viewer.data)) {
+  if (viewer.loading && !viewer.data) {
     return <div className={styles.main} aria-busy="true" data-testid="post-loading" />;
+  }
+
+  // The API can't be reached: not the same as being signed out (review R1-4).
+  if (viewer.error && !viewer.data) {
+    return (
+      <div className={styles.main} data-testid="post-load-error">
+        <ProblemText text={t('postTask.loadFailed')} />
+        <div>
+          <Button
+            variant="secondary"
+            onClick={() => void viewer.refetch().catch(() => undefined)}
+            data-testid="post-load-retry"
+          >
+            {t('postTask.where.retry')}
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (!viewer.data?.viewer) {
@@ -103,6 +125,10 @@ export function PostTaskWizard({
         </div>
       </div>
     );
+  }
+
+  if (phase.name === 'loading') {
+    return <div className={styles.main} aria-busy="true" data-testid="post-loading" />;
   }
 
   function change(patch: Partial<TaskDraft>) {

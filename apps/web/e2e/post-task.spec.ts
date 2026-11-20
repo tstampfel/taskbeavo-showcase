@@ -416,3 +416,81 @@ test('fits 375px in German and French, with 44px targets', async ({ page, stubGr
     expect(day.height).toBeGreaterThanOrEqual(44);
   }
 });
+
+test('a tab never takes another draft’s address after it is cleared elsewhere (R1-1)', async ({
+  page,
+  context,
+  stubGraphql,
+}) => {
+  await stubGraphql(answers());
+  await stubNominatim(page);
+  await page.goto('/en/tasks/new');
+  await fillToWhen(page);
+  await expect.poll(async () => (await storedDraft(page)).session).toContain('Starčevića');
+
+  // A second tab (same browser storage, its own session) starts again with a new draft. The
+  // fixture stubs the first page only, so this one gets the same answers by hand.
+  const other = await context.newPage();
+  await other.route('**/api/graphql', async (route) => {
+    const body = route.request().postDataJSON() as { operationName?: string };
+    const answer = answers()[body.operationName ?? ''];
+    await route.fulfill({ json: answer ? answer({}) : { data: null } });
+  });
+  await other.goto('/en/tasks/new');
+  await other.getByTestId('post-resume-start-again').click();
+  await other.getByTestId('post-category-GARDEN').check();
+  await other.getByTestId('post-title').fill('Wash the car');
+  await expect.poll(async () => (await storedDraft(other)).local).toContain('Wash the car');
+
+  // The first tab reloads: it resumes the new draft, without its old address.
+  await page.reload();
+  await expect(page.getByTestId('post-resume')).toContainText('Wash the car');
+  await page.getByTestId('post-resume-continue').click();
+  await page.getByTestId('post-next').click();
+  await page.getByTestId('post-description').fill('Inside and out.');
+  await page.getByTestId('post-next').click();
+  await expect(page.getByTestId('post-address')).toBeVisible();
+  await expect(page.getByTestId('post-address-picked')).toHaveCount(0);
+  expect((await storedDraft(page)).session).not.toContain('Starčevića');
+});
+
+test('the API being down is not "sign in" (R1-4)', async ({ page, stubGraphql }) => {
+  let down = true;
+  await stubGraphql(
+    answers({
+      Viewer: () =>
+        down
+          ? { data: null, errors: [{ message: 'Down.', extensions: { code: 'INTERNAL' } }] }
+          : { data: { viewer } },
+    }),
+  );
+  await page.goto('/en/tasks/new');
+  await expect(page.getByTestId('post-load-error')).toBeVisible();
+  await expect(page.getByTestId('post-sign-in')).toHaveCount(0);
+  down = false;
+  await page.getByTestId('post-load-retry').click();
+  await expect(page.getByTestId('post-task')).toBeVisible();
+});
+
+test('the address search needs three characters, and credits OpenStreetMap in the page language', async ({
+  page,
+  stubGraphql,
+}) => {
+  await stubGraphql(answers());
+  const nominatim = await stubNominatim(page);
+  await page.goto('/de/tasks/new');
+  await page.getByTestId('post-category-GARDEN').check();
+  await page.getByTestId('post-title').fill('Rasen mähen');
+  await page.getByTestId('post-next').click();
+  await page.getByTestId('post-description').fill('Vorne und hinten.');
+  await page.getByTestId('post-next').click();
+
+  await page.getByTestId('post-address').fill('Gr');
+  await expect(page.getByTestId('post-address-search')).toBeDisabled();
+  await page.getByTestId('post-address').fill('Gruž');
+  await page.getByTestId('post-address-search').click();
+  await expect(page.getByTestId('post-address-attribution')).toHaveText(
+    '© OpenStreetMap-Mitwirkende',
+  );
+  expect(nominatim).toHaveLength(1);
+});

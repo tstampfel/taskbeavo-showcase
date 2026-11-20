@@ -24,7 +24,7 @@ import { withTextBoxRounding } from './text-style';
  */
 const NARROW = new Set("iljIı.,:;'’!|".split(''));
 const SLIM = new Set('frt1()[]-‐/"„“”'.split(''));
-const WIDE = new Set('mwMWœæŒÆ@%—→#'.split(''));
+const WIDE = new Set('mwMWœæŒÆ@%—→#©'.split(''));
 const CAPITAL_LIKE = new Set('=…€_'.split(''));
 const NARROW_EM = 0.35;
 const SLIM_EM = 0.46;

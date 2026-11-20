@@ -12,7 +12,7 @@ import { languageNames, locales, toApiLocale, type Locale } from '@taskbeavo/i18
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { Button, Card, InfoIcon, Input, Note, Sheet } from '../ui';
-import type { AddressResult, AddressSearch } from './address-search';
+import { MIN_QUERY_LENGTH, type AddressResult, type AddressSearch } from './address-search';
 import styles from './post-task.module.css';
 import {
   Choice,
@@ -55,7 +55,7 @@ export function WhereStep({
   const picked = draft.lat !== null && draft.lng !== null && draft.address !== '';
 
   async function runSearch() {
-    if (running.current || query.trim().length === 0) return;
+    if (running.current || query.trim().length < MIN_QUERY_LENGTH) return;
     running.current = true;
     setSearch({ phase: 'searching' });
     try {
@@ -117,7 +117,8 @@ export function WhereStep({
             <Button
               type="submit"
               variant="secondary"
-              disabled={query.trim().length === 0 || search.phase === 'searching'}
+              // Nominatim gets nothing shorter (review R1-4).
+              disabled={query.trim().length < MIN_QUERY_LENGTH || search.phase === 'searching'}
               aria-busy={search.phase === 'searching'}
               data-testid="post-address-search"
             >
@@ -165,7 +166,7 @@ export function WhereStep({
                 className={`${styles.caption} ${styles.muted}`}
                 data-testid="post-address-attribution"
               >
-                {addressSearch.attribution}
+                {t('postTask.where.attribution')}
               </p>
             </div>
           ) : null}

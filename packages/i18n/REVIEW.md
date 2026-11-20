@@ -909,6 +909,8 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 - `postTask.where.accessHint`, `postTask.contact.intro`, `postTask.review.privacy`: restate hard rule e (exact address, access details and the contact's phone only for the booked helper while the booking is active).
 - `postTask.resume.bodyWeb`, `postTask.resume.bodyUntitledWeb`, `postTask.where.addressHintWeb`, `postTask.signInNeeded`, `postTask.signIn` (BEAV-87): the web wizard's own wording ("in this browser", "choose Search").
 - `postTask.where.accessNotSaved` (BEAV-87): the web draft never keeps the access details (hard rule e); the text must not promise they're saved.
+- `postTask.loadFailed`, `postTask.review.onSiteSaved` (BEAV-87 review): the account check failing (not "sign in"), and a saved on-site contact whose name hasn't loaded yet.
+- `postTask.where.attribution` (BEAV-87 review): OpenStreetMap's required attribution, in the wording OpenStreetMap itself uses for each language; keep the © and the name OpenStreetMap.
 
 ## Request payment (BEAV-116)
 

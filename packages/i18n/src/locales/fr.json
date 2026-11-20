@@ -992,7 +992,8 @@
       "accessLabel": "Informations d'accès (facultatif)",
       "accessHint": "Nom sur la sonnette, étage ou appartement, code du portail, où se trouve une clé. Seul l'aidant réservé les voit, et seulement tant que la réservation est active.",
       "addressHintWeb": "Rue, numéro et ville, puis choisissez Rechercher.",
-      "accessNotSaved": "Pour protéger votre vie privée, les informations d’accès ne sont pas gardées dans le brouillon. Saisissez-les à nouveau si vous revenez plus tard."
+      "accessNotSaved": "Pour protéger votre vie privée, les informations d’accès ne sont pas gardées dans le brouillon. Saisissez-les à nouveau si vous revenez plus tard.",
+      "attribution": "© les contributeurs d’OpenStreetMap"
     },
     "contact": {
       "title": "Ajouter un contact sur place",
@@ -1048,7 +1049,8 @@
       "post": "Publier la tâche",
       "postFailed": "Votre tâche n'a pas pu être publiée. Votre brouillon est enregistré, veuillez réessayer.",
       "verifyPhone": "Vérifier mon numéro",
-      "acceptTerms": "Consulter les conditions"
+      "acceptTerms": "Consulter les conditions",
+      "onSiteSaved": "Sur place : votre contact enregistré"
     },
     "waitlist": {
       "heading": "Nous n'y sommes pas encore",
@@ -1073,7 +1075,8 @@
       "budgetTooHigh": "Le budget ne peut pas dépasser 10 000 €."
     },
     "signInNeeded": "Connectez-vous pour publier une tâche.",
-    "signIn": "Se connecter"
+    "signIn": "Se connecter",
+    "loadFailed": "Nous ne pouvons pas vérifier votre compte pour le moment. Veuillez réessayer."
   },
   "requestPayment": {
     "title": "Demander le paiement",

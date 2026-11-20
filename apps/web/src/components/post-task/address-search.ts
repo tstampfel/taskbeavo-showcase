@@ -11,11 +11,12 @@ export interface AddressResult {
   city: string;
 }
 
-/** The small interface the wizard needs, so another geocoder can replace Nominatim. */
+/**
+ * The small interface the wizard needs, so another geocoder can replace Nominatim. The wizard
+ * shows the provider's attribution from the catalogue (postTask.where.attribution).
+ */
 export interface AddressSearch {
   search(query: string, locale: Locale): Promise<AddressResult[]>;
-  /** Shown next to the results, as the provider's terms ask. */
-  attribution: string;
 }
 
 export const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
@@ -43,10 +44,11 @@ interface NominatimPlace {
 
 /**
  * OpenStreetMap Nominatim (no key needed), limited to Croatia. The address text goes to the
- * OpenStreetMap Foundation's servers, straight from the browser. Usage policy: the wizard searches only when the poster
- * taps Search or submits and shows the attribution; here, requests go one at a time and at
- * least a second apart (a quick second tap waits its turn). Throws when the
- * service can't be reached, so the wizard can offer a retry; the draft stays saved.
+ * OpenStreetMap Foundation's servers, straight from the browser. Usage policy: the wizard
+ * searches only when the poster submits and shows the attribution; here, requests go one at a
+ * time (the next waits until the one before has answered) and start at least a second apart.
+ * Throws when the service can't be reached, so the wizard can offer a retry; the draft stays
+ * saved.
  */
 export function nominatimSearch(
   request: typeof fetch = fetch,
@@ -55,19 +57,25 @@ export function nominatimSearch(
   let lastRequestAt = -Infinity;
   let queue: Promise<void> = Promise.resolve();
 
-  /** Resolves when this request may go: after the one before it, and a second after it. */
-  function turn(): Promise<void> {
-    const mine = queue.then(async () => {
+  /** Runs `work` once the request before it has finished, and a second after it started. */
+  async function inTurn<T>(work: () => Promise<T>): Promise<T> {
+    const previous = queue;
+    let finished!: () => void;
+    queue = new Promise<void>((resolve) => {
+      finished = resolve;
+    });
+    try {
+      await previous;
       const wait = lastRequestAt + MIN_REQUEST_INTERVAL_MS - clock.now();
       if (wait > 0) await clock.sleep(wait);
       lastRequestAt = clock.now();
-    });
-    queue = mine.catch(() => undefined);
-    return mine;
+      return await work();
+    } finally {
+      finished();
+    }
   }
 
   return {
-    attribution: '© OpenStreetMap contributors',
     async search(query, locale) {
       const q = query.trim();
       if (q.length < MIN_QUERY_LENGTH) return [];
@@ -81,31 +89,32 @@ export function nominatimSearch(
       ]
         .map(([key, value]) => `${key}=${encodeURIComponent(value!)}`)
         .join('&');
-      await turn();
-      const response = await request(`${NOMINATIM_URL}?${params}`, {
-        headers: { Accept: 'application/json' },
-        // Browsers can't set User-Agent; the site's origin goes as the Referer, as Nominatim's
-        // policy asks of web apps. Nothing personal: no cookies, no path.
-        referrerPolicy: 'strict-origin-when-cross-origin',
-        credentials: 'omit',
-      });
-      if (!response.ok) throw new Error(`Address search failed: ${response.status}`);
-      const places = (await response.json()) as unknown;
-      if (!Array.isArray(places)) return [];
-      return (places as NominatimPlace[]).flatMap((place) => {
-        const lat = Number(place.lat);
-        const lng = Number(place.lon);
-        if (!place.display_name || !Number.isFinite(lat) || !Number.isFinite(lng)) return [];
-        const parts = place.address ?? {};
-        return [
-          {
-            id: String(place.place_id ?? `${lat},${lng}`),
-            address: place.display_name,
-            lat,
-            lng,
-            city: parts.city ?? parts.town ?? parts.village ?? parts.municipality ?? '',
-          },
-        ];
+      return inTurn(async () => {
+        const response = await request(`${NOMINATIM_URL}?${params}`, {
+          headers: { Accept: 'application/json' },
+          // Browsers can't set User-Agent; the site's origin goes as the Referer, as Nominatim's
+          // policy asks of web apps. Nothing personal: no cookies, no path.
+          referrerPolicy: 'strict-origin-when-cross-origin',
+          credentials: 'omit',
+        });
+        if (!response.ok) throw new Error(`Address search failed: ${response.status}`);
+        const places = (await response.json()) as unknown;
+        if (!Array.isArray(places)) return [];
+        return (places as NominatimPlace[]).flatMap((place) => {
+          const lat = Number(place.lat);
+          const lng = Number(place.lon);
+          if (!place.display_name || !Number.isFinite(lat) || !Number.isFinite(lng)) return [];
+          const parts = place.address ?? {};
+          return [
+            {
+              id: String(place.place_id ?? `${lat},${lng}`),
+              address: place.display_name,
+              lat,
+              lng,
+              city: parts.city ?? parts.town ?? parts.village ?? parts.municipality ?? '',
+            },
+          ];
+        });
       });
     },
   };

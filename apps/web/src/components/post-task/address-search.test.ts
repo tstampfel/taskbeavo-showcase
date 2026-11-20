@@ -50,10 +50,6 @@ it('throws when the service fails, so the wizard can offer a retry', async () =>
   await expect(nominatimSearch(answer({}, false)).search('Gruž', 'hr')).rejects.toThrow();
 });
 
-it('names OpenStreetMap as its terms ask', () => {
-  expect(nominatimSearch(answer([])).attribution).toBe('© OpenStreetMap contributors');
-});
-
 it('keeps at least a second between requests, as Nominatim asks', async () => {
   let time = 10_000;
   const sent: number[] = [];
@@ -99,4 +95,37 @@ it('queues taps that come at the same time instead of sending them together', as
   await Promise.all([search.search('Gruž', 'hr'), search.search('Lapad', 'hr')]);
 
   expect(sent).toEqual([0, MIN_REQUEST_INTERVAL_MS]);
+});
+
+it('sends one request at a time: the next waits for the answer to the one before', async () => {
+  let time = 0;
+  const clock: Clock = {
+    now: () => time,
+    sleep: async (ms) => {
+      time += ms;
+    },
+  };
+  const sent: string[] = [];
+  let answerFirst!: () => void;
+  const request = vi.fn(async (url: string) => {
+    sent.push(url);
+    if (sent.length === 1) {
+      await new Promise<void>((resolve) => {
+        answerFirst = resolve;
+      });
+      time += 5_000; // a slow answer
+    }
+    return { ok: true, status: 200, json: async () => [] } as unknown as Response;
+  });
+  const search = nominatimSearch(request as unknown as typeof fetch, clock);
+
+  const first = search.search('Gruž', 'hr');
+  const second = search.search('Lapad', 'hr');
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(sent).toHaveLength(1);
+
+  answerFirst();
+  await Promise.all([first, second]);
+  expect(sent).toHaveLength(2);
+  expect(sent[1]).toContain('Lapad');
 });

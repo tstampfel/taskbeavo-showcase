@@ -77,9 +77,12 @@ export function reviewSections(
       step: 'where',
       label: t('postTask.review.where'),
       main: draft.address,
+      // A saved contact whose name hasn't loaded yet is still sent: never "Me" for it (R1-4).
       detail: contactName
         ? t('postTask.review.onSite', { name: contactName })
-        : t('postTask.where.noContact'),
+        : draft.careContactId
+          ? t('postTask.review.onSiteSaved')
+          : t('postTask.where.noContact'),
     },
     { step: 'when', label: t('postTask.review.when'), main: when },
     {

@@ -121,6 +121,17 @@ describe('the review (mockup 3g)', () => {
     expect(sections[4]!.main).toBe(formatMoney(3_050, locale));
   });
 
+  it('names a saved contact neutrally until its name has loaded (R1-4)', () => {
+    const t = (key: string) => message('en', key);
+    const withContact = { ...draft, careContactId: 'contact-1' };
+    expect(reviewSections(withContact, t, 'en', null)[2]!.detail).toBe(
+      catalogues.en.postTask.review.onSiteSaved,
+    );
+    expect(reviewSections(draft, t, 'en', null)[2]!.detail).toBe(
+      catalogues.en.postTask.where.noContact,
+    );
+  });
+
   it('shortens a long description', () => {
     expect(excerpt('a'.repeat(200))).toHaveLength(141);
     expect(excerpt('short')).toBe('short');
