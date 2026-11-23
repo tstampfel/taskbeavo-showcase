@@ -3,8 +3,8 @@ from collections.abc import Iterator
 
 import pytest
 
-from bookings import checkout
-from bookings.tests.fakes import FakeGateway
+from bookings import checkout, payouts, tips
+from bookings.tests.fakes import FakeGateway, FakePayoutStripe
 from uploads import storage
 from uploads.tests.fakes import FakeR2
 
@@ -16,6 +16,16 @@ def r2() -> Iterator[FakeR2]:
     storage.use_client(fake)
     yield fake
     storage.use_client(None)
+
+
+@pytest.fixture(autouse=True)
+def payout_stripe(monkeypatch: pytest.MonkeyPatch) -> FakePayoutStripe:
+    """A release opens a payout whose outbox handler runs Celery eagerly in tests: an
+    in-memory Stripe for payouts and tips, never the network (bookings/tests/fakes.py)."""
+    fake = FakePayoutStripe()
+    monkeypatch.setattr(payouts, "get_gateway", lambda: fake)
+    monkeypatch.setattr(tips, "get_gateway", lambda: fake)
+    return fake
 
 
 @pytest.fixture(autouse=True)

@@ -24,7 +24,9 @@ payment_intent.succeeded event goes through the webhook handler.
 Event types sent: payment_intent.succeeded and payment_intent.payment_failed (the demo
 card form), charge.refunded (a refund), transfer.reversed (a transfer reversal),
 account.updated (a new account, enabled at once: there is no onboarding to do) and
-payout.paid (a payout, stored until its handler exists, as Stripe's would be).
+payout.paid (a payout: "Release payment" and a confirmed tip, BEAV-117). A tip is a
+PaymentIntent like the checkout's, without an application fee, and the demo card form
+confirms it the same way.
 """
 
 import hmac
@@ -190,6 +192,9 @@ def _route(
         return _list("transfer_reversal", lambda data: data["transfer"] == object_id)
     if route == ("POST", "payouts", False, ""):
         return _create_payout(params, account, key)
+    if route == ("GET", "payouts", False, ""):
+        _account(account, "Stripe-Account")
+        return _list("payout", lambda data: data.get("account") == account)
     if route == ("POST", "accounts", False, ""):
         return _create_account(params)
     if route == ("GET", "accounts", True, ""):
@@ -342,12 +347,17 @@ def _cancel_payment_intent(intent_id: str) -> dict[str, Any]:
 
 
 def _search_payment_intents(params: dict[str, Any]) -> dict[str, Any]:
-    match = re.fullmatch(r"metadata\['booking_id'\]:'([0-9a-f-]+)'", params.get("query", ""))
-    booking_id = match.group(1) if match else None
+    match = re.fullmatch(
+        r"metadata\['booking_id'\]:'([0-9a-f-]+)'(?: AND metadata\['action'\]:'([a-z_]+)')?",
+        params.get("query", ""),
+    )
+    booking_id, action = (match.group(1), match.group(2)) if match else (None, None)
     found = [
         row.data
         for row in DemoStripeObject.objects.filter(object="payment_intent").order_by("created_at")
-        if booking_id and (row.data.get("metadata") or {}).get("booking_id") == booking_id
+        if booking_id
+        and (row.data.get("metadata") or {}).get("booking_id") == booking_id
+        and (action is None or (row.data.get("metadata") or {}).get("action") == action)
     ]
     return {"object": "search_result", "data": found, "has_more": False, "url": "/v1/search"}
 
@@ -474,6 +484,8 @@ def _create_payout(params: dict[str, Any], account: str, key: str) -> dict[str, 
             "currency": params.get("currency", "eur"),
             "status": "paid",
             "method": "standard",
+            # Not a field of Stripe's payout: the demo's note of whose balance it left.
+            "account": account,
             "metadata": params.get("metadata") or {},
         }
     )

@@ -47,6 +47,8 @@ from bookings import (
     money,
     no_fault,
     payment_request,
+    release,
+    tips,
 )
 from bookings.arrival_schema import BookingArrivalType
 from bookings.cancellation import NotACancellation, charged_cents, withdrawal_period_ends_at
@@ -57,6 +59,8 @@ from bookings.models import (
     ConsentRecord,
     NoFaultRequest,
     PaymentRequest,
+    ReleaseProposal,
+    Tip,
 )
 from bookings.money import (
     CROATIAN_VAT_PERCENT,
@@ -477,6 +481,97 @@ class PaymentRequestType:
         )
 
 
+@strawberry.enum(description="Where a proposal to release less than the price stands.")
+class ReleaseProposalStatus(Enum):
+    OPEN = strawberry.enum_value("OPEN", description="Waiting for the helper's answer.")
+    ACCEPTED = strawberry.enum_value(
+        "ACCEPTED", description="The helper accepted: the rest is being refunded."
+    )
+    DECLINED = strawberry.enum_value(
+        "DECLINED", description="The helper declined: release in full or get help."
+    )
+    WITHDRAWN = strawberry.enum_value("WITHDRAWN", description="The poster withdrew it.")
+    CLOSED = strawberry.enum_value(
+        "CLOSED", description="The booking moved on before an answer (a release, a dispute)."
+    )
+
+
+@strawberry.type(
+    name="ReleaseProposal",
+    description=(
+        "The poster's proposal to release less than the price. Nothing moves until the "
+        "helper accepts; with no answer nothing moves at all."
+    ),
+)
+class ReleaseProposalType:
+    id: strawberry.ID
+    released_cents: int = strawberry.field(description="What the helper would get.")
+    status: ReleaseProposalStatus
+    refund_cents: int | None = strawberry.field(
+        description=(
+            "For the poster: what comes back to their card if accepted; null for the helper."
+        )
+    )
+    created_at: dt.datetime
+    answered_at: dt.datetime | None
+
+    @classmethod
+    def of(
+        cls, proposal: ReleaseProposal, booking: Booking, *, is_poster: bool
+    ) -> "ReleaseProposalType":
+        refund = (
+            release.partial_release_preview(booking, proposal.released_cents).refund_cents
+            if is_poster
+            else None
+        )
+        return cls(
+            id=strawberry.ID(str(proposal.pk)),
+            released_cents=proposal.released_cents,
+            status=ReleaseProposalStatus(proposal.status),
+            refund_cents=refund,
+            created_at=proposal.created_at,
+            answered_at=proposal.answered_at,
+        )
+
+
+@strawberry.type(
+    name="PartialReleasePreview",
+    description="What releasing `releasedCents` instead of the price would move. Poster only.",
+)
+class PartialReleasePreviewType:
+    id: strawberry.ID = strawberry.field(description="The booking's ID.")
+    released_cents: int = strawberry.field(description="What the helper would get.")
+    kept_fee_cents: int = strawberry.field(
+        description="TaskBeavo's service fee on it: the booking's fee rate of the released part."
+    )
+    refund_cents: int = strawberry.field(description="What comes back to the poster's card.")
+
+
+@strawberry.enum(description="Where the poster's tip stands.")
+class TipStatus(Enum):
+    PENDING = strawberry.enum_value(
+        "PENDING", description="Started; Stripe hasn't confirmed the payment yet."
+    )
+    SUCCEEDED = strawberry.enum_value(
+        "SUCCEEDED", description="Paid; it is on its way to the helper's bank."
+    )
+
+
+@strawberry.type(name="Tip", description="The poster's tip after releasing the payment.")
+class TipType:
+    id: strawberry.ID
+    amount_cents: int
+    status: TipStatus
+
+    @classmethod
+    def of(cls, tip: Tip) -> "TipType":
+        return cls(
+            id=strawberry.ID(str(tip.pk)),
+            amount_cents=tip.amount_cents,
+            status=TipStatus(tip.status),
+        )
+
+
 @strawberry.type(name="Booking", description="An accepted offer, from checkout to payout.")
 class BookingType:
     id: strawberry.ID
@@ -587,6 +682,22 @@ class BookingType:
     payment_request: PaymentRequestType | None = strawberry.field(
         description="Once the helper requested payment: their photos, note and invoice."
     )
+    can_release_payment: bool = strawberry.field(
+        description=(
+            "For the poster: Release payment, and proposing a lower amount, are offered now "
+            "(the helper requested payment, no late arrival waits for an answer, and no "
+            "accepted proposal is being settled)."
+        )
+    )
+    release_proposal: ReleaseProposalType | None = strawberry.field(
+        description="The latest proposal to release less than the price, if any."
+    )
+    tip: TipType | None = strawberry.field(
+        description=(
+            "The poster's tip: for the poster from when it is started, for the helper once "
+            "Stripe confirmed it."
+        )
+    )
     created_at: dt.datetime
     updated_at: dt.datetime
 
@@ -658,6 +769,13 @@ class BookingType:
                 if (request := PaymentRequest.objects.filter(booking=booking).first())
                 else None
             ),
+            can_release_payment=is_poster and release.can_release(booking, viewer),
+            release_proposal=(
+                ReleaseProposalType.of(proposal, booking, is_poster=is_poster)
+                if (proposal := release.latest_proposal(booking))
+                else None
+            ),
+            tip=_tip(booking, is_poster=is_poster),
             created_at=booking.created_at,
             updated_at=booking.updated_at,
         )
@@ -680,6 +798,21 @@ class CheckoutSession:
             "Stripe already has a payment that is succeeding or still being confirmed: "
             "don't pay again, wait for bookingUpdated."
         )
+    )
+
+
+@strawberry.type(
+    description=(
+        "A started tip: confirm it with Stripe's payment sheet using `clientSecret`, then "
+        "wait for `tip.status` SUCCEEDED."
+    )
+)
+class TipSession:
+    id: strawberry.ID = strawberry.field(description="The tip's ID.")
+    booking: BookingType
+    tip: TipType
+    client_secret: str = strawberry.field(
+        description="For Stripe's payment sheet only; never store or log it."
     )
 
 
@@ -1025,6 +1158,87 @@ class Mutation:
 
     @strawberry.mutation(
         description=(
+            "As the poster, while `canReleasePayment`: release the payment to the helper. "
+            "TaskBeavo then pays it out from the helper's Stripe balance to their bank; the "
+            "booking becomes PAID_OUT when Stripe confirms the payout. Releasing also says "
+            "the helper came. Safe to repeat. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, "
+            "BOOKING_ACTION_NOT_ALLOWED."
+        )
+    )
+    async def release_payment(self, info: Info, booking_id: strawberry.ID) -> BookingType:
+        user = _user(info)
+        booking = await sync_to_async(release.release_payment)(user, str(booking_id))
+        return await sync_to_async(BookingType.of)(booking, user)
+
+    @strawberry.mutation(
+        description=(
+            "As the poster, while `canReleasePayment`: propose releasing `releasedCents` "
+            "instead of the price (more than nothing, less than the price). Nothing moves "
+            "until the helper accepts; the rest is then refunded to your card. One open "
+            "proposal at a time. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, "
+            "BOOKING_ACTION_NOT_ALLOWED, INVALID_RELEASE_AMOUNT."
+        )
+    )
+    async def propose_partial_release(
+        self, info: Info, booking_id: strawberry.ID, released_cents: int
+    ) -> BookingType:
+        user = _user(info)
+        booking = await sync_to_async(release.propose_partial_release)(
+            user, str(booking_id), released_cents
+        )
+        return await sync_to_async(BookingType.of)(booking, user)
+
+    @strawberry.mutation(
+        description=(
+            "As the poster: withdraw your open proposal before the helper answers. Errors: "
+            "UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED."
+        )
+    )
+    async def withdraw_partial_release(self, info: Info, booking_id: strawberry.ID) -> BookingType:
+        user = _user(info)
+        booking = await sync_to_async(release.withdraw_partial_release)(user, str(booking_id))
+        return await sync_to_async(BookingType.of)(booking, user)
+
+    @strawberry.mutation(
+        description=(
+            "As the helper: accept or decline the poster's open proposal. Accepting releases "
+            "the proposed amount to you and refunds the rest to the poster (the booking "
+            "becomes PARTIALLY_SETTLED when Stripe confirms); declining moves nothing. "
+            "Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED."
+        )
+    )
+    async def respond_to_partial_release(
+        self, info: Info, booking_id: strawberry.ID, accept: bool
+    ) -> BookingType:
+        user = _user(info)
+        booking = await sync_to_async(release.respond_to_partial_release)(
+            user, str(booking_id), accept=accept
+        )
+        return await sync_to_async(BookingType.of)(booking, user)
+
+    @strawberry.mutation(
+        description=(
+            "As the poster, after releasing in full: tip the helper once, EUR 1 up to the task "
+            "price, with Stripe's payment sheet and `clientSecret`. TaskBeavo takes no fee. "
+            "It counts once Stripe confirms it (`tip.status`). Calling again with the same "
+            "amount returns the same payment. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, "
+            "BOOKING_ACTION_NOT_ALLOWED, INVALID_TIP_AMOUNT, HELPER_CANNOT_TAKE_PAYMENTS, "
+            "PAYMENT_UNAVAILABLE."
+        )
+    )
+    async def add_tip(self, info: Info, booking_id: strawberry.ID, amount_cents: int) -> TipSession:
+        user = _user(info)
+        session = await sync_to_async(tips.add_tip)(user, str(booking_id), amount_cents)
+        booking = await sync_to_async(BookingType.of)(session.booking, user)
+        return TipSession(
+            id=strawberry.ID(str(session.tip.pk)),
+            booking=booking,
+            tip=TipType.of(session.tip),
+            client_secret=session.client_secret,
+        )
+
+    @strawberry.mutation(
+        description=(
             "As the helper, once the job has started and while `canRequestPayment`: ask the "
             "poster to release the payment, with up to 6 photos (your EVIDENCE_PHOTO "
             "uploads) and a note of up to 1000 characters, both optional. A registered "
@@ -1217,6 +1431,19 @@ class Query:
 
     @strawberry.field(
         description=(
+            "What releasing `releasedCents` instead of the price would move, for one of your "
+            "bookings as its poster. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, "
+            "INVALID_RELEASE_AMOUNT."
+        )
+    )
+    async def partial_release_preview(
+        self, info: Info, booking_id: strawberry.ID, released_cents: int
+    ) -> PartialReleasePreviewType:
+        user = _user(info)
+        return await sync_to_async(_partial_release_preview)(user, str(booking_id), released_cents)
+
+    @strawberry.field(
+        description=(
             "Your open checkout again, to pay on the same PaymentIntent after leaving the "
             "payment sheet. Poster only, while AWAITING_PAYMENT and before "
             "`checkoutExpiresAt`. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, "
@@ -1316,9 +1543,42 @@ def _preview(booking: Booking) -> CancellationPreview | None:
     )
 
 
+def _partial_release_preview(
+    user: User, booking_id: str, released_cents: int
+) -> PartialReleasePreviewType:
+    try:
+        booking = Booking.objects.filter(pk=UUID(booking_id), poster=user).first()
+    except ValueError:
+        booking = None
+    if booking is None:
+        raise ApiError(ErrorCode.BOOKING_NOT_FOUND, "No such booking.")
+    try:
+        outcome = release.partial_release_preview(booking, released_cents)
+    except ValueError:
+        raise ApiError(
+            ErrorCode.INVALID_RELEASE_AMOUNT, "Release more than nothing and less than the price."
+        ) from None
+    return PartialReleasePreviewType(
+        id=strawberry.ID(str(booking.pk)),
+        released_cents=outcome.helper_compensation_cents,
+        kept_fee_cents=outcome.kept_fee_cents,
+        refund_cents=outcome.refund_cents,
+    )
+
+
+def _tip(booking: Booking, *, is_poster: bool) -> TipType | None:
+    tip = Tip.objects.filter(booking=booking).first()
+    if tip is None or (not is_poster and tip.status != Tip.Status.SUCCEEDED):
+        return None
+    return TipType.of(tip)
+
+
 def _cancellation(
     booking: Booking, settlement: CancellationSettlement | None, *, is_poster: bool
 ) -> Cancellation | None:
+    if settlement is not None and settlement.case == cancellation.Case.PARTIAL_RELEASE:
+        # Not a cancellation: an agreed partial release (`releaseProposal`).
+        return None
     withdrawal = booking.cancel_reason == cancel.WITHDRAWAL_REASON
     if settlement is None and not (
         withdrawal and booking.status == Booking.Status.CANCEL_REQUESTED

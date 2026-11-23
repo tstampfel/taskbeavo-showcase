@@ -179,6 +179,19 @@ type Booking {
 
   """Once the helper requested payment: their photos, note and invoice."""
   paymentRequest: PaymentRequest
+
+  """
+  For the poster: Release payment, and proposing a lower amount, are offered now (the helper requested payment, no late arrival waits for an answer, and no accepted proposal is being settled).
+  """
+  canReleasePayment: Boolean!
+
+  """The latest proposal to release less than the price, if any."""
+  releaseProposal: ReleaseProposal
+
+  """
+  The poster's tip: for the poster from when it is started, for the helper once Stripe confirmed it.
+  """
+  tip: Tip
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -1015,6 +1028,16 @@ enum ErrorCode {
   INVALID_PAYMENT_REQUEST
 
   """
+  A proposal to release less must be more than nothing and less than the task price, in whole cents; to pay everything, release the payment instead.
+  """
+  INVALID_RELEASE_AMOUNT
+
+  """
+  A tip is at least EUR 1 and at most the task price, in whole cents, and can't change once its payment started.
+  """
+  INVALID_TIP_AMOUNT
+
+  """
   The arrival time isn't valid: missing, outside 1 to 240 minutes, or for running late, not after the booked start.
   """
   INVALID_ETA
@@ -1416,6 +1439,31 @@ type Mutation {
   reopenTask(bookingId: ID!): Booking!
 
   """
+  As the poster, while `canReleasePayment`: release the payment to the helper. TaskBeavo then pays it out from the helper's Stripe balance to their bank; the booking becomes PAID_OUT when Stripe confirms the payout. Releasing also says the helper came. Safe to repeat. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  releasePayment(bookingId: ID!): Booking!
+
+  """
+  As the poster, while `canReleasePayment`: propose releasing `releasedCents` instead of the price (more than nothing, less than the price). Nothing moves until the helper accepts; the rest is then refunded to your card. One open proposal at a time. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, INVALID_RELEASE_AMOUNT.
+  """
+  proposePartialRelease(bookingId: ID!, releasedCents: Int!): Booking!
+
+  """
+  As the poster: withdraw your open proposal before the helper answers. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  withdrawPartialRelease(bookingId: ID!): Booking!
+
+  """
+  As the helper: accept or decline the poster's open proposal. Accepting releases the proposed amount to you and refunds the rest to the poster (the booking becomes PARTIALLY_SETTLED when Stripe confirms); declining moves nothing. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED.
+  """
+  respondToPartialRelease(bookingId: ID!, accept: Boolean!): Booking!
+
+  """
+  As the poster, after releasing in full: tip the helper once, EUR 1 up to the task price, with Stripe's payment sheet and `clientSecret`. TaskBeavo takes no fee. It counts once Stripe confirms it (`tip.status`). Calling again with the same amount returns the same payment. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, INVALID_TIP_AMOUNT, HELPER_CANNOT_TAKE_PAYMENTS, PAYMENT_UNAVAILABLE.
+  """
+  addTip(bookingId: ID!, amountCents: Int!): TipSession!
+
+  """
   As the helper, once the job has started and while `canRequestPayment`: ask the poster to release the payment, with up to 6 photos (your EVIDENCE_PHOTO uploads) and a note of up to 1000 characters, both optional. A registered business adds its fiscalized invoice first: an INVOICE upload or its JIR (`invoiceRequired`). Nothing is paid out until the poster releases. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, BOOKING_ACTION_NOT_ALLOWED, PAYMENT_REQUEST_TOO_EARLY, INVOICE_REQUIRED, INVALID_PAYMENT_REQUEST, UPLOAD_NOT_FOUND.
   """
   requestPayment(input: RequestPaymentInput!): Booking!
@@ -1773,6 +1821,25 @@ type OnSiteContact {
   phone: String
 }
 
+"""
+What releasing `releasedCents` instead of the price would move. Poster only.
+"""
+type PartialReleasePreview {
+  """The booking's ID."""
+  id: ID!
+
+  """What the helper would get."""
+  releasedCents: Int!
+
+  """
+  TaskBeavo's service fee on it: the booking's fee rate of the released part.
+  """
+  keptFeeCents: Int!
+
+  """What comes back to the poster's card."""
+  refundCents: Int!
+}
+
 """The last card attempt of an open checkout. The poster's only."""
 type PaymentAttempt {
   id: ID!
@@ -2012,6 +2079,11 @@ type Query {
   booking(id: ID!): Booking!
 
   """
+  What releasing `releasedCents` instead of the price would move, for one of your bookings as its poster. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, INVALID_RELEASE_AMOUNT.
+  """
+  partialReleasePreview(bookingId: ID!, releasedCents: Int!): PartialReleasePreview!
+
+  """
   Your open checkout again, to pay on the same PaymentIntent after leaving the payment sheet. Poster only, while AWAITING_PAYMENT and before `checkoutExpiresAt`. Errors: UNAUTHENTICATED, BOOKING_NOT_FOUND, CHECKOUT_CLOSED, PAYMENT_UNAVAILABLE.
   """
   checkoutSession(bookingId: ID!): CheckoutSession!
@@ -2099,6 +2171,42 @@ type Query {
 
   """Version of the API contract, for client compatibility checks."""
   apiVersion: String!
+}
+
+"""
+The poster's proposal to release less than the price. Nothing moves until the helper accepts; with no answer nothing moves at all.
+"""
+type ReleaseProposal {
+  id: ID!
+
+  """What the helper would get."""
+  releasedCents: Int!
+  status: ReleaseProposalStatus!
+
+  """
+  For the poster: what comes back to their card if accepted; null for the helper.
+  """
+  refundCents: Int
+  createdAt: DateTime!
+  answeredAt: DateTime
+}
+
+"""Where a proposal to release less than the price stands."""
+enum ReleaseProposalStatus {
+  """Waiting for the helper's answer."""
+  OPEN
+
+  """The helper accepted: the rest is being refunded."""
+  ACCEPTED
+
+  """The helper declined: release in full or get help."""
+  DECLINED
+
+  """The poster withdrew it."""
+  WITHDRAWN
+
+  """The booking moved on before an answer (a release, a dispute)."""
+  CLOSED
 }
 
 """The helper's Request payment."""
@@ -2408,6 +2516,35 @@ enum TaskStatus {
 enum TaskWarning {
   """You already have an open task at this address on this day."""
   DUPLICATE_TASK
+}
+
+"""The poster's tip after releasing the payment."""
+type Tip {
+  id: ID!
+  amountCents: Int!
+  status: TipStatus!
+}
+
+"""
+A started tip: confirm it with Stripe's payment sheet using `clientSecret`, then wait for `tip.status` SUCCEEDED.
+"""
+type TipSession {
+  """The tip's ID."""
+  id: ID!
+  booking: Booking!
+  tip: Tip!
+
+  """For Stripe's payment sheet only; never store or log it."""
+  clientSecret: String!
+}
+
+"""Where the poster's tip stands."""
+enum TipStatus {
+  """Started; Stripe hasn't confirmed the payment yet."""
+  PENDING
+
+  """Paid; it is on its way to the helper's bank."""
+  SUCCEEDED
 }
 
 input UpdateCareContactInput {

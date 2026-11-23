@@ -533,6 +533,20 @@ class ErrorCode(Enum):
             "added an invoice."
         ),
     )
+    INVALID_RELEASE_AMOUNT = strawberry.enum_value(
+        "INVALID_RELEASE_AMOUNT",
+        description=(
+            "A proposal to release less must be more than nothing and less than the task "
+            "price, in whole cents; to pay everything, release the payment instead."
+        ),
+    )
+    INVALID_TIP_AMOUNT = strawberry.enum_value(
+        "INVALID_TIP_AMOUNT",
+        description=(
+            "A tip is at least EUR 1 and at most the task price, in whole cents, and can't "
+            "change once its payment started."
+        ),
+    )
     INVALID_ETA = strawberry.enum_value(
         "INVALID_ETA",
         description=(

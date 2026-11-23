@@ -80,12 +80,41 @@ BEAV-116). The poster gets the `booking.payment_requested` push and email, in th
 language; the push opens the release screen. No names, amounts, photos or note in it:
 the app loads them. The live event to both sides is `booking.updated`.
 
+`booking.payment_released`: the poster released in full (bookings/release.py, BEAV-117).
+The helper gets the `booking.payment_released` push and email; the live event is
+`booking.updated`.
+
+`booking.release_proposal`: a proposal to release less (bookings/release.py). Both sides
+get a live event; the helper the `booking.release_proposed` push and email when it is made,
+the poster `booking.release_proposal_accepted` or `..._declined` when the helper answers.
+A withdrawal is a live event only.
+
+`booking.payout_opened`: a payout to the helper is due (bookings/payouts.py). The handler
+queues `pay_out` (Celery) after commit, so the Stripe call holds no row lock.
+
+`booking.tip_received`: Stripe confirmed the poster's tip (bookings/tips.py). Both sides
+get a live event, the helper the `booking.tip_received` push and email.
+
+A partial release's settlement confirmed (`booking.cancellation_settled` with case
+PARTIAL_RELEASE): the poster gets `booking.partial_release_refunded` and the helper
+`booking.payment_released`, instead of the cancellation's texts.
+
 `booking.late_payment_refunded`: that refund was made. The poster gets a push and an
 email, in their language, saying their payment was refunded in full.
 """
 
-from bookings import arrival, contract_email, payment_request, settlement, withdrawal_email
+from bookings import (
+    arrival,
+    contract_email,
+    payment_request,
+    payouts,
+    release,
+    settlement,
+    tips,
+    withdrawal_email,
+)
 from bookings.cancel import CANCELLED_TOPIC, WITHDRAWAL_RECEIVED_TOPIC
+from bookings.cancellation import Case
 from bookings.checkout import (
     ACTION_REQUIRED_TOPIC,
     FUNDS_HELD_TOPIC,
@@ -95,7 +124,7 @@ from bookings.checkout import (
     settle_after_commit,
 )
 from bookings.helper_cancel import CANCELLED_BY_HELPER_TOPIC, TASK_REOPENED_TOPIC
-from bookings.models import Booking
+from bookings.models import Booking, CancellationSettlement
 from bookings.no_fault import DECIDED_TOPIC as NO_FAULT_DECIDED_TOPIC
 from bookings.no_fault import REQUESTED_TOPIC as NO_FAULT_REQUESTED_TOPIC
 from bookings.no_fault import STOOD_TOPIC as NO_FAULT_STOOD_TOPIC
@@ -219,7 +248,62 @@ def tell_the_poster_about_the_refund_of_the_cancel(row: Outbox) -> None:
     booking = Booking.objects.filter(pk=row.aggregate_id).first()
     if booking is None:
         return
+    case = (
+        CancellationSettlement.objects.filter(booking=booking)
+        .values_list("case", flat=True)
+        .first()
+    )
+    if case == Case.PARTIAL_RELEASE:
+        notify(row, "booking.partial_release_refunded", [booking.poster_id])
+        notify(row, "booking.payment_released", [booking.helper_id], actor_id=booking.poster_id)
+        return
     notify(row, "booking.cancellation_refunded", [booking.poster_id])
+
+
+@register_handler(release.RELEASED_TOPIC)
+def tell_the_helper_about_the_release(row: Outbox) -> None:
+    booking = Booking.objects.filter(pk=row.aggregate_id).first()
+    if booking is None:
+        return
+    notify(row, "booking.payment_released", [booking.helper_id], actor_id=booking.poster_id)
+
+
+# The push of each proposal step, and who gets it; a withdrawal is a live event only.
+_PROPOSAL_PUSHES = {
+    release.PROPOSED: ("booking.release_proposed", "helper"),
+    release.ACCEPTED: ("booking.release_proposal_accepted", "poster"),
+    release.DECLINED: ("booking.release_proposal_declined", "poster"),
+}
+
+
+@register_handler(release.PROPOSAL_TOPIC)
+def tell_about_the_release_proposal(row: Outbox) -> None:
+    booking = Booking.objects.filter(pk=row.aggregate_id).first()
+    if booking is None:
+        return
+    send_to_users(row, [booking.poster_id, booking.helper_id])
+    push = _PROPOSAL_PUSHES.get(str(row.payload.get("step")))
+    if push is None:
+        return
+    kind, side = push
+    if side == "helper":
+        notify(row, kind, [booking.helper_id], actor_id=booking.poster_id)
+    else:
+        notify(row, kind, [booking.poster_id], actor_id=booking.helper_id)
+
+
+@register_handler(payouts.OPENED_TOPIC)
+def send_the_payout(row: Outbox) -> None:
+    payouts.pay_out_after_commit(row.payload["payout_id"])
+
+
+@register_handler(tips.RECEIVED_TOPIC)
+def tell_the_helper_about_the_tip(row: Outbox) -> None:
+    booking = Booking.objects.filter(pk=row.aggregate_id).first()
+    if booking is None:
+        return
+    send_to_users(row, [booking.poster_id, booking.helper_id])
+    notify(row, "booking.tip_received", [booking.helper_id], actor_id=booking.poster_id)
 
 
 @register_handler(CANCELLED_BY_HELPER_TOPIC)
