@@ -1136,6 +1136,7 @@
       "title": "Verser {amount} à votre intervenant ?",
       "price": "Prix de la mission",
       "tip": "Pourboire",
+      "tipByCard": "Vous payez le pourboire par carte juste après le versement.",
       "irreversible": "Cette action est irréversible.",
       "release": "Verser",
       "cancel": "Annuler"
@@ -1168,7 +1169,7 @@
       "body": "Votre intervenant a accepté {released}.",
       "refundPending": "{refund} est en cours de remboursement sur votre carte.",
       "refundDone": "{refund} a été remboursé sur votre carte.",
-      "helper": "Vous avez accepté {released}. Le montant est versé sur votre compte bancaire."
+      "helper": "Vous avez accepté {released}. Le montant est en route vers votre compte bancaire."
     },
     "released": {
       "title": "Paiement versé !",

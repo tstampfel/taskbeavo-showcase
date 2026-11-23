@@ -1136,6 +1136,7 @@
       "title": "Release {amount} to your helper?",
       "price": "Task price",
       "tip": "Tip",
+      "tipByCard": "You pay the tip by card right after releasing.",
       "irreversible": "This can't be undone.",
       "release": "Release",
       "cancel": "Cancel"
@@ -1168,7 +1169,7 @@
       "body": "Your helper accepted {released}.",
       "refundPending": "{refund} is on its way back to your card.",
       "refundDone": "{refund} was refunded to your card.",
-      "helper": "You accepted {released}. It's paid out to your bank account."
+      "helper": "You accepted {released}. It's on its way to your bank account."
     },
     "released": {
       "title": "Payment released!",

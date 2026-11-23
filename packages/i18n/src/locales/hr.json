@@ -1136,6 +1136,7 @@
       "title": "Osloboditi {amount} pomagaču?",
       "price": "Cijena zadatka",
       "tip": "Napojnica",
+      "tipByCard": "Napojnicu plaćate karticom odmah nakon oslobađanja.",
       "irreversible": "Ovo se ne može poništiti.",
       "release": "Oslobodi",
       "cancel": "Odustani"
@@ -1168,7 +1169,7 @@
       "body": "Vaš pomagač je prihvatio {released}.",
       "refundPending": "{refund} je na putu natrag na vašu karticu.",
       "refundDone": "{refund} vraćeno je na vašu karticu.",
-      "helper": "Prihvatili ste {released}. Isplaćuje se na vaš bankovni račun."
+      "helper": "Prihvatili ste {released}. Na putu je do vašeg bankovnog računa."
     },
     "released": {
       "title": "Isplata oslobođena!",

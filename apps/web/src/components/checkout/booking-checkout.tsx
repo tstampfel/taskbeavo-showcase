@@ -12,7 +12,6 @@ import {
   declineKey,
   demoPaymentsOn,
   type DemoCard,
-  redirectOutcome,
   secondsUntilExpiry,
   submittedAfter,
   subscribeToBooking,
@@ -28,6 +27,7 @@ import { BookingOutcome, DeclineNote, SecureLine, Summary } from './checkout-par
 import styles from './checkout.module.css';
 import { PAYMENT_ELEMENT_OPTIONS } from './payment-element-options';
 import { takeSecret } from './secret-handoff';
+import { stripeReturn } from './stripe-return';
 
 export { PAYMENT_ELEMENT_OPTIONS };
 
@@ -35,7 +35,6 @@ export { PAYMENT_ELEMENT_OPTIONS };
 const CONFIRMING_POLL_MS = 5_000;
 const COUNTDOWN_TICK_MS = 15_000;
 // Stripe's redirect back from a bank's page carries these; they're dropped from the URL.
-const STRIPE_RETURN_PARAMS = ['payment_intent', 'payment_intent_client_secret', 'redirect_status'];
 
 let stripePromise: Promise<Stripe | null> | null = null;
 
@@ -97,13 +96,11 @@ export function BookingCheckout({ bookingId, locale }: { bookingId: string; loca
   useEffect(() => {
     // Back from a bank's page. Only succeeded or processing means Stripe has the payment;
     // failed stays on the form with the decline (review R1-2). The server says the rest.
-    const url = new URL(window.location.href);
-    if (!url.searchParams.has('payment_intent')) return;
-    const outcome = redirectOutcome(url.searchParams.get('redirect_status'));
-    if (outcome === 'submitted') setReturned(true);
+    const back = stripeReturn(new URL(window.location.href));
+    if (!back) return;
+    if (back.outcome === 'submitted') setReturned(true);
     else setReturnDecline(true);
-    STRIPE_RETURN_PARAMS.forEach((name) => url.searchParams.delete(name));
-    window.history.replaceState(null, '', url);
+    window.history.replaceState(null, '', back.cleanUrl);
   }, []);
   useEffect(() => {
     // The first booking after the return is what the page had "seen" at that submit.

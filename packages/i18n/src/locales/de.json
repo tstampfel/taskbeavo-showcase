@@ -1136,6 +1136,7 @@
       "title": "{amount} an Ihren Helfer freigeben?",
       "price": "Auftragspreis",
       "tip": "Trinkgeld",
+      "tipByCard": "Das Trinkgeld zahlen Sie direkt nach der Freigabe mit Karte.",
       "irreversible": "Das lässt sich nicht rückgängig machen.",
       "release": "Freigeben",
       "cancel": "Abbrechen"
@@ -1168,7 +1169,7 @@
       "body": "Ihr Helfer hat {released} angenommen.",
       "refundPending": "{refund} sind auf dem Weg zurück auf Ihre Karte.",
       "refundDone": "{refund} wurden auf Ihre Karte erstattet.",
-      "helper": "Sie haben {released} angenommen. Der Betrag wird auf Ihr Bankkonto ausgezahlt."
+      "helper": "Sie haben {released} angenommen. Der Betrag ist auf dem Weg zu Ihrem Bankkonto."
     },
     "released": {
       "title": "Zahlung freigegeben!",

@@ -584,7 +584,7 @@ function ConfirmSheet({
     <Sheet
       visible={visible}
       onClose={onClose}
-      title={t('release.confirm.title', { amount: money(summary.totalCents) })}
+      title={t('release.confirm.title', { amount: money(summary.priceCents) })}
       closeLabel={t('release.confirm.cancel')}
       testID="release-confirm"
     >
@@ -603,6 +603,11 @@ function ConfirmSheet({
           />
         )}
       </AmountRowGroup>
+      {summary.tipCents > 0 && (
+        <Text style={[textStyle('small'), styles.muted]} testID="release-confirm-tip-note">
+          {t('release.confirm.tipByCard')}
+        </Text>
+      )}
       <Text style={[textStyle('body'), styles.muted]}>{t('release.confirm.irreversible')}</Text>
       <Button
         label={t('release.confirm.release')}

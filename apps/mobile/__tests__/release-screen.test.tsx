@@ -209,7 +209,7 @@ it.each(locales)(
   },
 );
 
-it('releases after the confirmation, which sums the price and the tip (7e, 7f)', async () => {
+it('releases after the confirmation, which titles the task price and says the tip is paid by card next (7e, 7f)', async () => {
   const sheet: PaymentSheet = { pay: jest.fn().mockResolvedValue('paid') };
   const { sent } = await renderRelease(booking(), {
     sheet,
@@ -234,8 +234,10 @@ it('releases after the confirmation, which sums the price and the tip (7e, 7f)',
   await fireEvent.press(screen.getByTestId('release-tip-500'));
   await fireEvent.press(screen.getByTestId('release-submit'));
 
-  expect(screen.getByText(`Release ${euros(3_500)} to your helper?`)).toBeOnTheScreen();
+  // releasePayment pays the task price; the tip is its own card payment afterwards (R1-3).
+  expect(screen.getByText(`Release ${euros(3_000)} to your helper?`)).toBeOnTheScreen();
   expect(screen.getByTestId('release-confirm-tip')).toHaveTextContent(euros(500), { exact: false });
+  expect(screen.getByTestId('release-confirm-tip-note')).toHaveTextContent(en.confirm.tipByCard);
   // Nothing is sent before the confirmation.
   expect(sent.some(({ name }) => name === 'ReleasePayment')).toBe(false);
 
@@ -272,6 +274,7 @@ it('releases without a tip and pays nothing else', async () => {
 
   await fireEvent.press(screen.getByTestId('release-submit'));
   expect(screen.queryByTestId('release-confirm-tip')).toBeNull();
+  expect(screen.queryByTestId('release-confirm-tip-note')).toBeNull();
   await fireEvent.press(screen.getByTestId('release-confirm-release'));
 
   expect(await screen.findByText(en.released.title)).toBeOnTheScreen();

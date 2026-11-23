@@ -25,6 +25,7 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from '../../i18n/navigation';
+import { stripeReturn } from '../checkout/stripe-return';
 import { Button, Card, ClockIcon, InfoIcon, Input, Note, Sheet } from '../ui';
 import styles from './release.module.css';
 
@@ -80,6 +81,20 @@ export function BookingRelease({ bookingId, locale }: { bookingId: string; local
   const [confirming, setConfirming] = useState(false);
   const [partialOpen, setPartialOpen] = useState(false);
   const [tipPayment, setTipPayment] = useState<TipPaymentState>({ kind: 'idle' });
+
+  useEffect(() => {
+    // Back from the bank's page after paying a tip (3-D Secure), as on checkout: Stripe has
+    // the tip when it says succeeded or processing; the webhook still decides (hard rule a).
+    // The client secret leaves the address bar and history (review R1-2).
+    const back = stripeReturn(new URL(window.location.href));
+    if (!back) return;
+    setTipPayment(
+      back.outcome === 'submitted'
+        ? { kind: 'confirming' }
+        : { kind: 'failed', key: 'release.tip.failed' },
+    );
+    window.history.replaceState(null, '', back.cleanUrl);
+  }, []);
 
   const current = booking.data?.booking;
   const viewer = viewerQuery.data?.viewer;
@@ -526,7 +541,11 @@ function TipChips({
   );
 }
 
-/** Mockup 7e: what goes to the helper, and that it can't be undone. */
+/**
+ * Mockup 7e: what the release pays the helper, and that it can't be undone. The title is the
+ * task price, since releasePayment pays only that; a tip is its own card payment right after
+ * (review R1-3).
+ */
 function ConfirmSheet({
   open,
   priceCents,
@@ -550,7 +569,7 @@ function ConfirmSheet({
     <Sheet
       open={open}
       onClose={onClose}
-      title={t('title', { amount: money(summary.totalCents) })}
+      title={t('title', { amount: money(summary.priceCents) })}
       closeLabel={t('cancel')}
     >
       <div className={styles.section} data-testid="release-confirm">
@@ -564,6 +583,11 @@ function ConfirmSheet({
             </>
           )}
         </dl>
+        {summary.tipCents > 0 && (
+          <p className={`${styles.small} ${styles.muted}`} data-testid="release-confirm-tip-note">
+            {t('tipByCard')}
+          </p>
+        )}
         <p className={`${styles.body} ${styles.muted}`}>{t('irreversible')}</p>
         <Button
           fullWidth

@@ -162,8 +162,12 @@ test('the poster releases with a tip after the confirmation, then pays the tip (
   await page.locator('label', { has: page.getByTestId('release-tip-500') }).click();
   await page.getByTestId('release-submit').click();
   const confirm = page.getByRole('dialog');
-  await expect(confirm.getByRole('heading')).toHaveText('Release €35.00 to your helper?');
+  // releasePayment pays the task price; the tip is its own card payment afterwards (R1-3).
+  await expect(confirm.getByRole('heading')).toHaveText('Release €30.00 to your helper?');
   await expect(confirm.getByTestId('release-confirm-tip')).toHaveText('€5.00');
+  await expect(confirm.getByTestId('release-confirm-tip-note')).toHaveText(
+    'You pay the tip by card right after releasing.',
+  );
   expect(stub.calls.map((c) => c.name)).not.toContain('ReleasePayment');
 
   await confirm.getByTestId('release-confirm-release').click();
@@ -249,7 +253,9 @@ test('the helper accepts the lower amount', async ({ page, stubGraphql }) => {
   await expect(page.getByTestId('release-submit')).toHaveCount(0);
   await page.getByTestId('release-accept').click();
 
-  await expect(page.getByTestId('release-partial-settled')).toContainText('You accepted €20.00.');
+  await expect(page.getByTestId('release-partial-settled')).toContainText(
+    "You accepted €20.00. It's on its way to your bank account.",
+  );
   expect(stub.calls.find((c) => c.name === 'RespondToPartialRelease')?.variables).toEqual({
     bookingId: 'booking-1',
     accept: true,
@@ -304,4 +310,24 @@ test('the release page fits in all four languages', async ({ page, stubGraphql }
     await expect(page.getByTestId('release-submit')).toHaveText(title);
     expect(await noHorizontalScroll(page), locale).toBe(true);
   }
+});
+
+test('back from the bank after a tip: confirming, or the decline, and no client secret left in the address (R1-2)', async ({
+  page,
+  stubGraphql,
+}) => {
+  const tip = { __typename: 'Tip', id: 'tip-1', amountCents: 500, status: 'PENDING' };
+  const state = { booking: booking({ status: 'RELEASED', canReleasePayment: false, tip }) };
+  await stubGraphql(answers(state, POSTER));
+  const stripeParams =
+    'payment_intent=pi_e2e&payment_intent_client_secret=pi_e2e_secret_e2e&redirect_status=';
+
+  await page.goto(`/en/bookings/booking-1/release?${stripeParams}succeeded`);
+  await expect(page.getByTestId('release-tip-confirming')).toContainText('Confirming your tip');
+  await expect(page).toHaveURL(/\/en\/bookings\/booking-1\/release$/);
+
+  await page.goto(`/en/bookings/booking-1/release?${stripeParams}failed`);
+  await expect(page.getByTestId('release-tip-error')).toBeVisible();
+  await expect(page.getByTestId('release-tip-pay')).toBeVisible();
+  await expect(page).toHaveURL(/\/en\/bookings\/booking-1\/release$/);
 });
