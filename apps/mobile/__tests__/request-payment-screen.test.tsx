@@ -64,6 +64,9 @@ function booking(extra: Record<string, unknown> = {}) {
     canRequestPayment: true,
     invoiceRequired: false,
     paymentRequest: null,
+    canReleasePayment: false,
+    releaseProposal: null,
+    tip: null,
     ...extra,
   };
 }
@@ -106,6 +109,10 @@ it('sends a private helper’s note, with no invoice step', async () => {
   const sent = await renderScreen(booking(), booking({ status: 'PAYMENT_REQUESTED' }));
   await screen.findByTestId('request-payment-photos');
   expect(screen.queryByTestId('request-payment-invoice')).toBeNull();
+  // Mockup 7a: the task and its agreed price on top (BEAV-118).
+  expect(screen.getByTestId('request-payment-price')).toHaveTextContent(
+    `${en.agreedPrice}${formatMoney(3_000, 'en')}`,
+  );
 
   await fireEvent.changeText(screen.getByTestId('request-payment-note'), ' All delivered ');
   await fireEvent.press(screen.getByTestId('request-payment-submit'));

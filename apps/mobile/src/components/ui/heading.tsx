@@ -22,8 +22,8 @@ import { withTextBoxRounding } from './text-style';
  * 0.75 em apart from M and W. Kerning only narrows text, so a sum of these is never narrower
  * than the rendered word.
  */
-const NARROW = new Set("iljIı.,:;'’!|".split(''));
-const SLIM = new Set('frt1()[]-‐/"„“”'.split(''));
+const NARROW = new Set("iljIı.,:;'’|".split(''));
+const SLIM = new Set('frt1()[]-‐/"„“”!'.split(''));
 const WIDE = new Set('mwMWœæŒÆ@%—→#©'.split(''));
 const CAPITAL_LIKE = new Set('=…€_'.split(''));
 const NARROW_EM = 0.35;

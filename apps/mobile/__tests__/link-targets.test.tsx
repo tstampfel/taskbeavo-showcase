@@ -47,11 +47,20 @@ function TaskDetailWithApi() {
   );
 }
 
+// The release screen loads the booking; with no answer it shows only its error and retry.
+function ReleaseWithoutApi() {
+  return (
+    <MockedProvider mocks={[]}>
+      <ReleasePayment />
+    </MockedProvider>
+  );
+}
+
 const routes = {
   index: () => <Text testID="home">home</Text>,
   'tasks/[id]/index': TaskDetailWithApi,
   'tasks/[id]/offers/[offerId]/checkout': Checkout,
-  'bookings/[id]/release': ReleasePayment,
+  'bookings/[id]/release': ReleaseWithoutApi,
   'bookings/[id]/no-access': NoAccess,
   'conversations/[id]': Conversation,
   'helper/payouts/index': Payouts,
@@ -66,7 +75,6 @@ describe('screens opened by links', () => {
   });
 
   it.each([
-    ['https://taskbeavo.com/fr/bookings/7/release', '/bookings/7/release', 'release'],
     ['taskbeavo://bookings/7/no-access', '/bookings/7/no-access', 'noAccess'],
     ['/conversations/3', '/conversations/3', 'conversation'],
     ['/helper/payouts', '/helper/payouts', 'payouts'],
@@ -105,16 +113,18 @@ describe('screens opened by links', () => {
   );
 
   it.each(locales)(
-    'the release screen explains in %s that the link released nothing',
+    'a release link in %s opens the release screen, which releases nothing by itself',
     async (locale) => {
       await i18n.changeLanguage(locale);
-      await renderRouter(routes, { initialUrl: '/bookings/7/release' });
-      const messages = catalogues[locale].linkTarget;
-      expect(screen.getByRole('header')).toHaveTextContent(messages.release);
-      expect(screen.getByText(messages.safety)).toBeOnTheScreen();
-      // A placeholder: the only action is going home, nothing that moves money.
-      expect(screen.getAllByRole('button')).toHaveLength(1);
-      expect(screen.getByRole('button')).toHaveTextContent(catalogues[locale].notFound.backHome);
+      await renderRouter(routes, {
+        initialUrl: appPathFromLink('https://taskbeavo.com/fr/bookings/7/release'),
+      });
+      expect(screen).toHavePathname('/bookings/7/release');
+      expect(await screen.findByTestId('release-screen')).toBeOnTheScreen();
+      expect(screen.getByRole('header')).toHaveTextContent(catalogues[locale].release.title);
+      // Until the booking loads there is nothing that moves money: back and retry only.
+      expect(await screen.findByText(catalogues[locale].release.loadError)).toBeOnTheScreen();
+      expect(screen.queryByTestId('release-submit')).toBeNull();
     },
   );
 

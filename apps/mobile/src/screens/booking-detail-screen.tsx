@@ -76,6 +76,8 @@ export function startsBesideStatus(
 
 const LINKS: readonly Link[] = [
   { link: 'release', screen: 'release', primary: true },
+  { link: 'answerProposal', screen: 'release', primary: true },
+  { link: 'tip', screen: 'release' },
   { link: 'requestPayment', screen: 'request-payment', primary: true },
   { link: 'noAccess', screen: 'no-access', primary: true },
   { link: 'arrival', screen: 'arrival' },

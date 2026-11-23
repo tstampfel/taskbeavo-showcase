@@ -1,6 +1,6 @@
 import { colors, spacing } from '@taskbeavo/ui-tokens';
 import { useRouter } from 'expo-router';
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense, useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 import { Text } from '../components/ui/text';
@@ -14,8 +14,8 @@ import type * as StripeModule from './stripe';
 import { stripePublishableKey, type PaymentSheet } from './stripe-config';
 
 // Expo Router loads every route file at launch, and importing the Stripe SDK starts it (fraud
-// signals to m.stripe.com, Stripe's `m` cookie). It loads only when a checkout screen renders
-// (BEAV-190). A require inside the loader, not import(): it runs only then, and Jest can run it.
+// signals to m.stripe.com, Stripe's `m` cookie). It loads only when a checkout screen renders,
+// or when the poster pays a tip (PaymentSheetScope, BEAV-118) (BEAV-190). A require inside the loader, not import(): it runs only then, and Jest can run it.
 const StripeCheckout = lazy(async () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const stripe: typeof StripeModule = require('./stripe');
@@ -72,6 +72,33 @@ function WithSheet({
       openFees={openFees}
     />
   );
+}
+
+/** Renders `children` with a payment sheet: null when this build can't take card payments. */
+export type PaymentSheetScopeComponent = (props: {
+  children: (sheet: PaymentSheet | null) => ReactNode;
+}) => ReactNode;
+
+/**
+ * Stripe's sheet, or the demo dialog, for a payment outside checkout: the poster's tip after
+ * releasing (BEAV-118). The release screen mounts it only while a tip is being paid, so the
+ * Stripe SDK still starts only when the poster pays (BEAV-190).
+ */
+export const PaymentSheetScope: PaymentSheetScopeComponent = ({ children }) => {
+  if (demoPaymentsEnabled()) return <DemoScope>{children}</DemoScope>;
+  const key = stripePublishableKey();
+  if (!key) return children(null);
+  return (
+    <Suspense fallback={<ActivityIndicator color={colors.green} />}>
+      <StripeCheckout publishableKey={key}>{children}</StripeCheckout>
+    </Suspense>
+  );
+};
+
+function DemoScope({ children }: { children: (sheet: PaymentSheet) => ReactNode }) {
+  const { t } = useTranslation();
+  const sheet = useMemo(() => demoPaymentSheet(t), [t]);
+  return children(sheet);
 }
 
 function Loading() {

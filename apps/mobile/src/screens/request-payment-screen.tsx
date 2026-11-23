@@ -12,7 +12,16 @@ import { colors, spacing } from '@taskbeavo/ui-tokens';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccessibilityInfo, ActivityIndicator, StyleSheet } from 'react-native';
-import { Button, Card, Heading, Input, Note, Screen } from '../components/ui';
+import {
+  AmountRow,
+  AmountRowGroup,
+  Button,
+  Card,
+  Heading,
+  Input,
+  Note,
+  Screen,
+} from '../components/ui';
 import { Text } from '../components/ui/text';
 import { textStyle } from '../components/ui/text-style';
 import { PhotoUploader } from '../uploads/photo-uploader';
@@ -27,8 +36,8 @@ export interface RequestPaymentScreenProps {
  * The helper's Request payment (BEAV-116, mockup 7a): photos of the finished job and a note,
  * both optional, and for a registered business its fiscalized invoice first, as a photo or
  * scan or by its JIR. Sending moves no money: the poster is told and releases. Photos are
- * taken with the camera (evidence, re-encoded without metadata on the server). The full
- * screens of mockup 07 come with BEAV-118.
+ * taken with the camera (evidence, re-encoded without metadata on the server). The agreed
+ * price sits on top, as in mockup 7a (BEAV-118).
  */
 export function RequestPaymentScreen({ bookingId, onBack }: RequestPaymentScreenProps) {
   const { t, i18n } = useTranslation();
@@ -117,7 +126,17 @@ export function RequestPaymentScreen({ bookingId, onBack }: RequestPaymentScreen
 
   return frame(
     <>
-      <Heading style={[textStyle('h2'), styles.ink]}>{current.task.title}</Heading>
+      <Card testID="request-payment-summary">
+        <Heading style={[textStyle('h2'), styles.ink]}>{current.task.title}</Heading>
+        <AmountRowGroup>
+          <AmountRow
+            label={t('requestPayment.agreedPrice')}
+            value={formatMoney(current.amountCents, locale)}
+            style={[textStyle('label'), styles.ink]}
+            testID="request-payment-price"
+          />
+        </AmountRowGroup>
+      </Card>
       {current.invoiceRequired && (
         <Card testID="request-payment-invoice">
           <Heading style={[textStyle('label'), styles.ink]}>
