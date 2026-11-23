@@ -179,13 +179,18 @@ class Subscription:
     @strawberry.subscription(
         description=(
             "New messages in a conversation you take part in, yours from other devices "
-            "included. Errors: UNAUTHENTICATED."
+            "included. Errors: UNAUTHENTICATED, CONVERSATION_NOT_FOUND."
         )
     )
     async def message_added(
         self, info: Info, conversation_id: strawberry.ID
     ) -> AsyncGenerator[MessageType, None]:
         wanted = str(conversation_id)
+        user = getattr(info.context, "user", None)
+        # The connect-time check (hard rule d): CONVERSATION_NOT_FOUND unless the viewer takes
+        # part in it now. viewer_events refuses a signed-out socket.
+        if isinstance(user, User) and user.is_authenticated:
+            await sync_to_async(services.conversation_of)(user, wanted)
 
         async def load(viewer: AbstractBaseUser, event: LiveEvent) -> MessageType | None:
             return await sync_to_async(_message_for)(viewer, event.aggregate_id, wanted)

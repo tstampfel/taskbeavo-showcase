@@ -41,6 +41,11 @@ MAX_MESSAGE = 2_000
 PAGE_SIZE = 50
 MAX_PAGE_SIZE = 100
 ADDED_TOPIC = "message.added"
+# Before acceptance a new message is also screened together with the sender's previous few,
+# so a phone number or email sent in pieces ("091", "234 5678") is caught too.
+JOINED_SCREEN_PREVIOUS = 3
+# Contact-filter verdicts that mean "contact details found" in the joined text.
+_FOUND = (Verdict.MASKED, Verdict.NEEDS_REVIEW)
 
 
 def open_conversation(viewer: User, offer_id: str) -> Conversation:
@@ -78,7 +83,7 @@ def send_message(sender: User, conversation_id: str, body: str) -> Message:
         state = state_of(conversation)
         if not state.can_send:
             raise ApiError(ErrorCode.CONVERSATION_CLOSED, "The conversation is closed.")
-        stored, verdict = _screen(sender, text, state)
+        stored, verdict = _screen(sender, conversation, text, state)
         message = Message.objects.create(
             conversation=conversation,
             sender=sender,
@@ -134,12 +139,17 @@ def other_participant(conversation: Conversation, user_id: int) -> int:
     return conversation.helper_id if user_id == poster_id else poster_id
 
 
-def _screen(sender: User, text: str, state: ConversationState) -> tuple[str, str]:
+def _screen(
+    sender: User, conversation: Conversation, text: str, state: ConversationState
+) -> tuple[str, str]:
     """The text as stored, and the filter's verdict (blank when not filtered)."""
     if not state.filtered:
         return text, ""
     result = filter_contact_details(text, sender.locale)
     if result.verdict == Verdict.NEEDS_REVIEW:
+        raise ApiError(ErrorCode.MESSAGE_CONTACT_DETAILS, "The message may hold contact details.")
+    if _pieces_hold_contact_details(sender, conversation, result.text):
+        logger.info("Chat message refused: contact details split across messages")
         raise ApiError(ErrorCode.MESSAGE_CONTACT_DETAILS, "The message may hold contact details.")
     if result.verdict != Verdict.CLEAN:
         logger.info(
@@ -147,6 +157,31 @@ def _screen(sender: User, text: str, state: ConversationState) -> tuple[str, str
             extra={"verdict": result.verdict.value, "kinds": sorted(k.value for k in result.kinds)},
         )
     return result.text, result.verdict.value
+
+
+def _pieces_hold_contact_details(sender: User, conversation: Conversation, stored: str) -> bool:
+    """Whether the new message (as it would be stored, already masked) joined to the sender's
+    previous few filtered messages holds contact details that none of them holds alone.
+
+    Only messages written before acceptance count (a non-blank verdict): after a failed
+    checkout the pair's earlier, unfiltered messages may hold a phone number on purpose.
+    The pieces are joined once with spaces and once with nothing between them, so both
+    "091" + "234 5678" and "ana.k" + "@example.com" read as one detail. Stored bodies are
+    already masked, so a detail masked in a single message doesn't match again.
+    """
+    previous = list(
+        conversation.messages.filter(sender=sender)
+        .exclude(moderation_verdict="")
+        .order_by("-created_at", "-id")
+        .values_list("body", flat=True)[:JOINED_SCREEN_PREVIOUS]
+    )
+    if not previous:
+        return False
+    pieces = [body.strip() for body in reversed(previous)] + [stored.strip()]
+    return any(
+        filter_contact_details(separator.join(pieces), sender.locale).verdict in _FOUND
+        for separator in (" ", "")
+    )
 
 
 def _of_participant(

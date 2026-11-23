@@ -2435,7 +2435,7 @@ type Subscription {
   bookingUpdated(id: ID!): Booking!
 
   """
-  New messages in a conversation you take part in, yours from other devices included. Errors: UNAUTHENTICATED.
+  New messages in a conversation you take part in, yours from other devices included. Errors: UNAUTHENTICATED, CONVERSATION_NOT_FOUND.
   """
   messageAdded(conversationId: ID!): Message!
 

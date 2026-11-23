@@ -37,7 +37,8 @@ def _dubrovnik() -> None:
     seed(django_apps, None)
 
 
-async def subscribed(user: AbstractBaseUser, conversation: Conversation) -> WebsocketCommunicator:
+async def subscribe(user: AbstractBaseUser, conversation_id: str) -> WebsocketCommunicator:
+    """A signed-in socket that has sent the subscribe message."""
     from config.asgi import application
 
     token = await sync_to_async(access_token)(user)
@@ -45,10 +46,23 @@ async def subscribed(user: AbstractBaseUser, conversation: Conversation) -> Webs
     assert (await ws.connect())[0]
     await ws.send_json_to({"type": "connection_init", "payload": {"authToken": token}})
     assert await ws.receive_json_from(timeout=5) == {"type": "connection_ack"}
-    variables = {"conversationId": str(conversation.pk)}
+    variables = {"conversationId": conversation_id}
     await ws.send_json_to(
         {"id": "1", "type": "subscribe", "payload": {"query": QUERY, "variables": variables}}
     )
+    return ws
+
+
+async def refusal_codes(ws: WebsocketCommunicator) -> list[str]:
+    """The error codes of a subscription refused at connect, which then completes."""
+    refusal = await ws.receive_json_from(timeout=5)
+    assert refusal["payload"]["data"] is None, refusal
+    assert (await ws.receive_json_from(timeout=5))["type"] == "complete"
+    return [error["extensions"]["code"] for error in refusal["payload"]["errors"]]
+
+
+async def subscribed(user: AbstractBaseUser, conversation: Conversation) -> WebsocketCommunicator:
+    ws = await subscribe(user, str(conversation.pk))
     layer = get_channel_layer()
     assert layer is not None
     for _ in range(100):
@@ -83,8 +97,10 @@ def test_both_participants_receive_the_message_and_nobody_else() -> None:
     async def run() -> None:
         poster_ws = await subscribed(offer.task.poster, conversation)
         helper_ws = await subscribed(offer.helper, conversation)
-        # Another helper subscribing with the same conversation ID gets nothing.
-        ivan_ws = await subscribed(ivan, conversation)
+        # Another helper is refused when subscribing with the same conversation ID
+        # (the connect-time check, hard rule d).
+        ivan_ws = await subscribe(ivan, str(conversation.pk))
+        assert await refusal_codes(ivan_ws) == ["CONVERSATION_NOT_FOUND"]
 
         message = await sync_to_async(services.send_message)(
             offer.helper, str(conversation.pk), "Call me on 091 234 5678"
@@ -101,14 +117,17 @@ def test_both_participants_receive_the_message_and_nobody_else() -> None:
 
 
 def test_a_misaddressed_event_is_dropped_by_the_per_event_check() -> None:
-    """Even if a handler named the wrong user, the message is re-checked for each event."""
+    """Even if a handler named the wrong user, the message is re-checked for each event:
+    Ivan, subscribed to his own conversation, never gets Marko's."""
     offer, conversation = offer_conversation()
-    ivan = make_helper("ivan")
+    ivan_offer = offer_on_flexible_task(make_helper("ivan"))
+    ivan = ivan_offer.helper
+    own = services.open_conversation(ivan, str(ivan_offer.pk))
     services.send_message(offer.helper, str(conversation.pk), "Hi")
     row = Outbox.objects.get(topic=services.ADDED_TOPIC)
 
     async def run() -> None:
-        ivan_ws = await subscribed(ivan, conversation)
+        ivan_ws = await subscribed(ivan, own)
 
         await sync_to_async(send_to_users)(row, [ivan.pk])
 
@@ -132,5 +151,16 @@ def test_messages_of_another_conversation_are_not_delivered() -> None:
 
         assert await poster_ws.receive_nothing(timeout=0.3)
         await poster_ws.disconnect()
+
+    async_to_sync(run)()
+
+
+def test_a_malformed_conversation_id_is_refused_at_connect() -> None:
+    offer, _conversation = offer_conversation()
+
+    async def run() -> None:
+        ws = await subscribe(offer.helper, "not-a-uuid")
+        assert await refusal_codes(ws) == ["CONVERSATION_NOT_FOUND"]
+        await ws.disconnect()
 
     async_to_sync(run)()

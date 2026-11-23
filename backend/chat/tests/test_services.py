@@ -177,6 +177,71 @@ def test_a_failed_checkout_brings_the_filter_back() -> None:
     assert "5678" not in message.body
 
 
+@pytest.mark.parametrize(
+    "pieces",
+    [
+        ["Call me on 091", "234", "5678"],
+        ["My number: 09", "12345", "678"],
+        ["Ring 0912", "345678"],
+        ["Write to ana.k@", "example", ".com"],
+    ],
+)
+def test_contact_details_sent_in_pieces_are_refused(pieces: list[str]) -> None:
+    """Each piece is clean alone; joined to the sender's earlier pieces it is refused as soon
+    as the run looks like a phone number or an email, so the whole detail never gets through."""
+    offer, conversation = offer_conversation()
+    first, *rest = pieces
+    services.send_message(offer.helper, str(conversation.pk), first)
+
+    refused = []
+    for piece in rest:
+        try:
+            services.send_message(offer.helper, str(conversation.pk), piece)
+        except ApiError as error:
+            refused.append(error.code)
+
+    assert refused and set(refused) == {ErrorCode.MESSAGE_CONTACT_DETAILS}
+    # Whatever was stored, the whole detail can't be read back from it.
+    stored = "".join(conversation.messages.values_list("body", flat=True)).replace(" ", "")
+    assert "".join(pieces).replace(" ", "")[-12:] not in stored
+
+
+@pytest.mark.parametrize(
+    "pieces",
+    [
+        ["I can do it for 30 €", "or 35 with the bags", "Saturday at 9:00?"],
+        ["Bus 6 stops at 10:15", "I'll be there by 10:30", "Done in 2 hours, 45 min tops"],
+        ["Kuća broj 24", "drugi kat", "oko 14 h"],
+    ],
+)
+def test_prices_and_times_in_separate_messages_still_pass(pieces: list[str]) -> None:
+    offer, conversation = offer_conversation()
+
+    for piece in pieces:
+        message = services.send_message(offer.helper, str(conversation.pk), piece)
+        assert message.body == piece
+
+
+def test_the_other_sides_messages_are_not_joined_to_the_senders() -> None:
+    offer, conversation = offer_conversation()
+    services.send_message(offer.task.poster, str(conversation.pk), "Call me on 091")
+
+    message = services.send_message(offer.helper, str(conversation.pk), "234")
+
+    assert message.body == "234"
+
+
+def test_messages_written_after_acceptance_are_not_joined_once_the_filter_is_back() -> None:
+    booking, conversation = booked_conversation(Booking.Status.FUNDS_HELD)
+    services.send_message(booking.helper, str(conversation.pk), "My number is 091 234")
+    Booking.objects.filter(pk=booking.pk).update(status=Booking.Status.PAYMENT_FAILED)
+    Offer.objects.filter(pk=booking.offer_id).update(status=Offer.Status.SENT)
+
+    message = services.send_message(booking.helper, str(conversation.pk), "5678 thanks")
+
+    assert message.body == "5678 thanks"
+
+
 def test_a_reopened_task_brings_the_filter_back_for_the_old_pair() -> None:
     booking, conversation = booked_conversation(Booking.Status.REFUNDED)
     Booking.objects.filter(pk=booking.pk).update(task_reopened_at=F("created_at"))

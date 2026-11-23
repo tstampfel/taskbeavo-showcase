@@ -715,8 +715,6 @@ GRAPHQL_MUTATION_RATE_LIMIT_OVERRIDES: dict[str, int] = {
     # Each published task notifies helpers (later tickets); drafts save as the poster types.
     "postTask": 10,
     "publishTaskDraft": 10,
-    # Chat (BEAV-104): a burst of short messages is normal; each one pushes to the other side.
-    "sendMessage": 30,
 }
 # Queries that cost like a mutation, counted the same way, per account (BEAV-111 R1-3), and
 # allowed once per operation so aliases can't multiply them. {"fieldName": calls per window}
