@@ -92,9 +92,11 @@ def test_push_only_kinds_send_no_email(fake_expo: FakeExpo, helper: User) -> Non
     ana = make_user("ana", locale="en")
     register_device(ana, "ExponentPushToken[ana-phone-0001]")
 
-    publish("message.added", [ana], helper)
+    # The chat handler's payload names the conversation the push opens (BEAV-104).
+    publish("message.added", [ana], helper, conversation_id="conv-1")
 
     assert [message.title for message in fake_expo.sent] == ["New message"]
+    assert [message.data for message in fake_expo.sent] == [{"route": "/conversations/conv-1"}]
     assert mail.outbox == []
 
 

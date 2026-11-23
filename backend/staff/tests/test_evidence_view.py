@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from bookings.models import Booking, BookingEvent, NoFaultRequest
+from chat.models import Conversation, Message
 from core.models import ActorKind
 from staff.models import StaffAction, StaffAuditEvent, StaffNote
 from staff.roles import Role
@@ -325,3 +326,17 @@ def test_masking_the_reason_never_changes_the_stored_event() -> None:
         "reason": "ILL",
         "case": "HELPER_CANCEL",
     }
+
+
+def test_support_reads_the_pairs_chat_and_finance_does_not() -> None:
+    booking = evidence_booking()
+    conversation = Conversation.objects.create(task=booking.task, helper=booking.helper)
+    Message.objects.create(
+        conversation=conversation,
+        sender=booking.helper,
+        sender_role=Message.Role.HELPER,
+        body="Gate was locked, waited 15 minutes.",
+    )
+
+    assert "Gate was locked, waited 15 minutes." in page(make_staff(Role.SUPPORT), booking)
+    assert "Gate was locked" not in page(make_staff(Role.FINANCE), booking)

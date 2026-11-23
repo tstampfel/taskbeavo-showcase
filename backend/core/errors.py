@@ -439,6 +439,28 @@ class ErrorCode(Enum):
             "it and send the offer again."
         ),
     )
+    CONVERSATION_NOT_FOUND = strawberry.enum_value(
+        "CONVERSATION_NOT_FOUND",
+        description="No such conversation of the signed-in user, or no such offer to talk about.",
+    )
+    CONVERSATION_CLOSED = strawberry.enum_value(
+        "CONVERSATION_CLOSED",
+        description=(
+            "The conversation takes no new messages: the offer is no longer open, or the "
+            "booking is settled. It can still be read."
+        ),
+    )
+    INVALID_MESSAGE = strawberry.enum_value(
+        "INVALID_MESSAGE",
+        description="The message is empty or longer than 2000 characters.",
+    )
+    MESSAGE_CONTACT_DETAILS = strawberry.enum_value(
+        "MESSAGE_CONTACT_DETAILS",
+        description=(
+            "Before a booking, the message may contain a phone number, email address or "
+            "link; remove it and send the message again."
+        ),
+    )
     BUSINESS_POSTER_REGISTERED_ONLY = strawberry.enum_value(
         "BUSINESS_POSTER_REGISTERED_ONLY",
         description=(

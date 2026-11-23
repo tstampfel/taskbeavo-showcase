@@ -72,7 +72,7 @@
     {% if evidence.chat is not None %}
     <section>
       <h2>{% translate "Chat" %}</h2>
-      {% for message in evidence.chat %}<p>{{ message }}</p>{% empty %}<p class="muted">{% translate "No chat messages are stored for this booking." %}</p>{% endfor %}
+      {% for message in evidence.chat %}<p><span class="muted">{{ message.get_sender_role_display }} · {{ message.created_at }}</span><br>{{ message.body|linebreaksbr }}</p>{% empty %}<p class="muted">{% translate "No chat messages are stored for this booking." %}</p>{% endfor %}
     </section>
     {% endif %}
 

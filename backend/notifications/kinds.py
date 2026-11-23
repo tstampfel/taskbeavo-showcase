@@ -106,14 +106,15 @@ KINDS: dict[str, Kind] = {
             "/tasks/{task_id}",
         ),
         Kind(
-            # The chat text never goes in a push or email; the handler skips users who
-            # are viewing the conversation.
+            # The chat text never goes in a push or email (chat/outbox_handlers.py). The
+            # app sets no foreground notification handler, so Expo shows no banner while
+            # it is open; the conversation screen gets the message over the subscription.
             "message.added",
             Category.MESSAGES,
             EmailRule.NEVER,
             _("New message"),
             _("You have a new message. Open TaskBeavo to read it."),
-            "/conversations/{id}",
+            "/conversations/{conversation_id}",
         ),
         Kind(
             "booking.payment_requested",
