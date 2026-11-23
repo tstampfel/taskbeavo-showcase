@@ -333,3 +333,24 @@ def test_result_has_no_matched_text() -> None:
     result = filter_contact_details("091 234 5678", "hr")
 
     assert "234" not in repr(result).replace(result.text, "")
+
+
+def test_doubtful_matches_are_described_by_kind_and_offset_only() -> None:
+    text = "See mysite dot com or call 091 234"
+
+    result = filter_contact_details(text, "en")
+
+    assert result.verdict == Verdict.NEEDS_REVIEW
+    assert result.doubtful_kinds == {MatchKind.URL, MatchKind.PHONE}
+    assert [text[start:end] for start, end in result.doubtful_spans] == [
+        "mysite dot com",
+        "091 234",
+    ]
+
+
+def test_clear_matches_are_not_doubtful() -> None:
+    result = filter_contact_details("Call me on 091 234 5678", "en")
+
+    assert result.verdict == Verdict.MASKED
+    assert result.doubtful_kinds == frozenset()
+    assert result.doubtful_spans == ()

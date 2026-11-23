@@ -282,4 +282,26 @@ describe('OffersList', () => {
     expect(compare).toContain(`>${text.row.price}</th>`);
     expect(compare).toContain(`>${text.backToList}</button>`);
   });
+
+  describe('messaging (BEAV-104)', () => {
+    it('has no Message button unless the page can open a conversation', () => {
+      expect(render('en')).not.toContain('data-testid="offer-message-');
+    });
+
+    it.each(locales)('offers a Message button on each open offer in %s', (locale) => {
+      const text = catalogues[locale].chat;
+      const markup = render(locale, { onMessage: vi.fn() });
+
+      expect(card(markup, 'marko')).toContain('data-testid="offer-message-marko"');
+      expect(card(markup, 'marko')).toContain(`aria-label="${text.openHelper}"`);
+      expect(card(markup, 'withdrawn')).not.toContain('offer-message-');
+    });
+
+    it('says when a conversation could not be opened, on that offer only', () => {
+      const markup = render('en', { onMessage: vi.fn(), messageFailedFor: 'marko' });
+
+      expect(card(markup, 'marko')).toContain(catalogues.en.chat.openError.replace(/'/g, '&#x27;'));
+      expect(card(markup, 'stjepan')).not.toContain('role="alert"');
+    });
+  });
 });

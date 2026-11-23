@@ -65,7 +65,6 @@ English is the source. Croatian is reviewed first. Remove a key from this list o
 | `uploads.permission.photoLibraryUsage`  | pending | pending | pending |
 | `linkTarget.release`                    | pending | pending | pending |
 | `linkTarget.noAccess`                   | pending | pending | pending |
-| `linkTarget.conversation`               | pending | pending | pending |
 | `linkTarget.notReady`                   | pending | pending | pending |
 | `linkTarget.safety`                     | pending | pending | pending |
 | `signIn.metaTitle`                      | pending | pending | pending |
@@ -928,3 +927,12 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 - `errors.INVALID_RELEASE_AMOUNT`: the poster proposed releasing nothing, or the full price or more, instead of a lower amount.
 - `errors.INVALID_TIP_AMOUNT`: a tip under €1 or over the task price, or a different amount from the tip already started.
 - The backend push and email texts of the five new notification kinds (`booking.release_proposed`, `booking.release_proposal_accepted`, `booking.release_proposal_declined`, `booking.partial_release_refunded`, `booking.tip_received`) are in `backend/locale/*/LC_MESSAGES/django.po`, drafted the same way.
+
+## Private chat (BEAV-104)
+
+DRAFT copy, written by me, never machine-translated: en is the source, and hr, de and fr are my drafts for a native speaker to check. None of it is legal text.
+
+- `chat.*`: the conversation page and screen (title, stage notes before and after acceptance, closed note, compose box, earlier messages, empty, load and send errors, the masked label, the screen-reader message label) and the Message buttons on offers and the booking (`chat.open`, `chat.openPoster`, `chat.openHelper`, `chat.openError`, `chat.viewBooking`).
+- `errors.CONVERSATION_NOT_FOUND`, `errors.CONVERSATION_CLOSED`, `errors.INVALID_MESSAGE`, `errors.MESSAGE_CONTACT_DETAILS`.
+- `chat.accessCodesNote`: the poster's note above the compose box once the booking is paid (owner decision after review round 2; the helper doesn't see it), pointing door, gate and key codes to Access details.
+- `linkTarget.conversation` is gone: the conversation link now opens the real page.

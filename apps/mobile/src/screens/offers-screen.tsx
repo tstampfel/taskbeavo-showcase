@@ -26,6 +26,7 @@ import { Text } from '../components/ui/text';
 import { TraderIdentity, traderSummary } from '../components/trader-identity';
 import { Badge, Button, Card, Screen } from '../components/ui';
 import { textStyle } from '../components/ui/text-style';
+import { useOpenConversation } from '../chat/use-open-conversation';
 
 type Offer = TaskOffersQuery['taskOffers'][number];
 
@@ -33,6 +34,8 @@ export interface OffersScreenProps {
   taskId: string;
   /** The poster tapped Accept: open checkout for this offer. */
   onAccept(offerId: string): void;
+  /** Opens the conversation with an offer's helper (BEAV-104); without it, no Message button. */
+  onMessage?(conversationId: string): void;
   /** Opens /{locale}/ranking in the in-app browser, like the legal pages. */
   openRanking(locale: Locale): void;
   /** The top bar's back button. */
@@ -56,10 +59,12 @@ export interface OffersScreenProps {
 export function OffersScreen({
   taskId,
   onAccept,
+  onMessage,
   openRanking,
   onBack,
   now = () => new Date(),
 }: OffersScreenProps) {
+  const chat = useOpenConversation((id) => onMessage?.(id));
   const { t, i18n } = useTranslation();
   const locale: Locale = isLocale(i18n.language) ? i18n.language : defaultLocale;
   const [sort, setSort] = useState<OfferSort>('newest');
@@ -199,6 +204,7 @@ export function OffersScreen({
               money={money}
               date={date}
               onAccept={onAccept}
+              chat={onMessage ? chat : undefined}
             />
           ))}
           {closed.map((offer) => (
@@ -218,12 +224,14 @@ interface CardProps {
   money(cents: number): string;
   date(value: unknown): string;
   onAccept(offerId: string): void;
+  /** The Message button's state; absent, the card has none. */
+  chat?: ReturnType<typeof useOpenConversation>;
 }
 
 /** From this text scale on, the price goes under the helper's details instead of beside them. */
 const STACKED_CARD_FONT_SCALE = 1.3;
 
-function OfferCard({ offer, at, money, date, onAccept }: CardProps) {
+function OfferCard({ offer, at, money, date, onAccept, chat }: CardProps) {
   const { t } = useTranslation();
   const stacked = useWindowDimensions().fontScale >= STACKED_CARD_FONT_SCALE;
   return (
@@ -265,6 +273,24 @@ function OfferCard({ offer, at, money, date, onAccept }: CardProps) {
         disabled={!canAcceptOffer(offer, at)}
         onPress={() => onAccept(offer.id)}
       />
+      {chat ? (
+        <>
+          <Button
+            label={t('chat.open')}
+            accessibilityLabel={t('chat.openHelper')}
+            variant="secondary"
+            size="sm"
+            busy={chat.pendingFor === offer.id}
+            onPress={() => void chat.open(offer.id)}
+            testID={`offer-message-${offer.id}`}
+          />
+          {chat.failedFor === offer.id ? (
+            <Text accessibilityRole="alert" style={[textStyle('small'), styles.ink]}>
+              {t('chat.openError')}
+            </Text>
+          ) : null}
+        </>
+      ) : null}
     </Card>
   );
 }

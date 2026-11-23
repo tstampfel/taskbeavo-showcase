@@ -40,6 +40,11 @@ export interface OffersListProps {
   onSort(sort: OfferSort): void;
   onCompare(comparing: boolean): void;
   onAccept(offerId: string): void;
+  /** Opens the conversation with an offer's helper (BEAV-104); without it, no Message button. */
+  onMessage?(offerId: string): void;
+  /** The offer whose conversation is opening, and the one that failed to open. */
+  messagePendingFor?: string | null;
+  messageFailedFor?: string | null;
 }
 
 /**
@@ -62,8 +67,12 @@ export function OffersList({
   onSort,
   onCompare,
   onAccept,
+  onMessage,
+  messagePendingFor = null,
+  messageFailedFor = null,
 }: OffersListProps) {
   const t = useTranslations('offers');
+  const tChat = useTranslations('chat');
   const { open, closed } = arrangeOffers(offers, sort, now);
   const money = (cents: number) => formatMoney(cents, locale);
   const date = (value: unknown) => formatDate(String(value), locale);
@@ -211,8 +220,27 @@ export function OffersList({
                     <span>{t('sent', { ago: timeAgo(offer.createdAt, now, locale) })}</span>
                     <span>{t('expires', { date: date(offer.expiresAt) })}</span>
                   </div>
-                  {/* No Chat button: there is no chat before a booking yet. */}
                   {accept(offer, 'sm')}
+                  {onMessage ? (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        aria-label={tChat('openHelper')}
+                        disabled={messagePendingFor !== null}
+                        aria-busy={messagePendingFor === offer.id}
+                        onClick={() => onMessage(offer.id)}
+                        data-testid={`offer-message-${offer.id}`}
+                      >
+                        {tChat('open')}
+                      </Button>
+                      {messageFailedFor === offer.id ? (
+                        <p className={styles.small} role="alert">
+                          {tChat('openError')}
+                        </p>
+                      ) : null}
+                    </>
+                  ) : null}
                 </Card>
               </li>
             ))}

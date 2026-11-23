@@ -4,7 +4,7 @@ their role (`staff.roles`), and the audit row that says they looked.
 
 Read-only. Building the view never changes the booking, its payment or the retention or
 legal hold of its photos (BEAV-63): disputes and holds are BEAV-126, money actions
-BEAV-157. Later tickets add their evidence here (chat, no-access photos, incidents).
+BEAV-157. Later tickets add their evidence here (no-access photos, incidents).
 """
 
 import copy
@@ -19,6 +19,7 @@ from django.db import transaction
 from bookings.cancellation import Case, NoFaultReason, no_fault_label
 from bookings.helper_cancel import HelperCancelReason
 from bookings.models import Booking, BookingEvent, ConsentRecord
+from chat.models import Message
 from staff import audit
 from staff.masking import mask
 from staff.models import StaffAction, StaffNote
@@ -88,7 +89,7 @@ class BookingEvidence:
     payments: Payments
     # None: the role doesn't see them.
     photos: list[Photo] | None
-    chat: list[Any] | None
+    chat: list[Message] | None
     notes: list[StaffNote]
     can_write_restricted: bool
     sections: list[str] = field(default_factory=list)
@@ -146,8 +147,14 @@ def booking_evidence(user: Any, booking: Booking) -> BookingEvidence:
         uploads = [task_photo.upload for task_photo in task_photos]
         photos = [_photo(upload) for upload in uploads]
 
-    # TODO(chat ticket): no chat model yet; the chat's messages go here.
-    chat: list[Any] | None = [] if Capability.CHAT in sees else None
+    # The pair's whole conversation, from their offer talk to now (chat.models).
+    chat: list[Message] | None = None
+    if Capability.CHAT in sees:
+        chat = list(
+            Message.objects.filter(
+                conversation__task=task, conversation__helper=booking.helper
+            ).order_by("created_at", "id")
+        )
 
     notes = StaffNote.objects.filter(object_type=_BOOKING, object_id=str(booking.pk))
     if Capability.RESTRICTED_NOTES not in sees:

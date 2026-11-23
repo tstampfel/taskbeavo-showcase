@@ -22,6 +22,9 @@ from bookings.schema import Query as BookingsQuery
 from bookings.schema import Subscription as BookingsSubscription
 from care_contacts.schema import Mutation as CareContactsMutation
 from care_contacts.schema import Query as CareContactsQuery
+from chat.schema import Mutation as ChatMutation
+from chat.schema import Query as ChatQuery
+from chat.schema import Subscription as ChatSubscription
 from config.graphql_limits import MutationRateLimiter, QueryComplexityLimiter
 from config.graphql_tracing import GraphQLTracing
 from core.errors import ErrorCode
@@ -48,6 +51,7 @@ class Query(
     AreasQuery,
     BookingsQuery,
     CareContactsQuery,
+    ChatQuery,
     HelpersQuery,
     LegalQuery,
     NotificationsQuery,
@@ -102,6 +106,7 @@ class Mutation(
     AreasMutation,
     BookingsMutation,
     CareContactsMutation,
+    ChatMutation,
     HelpersMutation,
     LegalMutation,
     NotificationsMutation,
@@ -113,7 +118,7 @@ class Mutation(
 
 
 @strawberry.type
-class Subscription(BookingsSubscription, OffersSubscription):
+class Subscription(BookingsSubscription, ChatSubscription, OffersSubscription):
     pass
 
 

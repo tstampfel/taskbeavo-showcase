@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "tasks",
     "offers",
     "bookings",
+    "chat",
     "legal",
     "vat",
     "staff",

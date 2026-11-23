@@ -30,6 +30,7 @@ import {
 } from '../components/ui';
 import { lineEm, wordsFit } from '../components/ui/heading';
 import { textStyle } from '../components/ui/text-style';
+import { useOpenConversation } from '../chat/use-open-conversation';
 
 /** The booking screens the detail screen links into, by their route segment. */
 export type BookingScreen =
@@ -38,6 +39,8 @@ export type BookingScreen =
 export interface BookingDetailScreenProps {
   bookingId: string;
   onOpen(screen: BookingScreen): void;
+  /** Opens the pair's conversation (BEAV-104); without it, no Message button. */
+  onOpenConversation?(conversationId: string): void;
   /** The top bar's back button. */
   onBack?: () => void;
 }
@@ -91,7 +94,12 @@ const LINKS: readonly Link[] = [
  * socket reconnects (src/apollo). The exact address and access details show only when the
  * server sends them (hard rule e); a live event that ends the booking takes them away.
  */
-export function BookingDetailScreen({ bookingId, onOpen, onBack }: BookingDetailScreenProps) {
+export function BookingDetailScreen({
+  bookingId,
+  onOpen,
+  onOpenConversation,
+  onBack,
+}: BookingDetailScreenProps) {
   const { t, i18n } = useTranslation();
   const locale: Locale = isLocale(i18n.language) ? i18n.language : defaultLocale;
   const { width, fontScale } = useWindowDimensions();
@@ -100,6 +108,7 @@ export function BookingDetailScreen({ bookingId, onOpen, onBack }: BookingDetail
     fetchPolicy: 'cache-and-network',
   });
   const viewerQuery = useQuery(ViewerDocument);
+  const chat = useOpenConversation((id) => onOpenConversation?.(id));
   const { subscribeToMore } = booking;
   useEffect(
     () => subscribeToBookingDetail(subscribeToMore, bookingId),
@@ -210,6 +219,23 @@ export function BookingDetailScreen({ bookingId, onOpen, onBack }: BookingDetail
       <PlaceCard place={view.place} />
 
       {view.trader && <HelperCard trader={view.trader} />}
+
+      {onOpenConversation ? (
+        <>
+          <Button
+            variant="secondary"
+            label={t(poster ? 'chat.openHelper' : 'chat.openPoster')}
+            busy={chat.pendingFor === current.offerId}
+            onPress={() => void chat.open(current.offerId)}
+            testID="booking-message"
+          />
+          {chat.failedFor === current.offerId ? (
+            <Text accessibilityRole="alert" style={[textStyle('small'), styles.error]}>
+              {t('chat.openError')}
+            </Text>
+          ) : null}
+        </>
+      ) : null}
 
       <Note tone="warn">{t('bookingDetail.safety')}</Note>
     </Screen>

@@ -22,12 +22,12 @@ export default async function BookingDetailPage({ params }: Props) {
   const { locale, id } = await params;
   if (!hasLocale(routing.locales, locale) || !LINK_ID.test(id)) notFound();
   setRequestLocale(locale);
-  const { bookingDetail, checkout, offers, errors } = await getMessages();
+  const { bookingDetail, checkout, offers, errors, chat } = await getMessages();
   const t = await getTranslations({ locale, namespace: 'bookingDetail' });
   return (
     <AppShell title={t('metaTitle')}>
       <main className={styles.main}>
-        <NextIntlClientProvider messages={{ bookingDetail, checkout, offers, errors }}>
+        <NextIntlClientProvider messages={{ bookingDetail, checkout, offers, errors, chat }}>
           <BookingDetailView bookingId={id} locale={locale} />
         </NextIntlClientProvider>
       </main>

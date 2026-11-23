@@ -9,7 +9,7 @@ import { AppShell, type AppHref } from './shell/app-shell';
 import { Card } from './ui/card';
 
 /** The pages that mirror app screens; each has its title under `linkTarget.<target>`. */
-export type LinkTarget = 'noAccess' | 'conversation' | 'payouts';
+export type LinkTarget = 'noAccess' | 'payouts';
 
 interface LinkTargetParams {
   /** `id` is absent on pages without one (`/de/helper/payouts`). */
