@@ -250,6 +250,19 @@ def test_links_emails_and_handles_sent_in_pieces_are_refused(pieces: list[str]) 
     assert refused == [ErrorCode.MESSAGE_CONTACT_DETAILS]
 
 
+def test_an_email_assembled_next_to_bare_numbers_is_refused() -> None:
+    """The bare numbers make the joined text doubtful, but the email assembled from the
+    pieces is a clear match and still counts."""
+    offer, conversation = offer_conversation()
+    for piece in ["40 35", "32 30 ana.k@", "example"]:
+        services.send_message(offer.helper, str(conversation.pk), piece)
+
+    with pytest.raises(ApiError) as refused:
+        services.send_message(offer.helper, str(conversation.pk), ".com")
+
+    assert refused.value.code == ErrorCode.MESSAGE_CONTACT_DETAILS
+
+
 @pytest.mark.parametrize(
     "numbers",
     [

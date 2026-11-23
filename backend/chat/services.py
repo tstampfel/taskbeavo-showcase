@@ -193,7 +193,10 @@ def _joined_holds_contact_details(result: FilterResult, joined: str) -> bool:
     """A clear match counts. A doubtful one counts unless every doubtful match is a phone
     number whose own digits aren't phone-like, so a run of bare prices or counts passes
     (review R2-1) while a doubtful link sent in pieces is still refused."""
-    if result.verdict == Verdict.MASKED:
+    # Stored bodies are already masked, so a clear match here was assembled from the pieces.
+    # It counts whatever the verdict: a doubtful run of bare numbers beside it makes the
+    # verdict NEEDS_REVIEW but must not hide it.
+    if result.verdict == Verdict.MASKED or result.masked_count > 0:
         return True
     if result.verdict != Verdict.NEEDS_REVIEW:
         return False
