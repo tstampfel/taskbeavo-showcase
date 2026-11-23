@@ -54,6 +54,9 @@ function booking(extra: Partial<Booking> = {}, exact = true): Booking {
     canRequestPayment: false,
     invoiceRequired: false,
     paymentRequest: null,
+    canReleasePayment: false,
+    releaseProposal: null,
+    tip: null,
     ...extra,
   };
 }

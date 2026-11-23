@@ -42,6 +42,9 @@ function booking(extra: Partial<Booking> = {}, task: Partial<Booking['task']> = 
     canRequestPayment: false,
     invoiceRequired: false,
     paymentRequest: null,
+    canReleasePayment: false,
+    releaseProposal: null,
+    tip: null,
     ...extra,
   };
 }
@@ -278,6 +281,39 @@ describe('the links into the other booking screens', () => {
     expect(view(booking({ status: 'PAYMENT_REQUESTED' }), 'helper').links.release).toBe(false);
     expect(view(booking({ status: 'NO_ACCESS_REPORTED' })).links.noAccess).toBe(true);
     expect(view(booking({ status: 'NO_ACCESS_REPORTED' }), 'helper').links.noAccess).toBe(false);
+  });
+
+  it('offers the poster a tip after a full release until one is paid (BEAV-118)', () => {
+    expect(view(booking({ status: 'RELEASED' })).links.tip).toBe(true);
+    expect(view(booking({ status: 'PAID_OUT' })).links.tip).toBe(true);
+    const tip = { id: 't1', amountCents: 500 };
+    expect(
+      view(booking({ status: 'PAID_OUT', tip: { ...tip, status: 'PENDING' } })).links.tip,
+    ).toBe(true);
+    expect(
+      view(booking({ status: 'PAID_OUT', tip: { ...tip, status: 'SUCCEEDED' } })).links.tip,
+    ).toBe(false);
+    expect(view(booking({ status: 'CLOSED' })).links.tip).toBe(false);
+    expect(view(booking({ status: 'RELEASED' }), 'helper').links.tip).toBe(false);
+  });
+
+  it("sends the helper to answer the poster's lower amount while it is open", () => {
+    const proposal = (status: 'OPEN' | 'DECLINED') => ({
+      id: 'p1',
+      releasedCents: 2000,
+      status,
+      refundCents: null,
+      createdAt: LATER,
+      answeredAt: null,
+    });
+    const open = booking({ status: 'PAYMENT_REQUESTED', releaseProposal: proposal('OPEN') });
+    expect(view(open, 'helper').links.answerProposal).toBe(true);
+    expect(view(open).links.answerProposal).toBe(false);
+    const declined = booking({
+      status: 'PAYMENT_REQUESTED',
+      releaseProposal: proposal('DECLINED'),
+    });
+    expect(view(declined, 'helper').links.answerProposal).toBe(false);
   });
 });
 

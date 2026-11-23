@@ -1,0 +1,81 @@
+# Release payment (BEAV-117 API, BEAV-118 screens; mockup 07d–7f). The poster releases in
+# full, or proposes a lower amount that the helper accepts or declines; after a full release
+# the poster may tip once with Stripe's payment sheet. Every amount is the server's: the
+# screens only show them and send the poster's choice. Nothing here moves money on its own:
+# a tip counts once Stripe's webhook confirms it (`tip.status`, hard rule a).
+#
+# ReleaseFields is part of BookingDetailFields (bookings.graphql), so the detail screen's live
+# event carries the proposal and the tip too.
+
+fragment ReleaseProposalFields on ReleaseProposal {
+  id
+  releasedCents
+  status
+  refundCents
+  createdAt
+  answeredAt
+}
+
+fragment ReleaseFields on Booking {
+  id
+  canReleasePayment
+  releaseProposal {
+    ...ReleaseProposalFields
+  }
+  tip {
+    id
+    amountCents
+    status
+  }
+}
+
+mutation ReleasePayment($bookingId: ID!) {
+  releasePayment(bookingId: $bookingId) {
+    ...BookingFields
+    ...BookingDetailFields
+  }
+}
+
+query PartialReleasePreview($bookingId: ID!, $releasedCents: Int!) {
+  partialReleasePreview(bookingId: $bookingId, releasedCents: $releasedCents) {
+    id
+    releasedCents
+    keptFeeCents
+    refundCents
+  }
+}
+
+mutation ProposePartialRelease($bookingId: ID!, $releasedCents: Int!) {
+  proposePartialRelease(bookingId: $bookingId, releasedCents: $releasedCents) {
+    ...BookingFields
+    ...BookingDetailFields
+  }
+}
+
+mutation WithdrawPartialRelease($bookingId: ID!) {
+  withdrawPartialRelease(bookingId: $bookingId) {
+    ...BookingFields
+    ...BookingDetailFields
+  }
+}
+
+mutation RespondToPartialRelease($bookingId: ID!, $accept: Boolean!) {
+  respondToPartialRelease(bookingId: $bookingId, accept: $accept) {
+    ...BookingFields
+    ...BookingDetailFields
+  }
+}
+
+# The tip's `clientSecret` is for Stripe's payment sheet only: use fetchPolicy "no-cache",
+# never store or log it (TipSession is never persisted, src/persistence.ts).
+mutation AddTip($bookingId: ID!, $amountCents: Int!) {
+  addTip(bookingId: $bookingId, amountCents: $amountCents) {
+    id
+    clientSecret
+    tip {
+      id
+      amountCents
+      status
+    }
+  }
+}

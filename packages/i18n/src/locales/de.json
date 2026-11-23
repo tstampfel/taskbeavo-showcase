@@ -884,7 +884,9 @@
       "cancel": "Stornieren oder widerrufen",
       "noAccess": "Entscheiden, wie es weitergeht",
       "release": "Zahlung freigeben",
-      "requestPayment": "Zahlung anfordern"
+      "requestPayment": "Zahlung anfordern",
+      "tip": "Trinkgeld geben",
+      "answerProposal": "Auf den Vorschlag des Auftraggebers antworten"
     },
     "safety": "Wickeln Sie Zahlung und Chat über TaskBeavo ab, um geschützt zu bleiben.",
     "amountLabelPoster": "Sie zahlen",
@@ -1106,6 +1108,100 @@
       "jirInvalid": "Das sieht nicht wie eine JIR aus. Prüfen Sie sie auf der Rechnung.",
       "noteTooLong": "Die Notiz darf höchstens 1000 Zeichen lang sein.",
       "tooManyPhotos": "Sie können bis zu 6 Fotos hinzufügen."
+    },
+    "agreedPrice": "Vereinbarter Preis",
+    "photosInApp": "Fotos der erledigten Arbeit werden in der TaskBeavo-App aufgenommen. Hier können Sie die Zahlung mit einer Nachricht anfordern."
+  },
+  "release": {
+    "title": "Zahlung freigeben",
+    "back": "Zurück",
+    "loadError": "Wir konnten diese Buchung nicht laden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "retry": "Erneut versuchen",
+    "finished": "Ihr Helfer hat den Auftrag erledigt",
+    "requestedAt": "Zahlung angefordert {time}",
+    "photosTitle": "Fotos der erledigten Arbeit",
+    "photoLabel": "Foto {number} der erledigten Arbeit",
+    "noteTitle": "Nachricht Ihres Helfers",
+    "invoiceTitle": "Rechnung Ihres Helfers",
+    "invoiceJir": "JIR: {jir}",
+    "invoicePhoto": "Foto der Rechnung",
+    "amount": "Betrag",
+    "tipTitle": "Trinkgeld geben? (optional)",
+    "tipNone": "Kein Trinkgeld",
+    "tipNote": "Das Trinkgeld geht vollständig an Ihren Helfer, TaskBeavo behält keine Gebühr ein. Sie zahlen es direkt nach der Freigabe mit Karte.",
+    "checkFirst": "Unsicher? Fragen Sie zuerst Ihren Kontakt vor Ort.",
+    "submit": "Zahlung freigeben",
+    "lower": "Einen niedrigeren Betrag freigeben",
+    "declined": "Ihr Helfer hat {amount} abgelehnt. Geben Sie die volle Zahlung frei oder wenden Sie sich an den Support, wenn etwas nicht stimmt.",
+    "confirm": {
+      "title": "{amount} an Ihren Helfer freigeben?",
+      "price": "Auftragspreis",
+      "tip": "Trinkgeld",
+      "irreversible": "Das lässt sich nicht rückgängig machen.",
+      "release": "Freigeben",
+      "cancel": "Abbrechen"
+    },
+    "partial": {
+      "title": "Einen niedrigeren Betrag freigeben",
+      "body": "Wenn nur ein Teil der Arbeit erledigt wurde, schlagen Sie einen fairen Betrag vor. Nichts wird bewegt, bis Ihr Helfer zustimmt; der Rest geht dann auf Ihre Karte zurück.",
+      "label": "Betrag für Ihren Helfer (€)",
+      "hint": "Mehr als 0 € und weniger als {price}.",
+      "check": "Weiter",
+      "helperGets": "Ihr Helfer erhält",
+      "keptFee": "Servicegebühr von TaskBeavo darauf",
+      "refund": "Zurück auf Ihre Karte",
+      "send": "Vorschlag senden",
+      "cancel": "Abbrechen",
+      "problems": {
+        "format": "Geben Sie einen Betrag in Euro ein, zum Beispiel 20 oder 20,50.",
+        "range": "Geben Sie mehr als 0 € und weniger als {price} ein. Für den vollen Preis geben Sie die Zahlung frei."
+      }
+    },
+    "proposalOpen": {
+      "title": "Warten auf Ihren Helfer",
+      "body": "Sie haben {released} statt {price} vorgeschlagen.",
+      "refund": "Wenn Ihr Helfer zustimmt, gehen {refund} auf Ihre Karte zurück.",
+      "withdraw": "Vorschlag zurückziehen",
+      "releaseFull": "Stattdessen die vollen {price} freigeben"
+    },
+    "partialSettled": {
+      "title": "Niedrigerer Betrag vereinbart",
+      "body": "Ihr Helfer hat {released} angenommen.",
+      "refundPending": "{refund} sind auf dem Weg zurück auf Ihre Karte.",
+      "refundDone": "{refund} wurden auf Ihre Karte erstattet.",
+      "helper": "Sie haben {released} angenommen. Der Betrag wird auf Ihr Bankkonto ausgezahlt."
+    },
+    "released": {
+      "title": "Zahlung freigegeben!",
+      "body": "{amount} sind auf dem Weg zu Ihrem Helfer.",
+      "payout": "Auszahlung auf das Bankkonto Ihres Helfers",
+      "payoutTime": "3–5 Werktage",
+      "backToBooking": "Zurück zur Buchung"
+    },
+    "tip": {
+      "title": "Trinkgeld geben?",
+      "pay": "{amount} Trinkgeld zahlen",
+      "sheetButton": "Trinkgeld zahlen",
+      "confirming": "Ihr Trinkgeld wird bestätigt…",
+      "pending": "Ihr Trinkgeld von {amount} ist noch nicht bestätigt. Wenn Sie die Zahlung geschlossen haben, zahlen Sie es erneut.",
+      "paid": "Sie haben {amount} Trinkgeld gegeben. Vielen Dank!",
+      "failed": "Das Trinkgeld wurde nicht gezahlt. Sie können es erneut versuchen.",
+      "notConfigured": "Kartenzahlungen sind in dieser Version nicht eingerichtet, daher kann hier kein Trinkgeld gezahlt werden."
+    },
+    "notRequested": "Ihr Helfer hat die Zahlung noch nicht angefordert. Sie können sie freigeben, sobald er das tut.",
+    "unavailable": "Eine Freigabe ist gerade nicht möglich. Gehen Sie zur Buchung zurück, um zu sehen, wie es weitergeht.",
+    "answer": {
+      "title": "Der Auftraggeber hat einen niedrigeren Betrag vorgeschlagen",
+      "body": "Er schlägt {released} statt {price} vor. Wenn Sie zustimmen, werden Ihnen {released} ausgezahlt und der Rest geht an den Auftraggeber zurück. Wenn Sie ablehnen, ändert sich nichts.",
+      "accept": "{released} annehmen",
+      "decline": "Ablehnen"
+    },
+    "helperWaiting": "Warten, bis der Auftraggeber {amount} freigibt.",
+    "helperReleased": "Der Auftraggeber hat {amount} freigegeben. Der Betrag ist auf dem Weg zu Ihrem Bankkonto.",
+    "helperTip": "Dazu {amount} Trinkgeld.",
+    "errors": {
+      "HELPER_CANNOT_TAKE_PAYMENTS": "Ihr Helfer kann gerade kein Trinkgeld erhalten. Ihre Zahlung an ihn wurde freigegeben.",
+      "PAYMENT_UNAVAILABLE": "Wir konnten die Trinkgeldzahlung nicht starten. Bitte versuchen Sie es gleich noch einmal."
     }
   }
 }

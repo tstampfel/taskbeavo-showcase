@@ -67,6 +67,9 @@ function booking(helperUserId: string, { exact = true, ...extra }: Record<string
     canRequestPayment: false,
     invoiceRequired: false,
     paymentRequest: null,
+    canReleasePayment: false,
+    releaseProposal: null,
+    tip: null,
     ...extra,
   };
 }
