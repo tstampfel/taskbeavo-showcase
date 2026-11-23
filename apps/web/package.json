@@ -25,7 +25,7 @@
     "@taskbeavo/i18n": "workspace:*",
     "@taskbeavo/ui-tokens": "workspace:*",
     "graphql": "17.0.2",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "next-intl": "4.14.9",
     "posthog-js": "1.441.2",
     "react": "19.3.1",
@@ -33,7 +33,7 @@
     "rxjs": "7.8.2"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "16.4.3",
+    "@next/eslint-plugin-next": "16.4.6",
     "@playwright/test": "1.64.1",
     "@taskbeavo/eslint-config": "workspace:*",
     "@taskbeavo/tsconfig": "workspace:*",
