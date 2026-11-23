@@ -8,8 +8,8 @@
  * - Phone numbers, including masked ones.
  * - A helper's home address, and a trader's registered business address, which is often the
  *   obrt owner's home (only the task's poster sees it on an offer; BEAV-192).
- * - Chat message text, once chat is in the schema, and an offer's message (helper-written text
- *   before a booking, treated like chat).
+ * - Chat message text and the counterpart's name in a conversation, and an offer's message
+ *   (helper-written text before a booking, treated like chat).
  * - Credentials: session tokens, sign-up tickets, signed upload URLs, Stripe onboarding links,
  *   sign-in nonces, a checkout's Stripe client secret.
  *
@@ -19,6 +19,9 @@
 export const NOT_PERSISTED: Readonly<Record<string, readonly string[] | 'all'>> = {
   Task: ['address', 'lat', 'lng', 'accessDetails'],
   Offer: ['message', 'helperBusinessAddress'],
+  // Chat (BEAV-104): the text, and the other participant's first name and initial.
+  Message: ['body'],
+  Conversation: ['counterpartName'],
   CareContact: ['phone'],
   // The helper of an active booking sees it; a copy on disk on the helper's phone would
   // outlive the booking.
@@ -80,6 +83,11 @@ export const PERSIST_CHECKED: readonly string[] = [
   // town anyway (BEAV-192).
   'HelperProfile.businessAddressCity',
   'HelperProfile.businessAddressCountry',
+  // Chat (BEAV-104): a timestamp, and root fields that hold references to normalised
+  // `Message` objects, whose `body` is stripped above.
+  'Conversation.lastMessageAt',
+  'Query.conversationMessages',
+  'Subscription.messageAdded',
 ];
 
 type Normalized = Record<string, Record<string, unknown>>;

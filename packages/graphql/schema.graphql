@@ -480,6 +480,12 @@ type CareContact {
   updatedAt: DateTime!
 }
 
+"""A participant's side of a conversation."""
+enum ChatRole {
+  POSTER
+  HELPER
+}
+
 """
 The two separate, unticked checkout boxes. Both must be ticked, for the cancellation policy version shown, which must be the one in force.
 """
@@ -590,6 +596,37 @@ type ConsentState {
   """
   version: String
   givenAt: DateTime
+}
+
+"""The private chat of a task's poster and one helper."""
+type Conversation {
+  id: ID!
+  taskId: ID!
+  taskTitle: String!
+  myRole: ChatRole!
+
+  """The other participant's first name and last initial, e.g. 'Marko P.'."""
+  counterpartName: String!
+  stage: ConversationStage!
+
+  """
+  Whether it takes new messages now: before acceptance while the helper's offer is open, after acceptance until the booking is settled.
+  """
+  canSend: Boolean!
+
+  """The pair's booking, once the poster accepted the helper's offer."""
+  bookingId: ID
+  lastMessageAt: DateTime
+}
+
+enum ConversationStage {
+  """
+  Before acceptance: contact details in new messages are masked, and a message that may hold one is refused with MESSAGE_CONTACT_DETAILS.
+  """
+  OFFER
+
+  """The pair's booking is paid: messages are shown as written."""
+  BOOKED
 }
 
 input CreateCareContactInput {
@@ -955,6 +992,24 @@ enum ErrorCode {
   OFFER_MESSAGE_CONTACT_DETAILS
 
   """
+  No such conversation of the signed-in user, or no such offer to talk about.
+  """
+  CONVERSATION_NOT_FOUND
+
+  """
+  The conversation takes no new messages: the offer is no longer open, or the booking is settled. It can still be read.
+  """
+  CONVERSATION_CLOSED
+
+  """The message is empty or longer than 2000 characters."""
+  INVALID_MESSAGE
+
+  """
+  Before a booking, the message may contain a phone number, email address or link; remove it and send the message again.
+  """
+  MESSAGE_CONTACT_DETAILS
+
+  """
   The task's poster books for a business, so only registered helpers (obrt or company) can offer on it or be booked for it.
   """
   BUSINESS_POSTER_REGISTERED_ONLY
@@ -1307,6 +1362,21 @@ enum Locale {
   FR
 }
 
+"""A chat message between a poster and a helper."""
+type Message {
+  id: ID!
+  conversationId: ID!
+
+  """Before acceptance, contact details are masked."""
+  body: String!
+  senderRole: ChatRole!
+  isMine: Boolean!
+
+  """Contact details were hidden in the body."""
+  masked: Boolean!
+  createdAt: DateTime!
+}
+
 type Mutation {
   """
   Email a 6-digit sign-in code, valid 10 minutes. Always returns true, whether or not the address has an account. `locale` is the app's current language, used for the email when the address has no account yet. At most 5 per address per hour. Errors: INVALID_EMAIL, RATE_LIMITED and LOCKED (both with extensions.retryAfterSeconds).
@@ -1522,6 +1592,16 @@ type Mutation {
   Delete an on-site contact; returns it as it was. Errors: UNAUTHENTICATED, CARE_CONTACT_NOT_FOUND, CARE_CONTACT_IN_USE.
   """
   deleteCareContact(id: ID!): CareContact!
+
+  """
+  Open the conversation between the poster and the helper of an offer, as either of them; the same one every time. Errors: UNAUTHENTICATED, CONVERSATION_NOT_FOUND, CONVERSATION_CLOSED.
+  """
+  openConversation(offerId: ID!): Conversation!
+
+  """
+  Send a message (1 to 2000 characters). Before acceptance contact details are masked. Errors: UNAUTHENTICATED, PHONE_NOT_VERIFIED, CONVERSATION_NOT_FOUND, CONVERSATION_CLOSED, INVALID_MESSAGE, MESSAGE_CONTACT_DETAILS, RATE_LIMITED.
+  """
+  sendMessage(conversationId: ID!, body: String!): Message!
 
   """
   Create or change the signed-in user's helper profile, one onboarding step at a time. Errors: UNAUTHENTICATED, INVALID_OIB, OIB_IN_USE, INVALID_IBAN, INVALID_VAT_ID, INVALID_HELPER_DETAILS, UNDERAGE, HELPER_ADDRESS_NOT_IN_CROATIA (offer joinWaitlist), SERVICE_AREA_NOT_FOUND.
@@ -2094,6 +2174,16 @@ type Query {
   myCareContacts: [CareContact!]!
 
   """
+  A conversation you take part in. Errors: UNAUTHENTICATED, CONVERSATION_NOT_FOUND.
+  """
+  conversation(id: ID!): Conversation!
+
+  """
+  The latest messages of a conversation you take part in, oldest first; pass the first message's ID as `before` for older ones. `limit` is 1 to 100. Errors: UNAUTHENTICATED, CONVERSATION_NOT_FOUND.
+  """
+  conversationMessages(conversationId: ID!, before: ID = null, limit: Int! = 50): [Message!]!
+
+  """
   The signed-in user's helper profile; null until they start one. Errors: UNAUTHENTICATED.
   """
   myHelperProfile: HelperProfile
@@ -2343,6 +2433,11 @@ type Subscription {
   Your booking changed: its status (FUNDS_HELD once Stripe confirms the payment), or, for the poster, a card attempt of its checkout. Yields the whole booking. Errors: UNAUTHENTICATED.
   """
   bookingUpdated(id: ID!): Booking!
+
+  """
+  New messages in a conversation you take part in, yours from other devices included. Errors: UNAUTHENTICATED.
+  """
+  messageAdded(conversationId: ID!): Message!
 
   """A helper sent an offer on your task. Errors: UNAUTHENTICATED."""
   offerReceived(taskId: ID!): Offer!

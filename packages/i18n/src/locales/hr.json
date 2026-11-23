@@ -13,7 +13,6 @@
   },
   "linkTarget": {
     "noAccess": "Pomagač nije mogao ući",
-    "conversation": "Poruke",
     "payouts": "Isplate",
     "notReady": "Ovaj zaslon uskoro stiže.",
     "safety": "Otvaranje poveznice nikad ništa ne plaća, ne oslobađa i ne otkazuje. Uvijek potvrđujete dodirom."
@@ -194,7 +193,11 @@
     "INVOICE_REQUIRED": "Najprije dodajte svoj fiskalizirani račun: fotografiju ili sken, ili njegov JIR.",
     "INVALID_PAYMENT_REQUEST": "Nešto u zahtjevu nije u redu. Provjerite napomenu, fotografije i JIR pa pokušajte ponovno.",
     "INVALID_RELEASE_AMOUNT": "Unesite iznos veći od 0 € i manji od cijene zadatka.",
-    "INVALID_TIP_AMOUNT": "Napojnica iznosi najmanje 1 €, a najviše koliko i cijena zadatka. Ako ste započeli napojnicu, dovršite je s istim iznosom."
+    "INVALID_TIP_AMOUNT": "Napojnica iznosi najmanje 1 €, a najviše koliko i cijena zadatka. Ako ste započeli napojnicu, dovršite je s istim iznosom.",
+    "CONVERSATION_NOT_FOUND": "Ne možemo pronaći ovaj razgovor.",
+    "CONVERSATION_CLOSED": "U ovaj razgovor više se ne mogu slati poruke. I dalje ga možete čitati.",
+    "INVALID_MESSAGE": "Napišite poruku od najviše 2000 znakova.",
+    "MESSAGE_CONTACT_DETAILS": "Vaša poruka možda sadrži broj telefona, e-adresu ili poveznicu. Uklonite ih i ponovno pošaljite poruku. Kontakt podatke možete podijeliti kad rezervacija bude plaćena."
   },
   "uploads": {
     "choosePhoto": "Odaberi fotografiju",
@@ -1203,5 +1206,29 @@
       "HELPER_CANNOT_TAKE_PAYMENTS": "Vaš pomagač trenutačno ne može primiti napojnicu. Vaša isplata njemu je oslobođena.",
       "PAYMENT_UNAVAILABLE": "Nismo uspjeli pokrenuti plaćanje napojnice. Pokušajte ponovno za trenutak."
     }
+  },
+  "chat": {
+    "metaTitle": "Poruke",
+    "back": "Natrag",
+    "aboutTask": "Zadatak: {task}",
+    "offerStage": "Dok rezervacija nije plaćena, brojevi telefona, e-adrese i poveznice su skriveni. Plaćanje i razgovor zadržite u TaskBeavu kako biste bili zaštićeni.",
+    "bookedStage": "Plaćanje i razgovor zadržite u TaskBeavu kako biste bili zaštićeni.",
+    "closed": "Ovaj razgovor je zatvoren. I dalje ga možete čitati.",
+    "inputLabel": "Poruka za {name}",
+    "send": "Pošalji",
+    "earlier": "Prikaži starije poruke",
+    "empty": "Još nema poruka. Pitajte bilo što o zadatku.",
+    "loadError": "Ne možemo učitati poruke. Provjerite vezu i pokušajte ponovno.",
+    "retry": "Pokušaj ponovno",
+    "sendError": "Poruka nije poslana. Provjerite vezu i pokušajte ponovno.",
+    "masked": "Kontakt podaci skriveni",
+    "you": "Vi",
+    "messageLabel": "{sender}, {time}: {body}",
+    "tooLong": "Poruka može imati najviše {max} znakova.",
+    "open": "Poruka",
+    "openPoster": "Pošalji poruku naručitelju",
+    "openHelper": "Pošalji poruku pomagaču",
+    "openError": "Ne možemo otvoriti razgovor. Pokušajte ponovno.",
+    "viewBooking": "Prikaži rezervaciju"
   }
 }

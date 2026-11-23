@@ -67,6 +67,17 @@ export {
   type WithdrawalOffer,
 } from './cancel';
 export {
+  MESSAGE_MAX,
+  MESSAGE_PAGE,
+  messageProblem,
+  subscribeToConversation,
+  withEarlierMessages,
+  withMessage,
+  withNewMessage,
+  type ChatMessage,
+  type MessageProblem,
+} from './chat';
+export {
   OFFER_SORTS,
   arrangeOffers,
   canAcceptOffer,

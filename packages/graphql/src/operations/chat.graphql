@@ -1,0 +1,65 @@
+# Private chat (BEAV-104) between a task's poster and one helper: the same conversation
+# carries the talk about the helper's offer and, after acceptance, the booked pair's.
+# openConversation(offerId) works for either side of the offer, also an accepted one, and
+# returns the same conversation every time. Before acceptance (`stage: OFFER`) contact
+# details in new messages are masked (`masked: true`), and a message that may hold one is
+# refused with MESSAGE_CONTACT_DETAILS; once the booking is paid (`stage: BOOKED`) messages
+# are shown as written. `canSend` is false once the offer is no longer open or the booking is
+# settled: the conversation stays readable. Message bodies and the counterpart's name are
+# never persisted to disk (NOT_PERSISTED in src/persistence.ts).
+
+fragment ConversationFields on Conversation {
+  id
+  taskId
+  taskTitle
+  myRole
+  counterpartName
+  stage
+  canSend
+  bookingId
+  lastMessageAt
+}
+
+fragment MessageFields on Message {
+  id
+  conversationId
+  body
+  senderRole
+  isMine
+  masked
+  createdAt
+}
+
+query Conversation($id: ID!) {
+  conversation(id: $id) {
+    ...ConversationFields
+  }
+}
+
+# The latest messages, oldest first; pass the first message's ID as `before` for older ones.
+query ConversationMessages($conversationId: ID!, $before: ID, $limit: Int) {
+  conversationMessages(conversationId: $conversationId, before: $before, limit: $limit) {
+    ...MessageFields
+  }
+}
+
+mutation OpenConversation($offerId: ID!) {
+  openConversation(offerId: $offerId) {
+    ...ConversationFields
+  }
+}
+
+mutation SendMessage($conversationId: ID!, $body: String!) {
+  sendMessage(conversationId: $conversationId, body: $body) {
+    ...MessageFields
+  }
+}
+
+# Use with subscribeToMore on ConversationMessages and `withNewMessage` (src/chat.ts). Only
+# the conversation's two participants receive it. Missed messages come back with the refetch
+# on reconnect and on return to the foreground.
+subscription MessageAdded($conversationId: ID!) {
+  messageAdded(conversationId: $conversationId) {
+    ...MessageFields
+  }
+}

@@ -1,6 +1,5 @@
 {
   "keep": {
-    "contactFilter.masked": "Tells the author why text was masked (moderation/contact_filter.py verdict MASKED); task, question, chat and review screens use it from BEAV-85 on",
     "contactFilter.heldForReview": "Tells the author their text waits for review (moderation/contact_filter.py verdict NEEDS_REVIEW); task, question, chat and review screens use it from BEAV-85 on",
     "enums.TaskHoldReason.CONTACT_DETAILS": "Statement of reasons for a task held for review (tasks API holdReasons); the post-a-task wizards (BEAV-86, BEAV-87) use it",
     "enums.TaskHoldReason.EXCLUDED_CATEGORY": "Statement of reasons for a task held for review (tasks API holdReasons); the post-a-task wizards (BEAV-86, BEAV-87) use it",

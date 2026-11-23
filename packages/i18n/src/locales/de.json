@@ -13,7 +13,6 @@
   },
   "linkTarget": {
     "noAccess": "Ihr Helfer kam nicht hinein",
-    "conversation": "Nachrichten",
     "payouts": "Auszahlungen",
     "notReady": "Diese Ansicht kommt bald.",
     "safety": "Ein Link bezahlt, gibt frei oder storniert nie etwas. Sie bestätigen immer mit einem Tippen."
@@ -194,7 +193,11 @@
     "INVOICE_REQUIRED": "Fügen Sie zuerst Ihre fiskalisierte Rechnung hinzu: ein Foto oder einen Scan oder ihre JIR.",
     "INVALID_PAYMENT_REQUEST": "Etwas an der Anfrage stimmt nicht. Prüfen Sie die Notiz, die Fotos und die JIR und versuchen Sie es erneut.",
     "INVALID_RELEASE_AMOUNT": "Geben Sie einen Betrag über 0 € und unter dem Preis der Aufgabe ein.",
-    "INVALID_TIP_AMOUNT": "Ein Trinkgeld beträgt mindestens 1 € und höchstens den Preis der Aufgabe. Wenn Sie ein Trinkgeld begonnen haben, schließen Sie es mit demselben Betrag ab."
+    "INVALID_TIP_AMOUNT": "Ein Trinkgeld beträgt mindestens 1 € und höchstens den Preis der Aufgabe. Wenn Sie ein Trinkgeld begonnen haben, schließen Sie es mit demselben Betrag ab.",
+    "CONVERSATION_NOT_FOUND": "Wir konnten dieses Gespräch nicht finden.",
+    "CONVERSATION_CLOSED": "In diesem Gespräch können keine neuen Nachrichten gesendet werden. Sie können es weiterhin lesen.",
+    "INVALID_MESSAGE": "Schreiben Sie eine Nachricht mit höchstens 2000 Zeichen.",
+    "MESSAGE_CONTACT_DETAILS": "Ihre Nachricht enthält möglicherweise eine Telefonnummer, E-Mail-Adresse oder einen Link. Bitte entfernen Sie diese und senden Sie die Nachricht erneut. Kontaktdaten können Sie teilen, sobald die Buchung bezahlt ist."
   },
   "uploads": {
     "choosePhoto": "Foto auswählen",
@@ -1203,5 +1206,29 @@
       "HELPER_CANNOT_TAKE_PAYMENTS": "Ihr Helfer kann gerade kein Trinkgeld erhalten. Ihre Zahlung an ihn wurde freigegeben.",
       "PAYMENT_UNAVAILABLE": "Wir konnten die Trinkgeldzahlung nicht starten. Bitte versuchen Sie es gleich noch einmal."
     }
+  },
+  "chat": {
+    "metaTitle": "Nachrichten",
+    "back": "Zurück",
+    "aboutTask": "Auftrag: {task}",
+    "offerStage": "Bis eine Buchung bezahlt ist, werden Telefonnummern, E-Mail-Adressen und Links ausgeblendet. Bleiben Sie mit Zahlung und Chat bei TaskBeavo, um geschützt zu sein.",
+    "bookedStage": "Bleiben Sie mit Zahlung und Chat bei TaskBeavo, um geschützt zu sein.",
+    "closed": "Dieses Gespräch ist geschlossen. Sie können es weiterhin lesen.",
+    "inputLabel": "Nachricht an {name}",
+    "send": "Senden",
+    "earlier": "Ältere Nachrichten anzeigen",
+    "empty": "Noch keine Nachrichten. Fragen Sie alles zum Auftrag.",
+    "loadError": "Wir konnten die Nachrichten nicht laden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "retry": "Erneut versuchen",
+    "sendError": "Ihre Nachricht wurde nicht gesendet. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "masked": "Kontaktdaten ausgeblendet",
+    "you": "Sie",
+    "messageLabel": "{sender}, {time}: {body}",
+    "tooLong": "Nachrichten dürfen höchstens {max} Zeichen lang sein.",
+    "open": "Nachricht",
+    "openPoster": "Nachricht an den Auftraggeber",
+    "openHelper": "Nachricht an den Helfer",
+    "openError": "Wir konnten das Gespräch nicht öffnen. Versuchen Sie es erneut.",
+    "viewBooking": "Buchung ansehen"
   }
 }

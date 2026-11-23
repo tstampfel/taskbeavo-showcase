@@ -13,7 +13,6 @@
   },
   "linkTarget": {
     "noAccess": "Votre intervenant n’a pas pu entrer",
-    "conversation": "Messages",
     "payouts": "Versements",
     "notReady": "Cet écran arrive bientôt.",
     "safety": "Ouvrir un lien ne paie, ne débloque et n’annule jamais rien. Vous confirmez toujours d’un geste."
@@ -194,7 +193,11 @@
     "INVOICE_REQUIRED": "Ajoutez d’abord votre facture fiscalisée : une photo ou un scan, ou son JIR.",
     "INVALID_PAYMENT_REQUEST": "Quelque chose ne va pas dans la demande. Vérifiez la note, les photos et le JIR, puis réessayez.",
     "INVALID_RELEASE_AMOUNT": "Saisissez un montant supérieur à 0 € et inférieur au prix de la tâche.",
-    "INVALID_TIP_AMOUNT": "Un pourboire est d’au moins 1 € et d’au plus le prix de la tâche. Si vous avez commencé un pourboire, terminez-le avec le même montant."
+    "INVALID_TIP_AMOUNT": "Un pourboire est d’au moins 1 € et d’au plus le prix de la tâche. Si vous avez commencé un pourboire, terminez-le avec le même montant.",
+    "CONVERSATION_NOT_FOUND": "Nous n’avons pas trouvé cette conversation.",
+    "CONVERSATION_CLOSED": "Cette conversation n’accepte plus de nouveaux messages. Vous pouvez toujours la lire.",
+    "INVALID_MESSAGE": "Écrivez un message de 2000 caractères au maximum.",
+    "MESSAGE_CONTACT_DETAILS": "Votre message contient peut-être un numéro de téléphone, une adresse e-mail ou un lien. Veuillez les retirer et renvoyer le message. Vous pourrez partager vos coordonnées une fois la réservation payée."
   },
   "uploads": {
     "choosePhoto": "Choisir une photo",
@@ -1203,5 +1206,29 @@
       "HELPER_CANNOT_TAKE_PAYMENTS": "Votre intervenant ne peut pas recevoir de pourboire pour le moment. Votre paiement lui a bien été versé.",
       "PAYMENT_UNAVAILABLE": "Nous n’avons pas pu lancer le paiement du pourboire. Réessayez dans un instant."
     }
+  },
+  "chat": {
+    "metaTitle": "Messages",
+    "back": "Retour",
+    "aboutTask": "Tâche : {task}",
+    "offerStage": "Tant qu’une réservation n’est pas payée, les numéros, e-mails et liens sont masqués. Gardez le paiement et le chat sur TaskBeavo pour rester protégé.",
+    "bookedStage": "Gardez le paiement et le chat sur TaskBeavo pour rester protégé.",
+    "closed": "Cette conversation est fermée. Vous pouvez toujours la lire.",
+    "inputLabel": "Message à {name}",
+    "send": "Envoyer",
+    "earlier": "Afficher les messages précédents",
+    "empty": "Pas encore de messages. Posez toutes vos questions sur la tâche.",
+    "loadError": "Nous n’avons pas pu charger les messages. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer",
+    "sendError": "Votre message n’a pas été envoyé. Vérifiez votre connexion et réessayez.",
+    "masked": "Coordonnées masquées",
+    "you": "Vous",
+    "messageLabel": "{sender}, {time} : {body}",
+    "tooLong": "Un message peut compter au maximum {max} caractères.",
+    "open": "Message",
+    "openPoster": "Écrire au demandeur",
+    "openHelper": "Écrire à l’aide",
+    "openError": "Nous n’avons pas pu ouvrir la conversation. Réessayez.",
+    "viewBooking": "Voir la réservation"
   }
 }
