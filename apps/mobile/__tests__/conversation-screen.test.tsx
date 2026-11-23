@@ -163,6 +163,13 @@ describe('ConversationScreen', () => {
     },
   );
 
+  it('the helper sees no access-codes note: only the poster can edit Access details', async () => {
+    await renderScreen({ conversation: { stage: 'BOOKED', bookingId: 'b-1', myRole: 'HELPER' } });
+
+    expect(screen.getByTestId('conversation-input')).toBeOnTheScreen();
+    expect(screen.queryByTestId('conversation-access-codes')).toBeNull();
+  });
+
   it('before acceptance there is no access-codes note', async () => {
     await renderScreen();
     expect(screen.queryByTestId('conversation-access-codes')).toBeNull();

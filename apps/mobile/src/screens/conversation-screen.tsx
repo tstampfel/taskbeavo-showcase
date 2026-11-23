@@ -155,8 +155,9 @@ export function ConversationScreen({
   const footer = conversation.canSend ? (
     <View style={styles.compose}>
       {/* Once messages are no longer masked: codes belong in Access details, which are
-          hidden after the booking ends, while the chat stays readable (owner decision). */}
-      {conversation.stage === 'BOOKED' ? (
+          hidden after the booking ends, while the chat stays readable (owner decision). Only
+          the poster can edit Access details, so only the poster sees it (review R3-1). */}
+      {conversation.stage === 'BOOKED' && conversation.myRole === 'POSTER' ? (
         <Note testID="conversation-access-codes">{t('chat.accessCodesNote')}</Note>
       ) : null}
       <Input

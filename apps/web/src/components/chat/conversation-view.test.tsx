@@ -129,6 +129,12 @@ describe('ConversationView', () => {
       // Before acceptance messages are masked anyway; a closed chat has no composer.
       expect(offer).not.toContain('conversation-access-codes');
       expect(closed).not.toContain('conversation-access-codes');
+      // Only the poster can edit Access details (review R3-1).
+      const helper = render(locale, {
+        extra: { stage: 'BOOKED', bookingId: 'b-1', myRole: 'HELPER', counterpartName: 'Ana K.' },
+      });
+      expect(helper).not.toContain('conversation-access-codes');
+      expect(helper).toContain('data-testid="conversation-input"');
     },
   );
 

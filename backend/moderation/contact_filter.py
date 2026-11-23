@@ -20,6 +20,8 @@ booking exists. Every write path that stores such text calls one function:
     review queue instead of publishing it. This is the only verdict that holds content.
 - `result.kinds` is which kinds of contact detail were found; `masked_count`,
   `review_count` and `flagged_count` count the clear, doubtful and flag-only matches.
+  `doubtful_kinds` and `doubtful_spans` describe the doubtful matches alone, as kinds and
+  as offsets into `text` (never the matched text).
 
 The result never holds the matched text, and this module never logs: the input is user text
 and may hold names, phone numbers and addresses, which must stay out of logs, Sentry and
@@ -79,6 +81,11 @@ class FilterResult:
     masked_count: int
     review_count: int
     flagged_count: int
+    # The doubtful matches alone: their kinds, and where each sits in `text` as (start, end)
+    # offsets, never the matched text. Chat uses them to tell a doubtful phone number apart
+    # from a doubtful link (chat/services.py).
+    doubtful_kinds: frozenset[MatchKind] = frozenset()
+    doubtful_spans: tuple[tuple[int, int], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -481,4 +488,10 @@ def filter_contact_details(text: str, locale: str) -> FilterResult:
         masked_count=len(masked),
         review_count=len(doubtful),
         flagged_count=len(flagged),
+        doubtful_kinds=frozenset(m.kind for m in doubtful),
+        doubtful_spans=tuple(
+            (origin[m.start], origin[m.end - 1] + 1)
+            for m in sorted(doubtful, key=lambda m: m.start)
+            if m.end > m.start
+        ),
     )

@@ -224,6 +224,33 @@ def test_prices_and_times_in_separate_messages_still_pass(pieces: list[str]) -> 
 
 
 @pytest.mark.parametrize(
+    "pieces",
+    [
+        # Doubtful links: a spelled-out domain and a capitalised ending, which the filter
+        # holds for review rather than masks, sent in pieces.
+        ["see mysite", "dot", "com"],
+        ["ivanhorvat", ".Com"],
+        # An email and a messenger handle sent in pieces.
+        ["ana.k @", "example", ".com"],
+        ["Find me on telegram", "ana_k99"],
+    ],
+)
+def test_links_emails_and_handles_sent_in_pieces_are_refused(pieces: list[str]) -> None:
+    offer, conversation = offer_conversation()
+    first, *rest = pieces
+    services.send_message(offer.helper, str(conversation.pk), first)
+
+    refused = []
+    for piece in rest:
+        try:
+            services.send_message(offer.helper, str(conversation.pk), piece)
+        except ApiError as error:
+            refused.append(error.code)
+
+    assert refused == [ErrorCode.MESSAGE_CONTACT_DETAILS]
+
+
+@pytest.mark.parametrize(
     "numbers",
     [
         ["40", "35", "32", "30"],
