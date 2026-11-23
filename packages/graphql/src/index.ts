@@ -38,6 +38,20 @@ export {
   type PaymentRequestProblem,
 } from './payment-request';
 export {
+  MIN_TIP_CENTS,
+  TIP_CHOICES_CENTS,
+  parseEuroCents,
+  partialReleaseCheck,
+  releaseSummary,
+  releaseView,
+  tipCheck,
+  tipChoices,
+  type PartialReleaseCheck,
+  type ReleaseBooking,
+  type ReleaseView,
+  type TipState,
+} from './release';
+export {
   HELPER_CANCEL_REASONS,
   NO_FAULT_REASONS,
   POSTER_CANCEL_REASONS,

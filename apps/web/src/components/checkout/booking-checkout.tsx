@@ -2,7 +2,7 @@
 
 import { useApolloClient, useQuery } from '@apollo/client/react';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { loadStripe, type Stripe, type StripePaymentElementOptions } from '@stripe/stripe-js';
+import { loadStripe, type Stripe } from '@stripe/stripe-js';
 import {
   BookingDocument,
   CheckoutSessionDocument,
@@ -12,7 +12,6 @@ import {
   declineKey,
   demoPaymentsOn,
   type DemoCard,
-  redirectOutcome,
   secondsUntilExpiry,
   submittedAfter,
   subscribeToBooking,
@@ -26,23 +25,16 @@ import { useRouter } from '../../i18n/navigation';
 import { Button, PinnedFoot } from '../ui';
 import { BookingOutcome, DeclineNote, SecureLine, Summary } from './checkout-parts';
 import styles from './checkout.module.css';
+import { PAYMENT_ELEMENT_OPTIONS } from './payment-element-options';
 import { takeSecret } from './secret-handoff';
+import { stripeReturn } from './stripe-return';
+
+export { PAYMENT_ELEMENT_OPTIONS };
 
 // While confirming, the booking is also refetched in case the live event is missed.
 const CONFIRMING_POLL_MS = 5_000;
 const COUNTDOWN_TICK_MS = 15_000;
 // Stripe's redirect back from a bank's page carries these; they're dropped from the URL.
-const STRIPE_RETURN_PARAMS = ['payment_intent', 'payment_intent_client_secret', 'redirect_status'];
-
-/**
- * Stripe Link stays off: it would store a Stripe login on the device, which isn't strictly
- * necessary for the payment (BEAV-190). advancedFraudSignals stays at Stripe's default (on),
- * which is fine because Stripe.js only loads on this page (STRIPE_JS_MODULES in eslint.config.js).
- */
-export const PAYMENT_ELEMENT_OPTIONS = {
-  layout: 'tabs',
-  wallets: { link: 'never' },
-} as const satisfies StripePaymentElementOptions;
 
 let stripePromise: Promise<Stripe | null> | null = null;
 
@@ -104,13 +96,11 @@ export function BookingCheckout({ bookingId, locale }: { bookingId: string; loca
   useEffect(() => {
     // Back from a bank's page. Only succeeded or processing means Stripe has the payment;
     // failed stays on the form with the decline (review R1-2). The server says the rest.
-    const url = new URL(window.location.href);
-    if (!url.searchParams.has('payment_intent')) return;
-    const outcome = redirectOutcome(url.searchParams.get('redirect_status'));
-    if (outcome === 'submitted') setReturned(true);
+    const back = stripeReturn(new URL(window.location.href));
+    if (!back) return;
+    if (back.outcome === 'submitted') setReturned(true);
     else setReturnDecline(true);
-    STRIPE_RETURN_PARAMS.forEach((name) => url.searchParams.delete(name));
-    window.history.replaceState(null, '', url);
+    window.history.replaceState(null, '', back.cleanUrl);
   }, []);
   useEffect(() => {
     // The first booking after the return is what the page had "seen" at that submit.

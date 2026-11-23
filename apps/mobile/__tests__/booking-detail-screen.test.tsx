@@ -81,6 +81,9 @@ function booking(
     canRequestPayment: false,
     invoiceRequired: false,
     paymentRequest: null,
+    canReleasePayment: false,
+    releaseProposal: null,
+    tip: null,
     ...extra,
   };
 }
@@ -242,6 +245,33 @@ it('sends the poster to release once payment is requested', async () => {
 
   expect(onOpen).toHaveBeenCalledWith('release');
   expect(screen.queryByTestId('booking-link-arrival')).toBeNull();
+});
+
+it("sends the helper to the release screen to answer the poster's lower amount", async () => {
+  const proposal = {
+    __typename: 'ReleaseProposal',
+    id: 'rp-1',
+    releasedCents: 2_000,
+    status: 'OPEN',
+    refundCents: null,
+    createdAt: '2026-11-08T11:00:00Z',
+    answeredAt: null,
+  };
+  const { onOpen } = await renderDetail(
+    booking('user-1', { status: 'PAYMENT_REQUESTED', releaseProposal: proposal }),
+  );
+
+  await fireEvent.press(screen.getByRole('button', { name: en.links.answerProposal }));
+
+  expect(onOpen).toHaveBeenCalledWith('release');
+});
+
+it('offers the poster a tip after the release', async () => {
+  const { onOpen } = await renderDetail(booking('helper-9', { status: 'PAID_OUT', exact: false }));
+
+  await fireEvent.press(screen.getByRole('button', { name: en.links.tip }));
+
+  expect(onOpen).toHaveBeenCalledWith('release');
 });
 
 it('links both sides to the day of the job while the money is held', async () => {

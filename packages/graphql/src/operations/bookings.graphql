@@ -282,6 +282,7 @@ fragment BookingDetailFields on Booking {
   paymentRequest {
     ...PaymentRequestFields
   }
+  ...ReleaseFields
 }
 
 query BookingDetail($id: ID!) {

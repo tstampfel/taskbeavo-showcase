@@ -6,10 +6,13 @@ import base from '@taskbeavo/eslint-config';
  * strictly necessary only on the checkout and payment pages; anywhere else they would need a
  * consent banner (BEAV-190). stripe-imports.test.ts checks the same list.
  */
-export const STRIPE_JS_MODULES = ['src/components/checkout/booking-checkout.tsx'];
+export const STRIPE_JS_MODULES = [
+  'src/components/checkout/booking-checkout.tsx',
+  'src/components/release/tip-payment.tsx',
+];
 
 const STRIPE_MESSAGE =
-  'Stripe.js loads only on the checkout and payment pages (cookie-exempt storage, BEAV-190). Add the module to STRIPE_JS_MODULES only for a new payment page.';
+  'Stripe.js loads only on the checkout and payment pages (the tip form loads lazily on the release page) (cookie-exempt storage, BEAV-190). Add the module to STRIPE_JS_MODULES only for a new payment page.';
 
 export default [
   ...base,

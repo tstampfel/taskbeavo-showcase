@@ -23,6 +23,9 @@ export interface BookingDetailPanelProps {
 /** The booking screens the detail page links into, by their path segment. */
 const LINKS: readonly { link: keyof BookingLinks; segment: string; primary?: boolean }[] = [
   { link: 'release', segment: 'release', primary: true },
+  { link: 'answerProposal', segment: 'release', primary: true },
+  { link: 'requestPayment', segment: 'request-payment', primary: true },
+  { link: 'tip', segment: 'release' },
   { link: 'noAccess', segment: 'no-access', primary: true },
   { link: 'arrival', segment: 'arrival' },
   { link: 'cancel', segment: 'cancel' },

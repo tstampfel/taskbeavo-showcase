@@ -82,6 +82,10 @@ export interface BookingLinks {
   cancel: boolean;
   noAccess: boolean;
   release: boolean;
+  /** For the poster after a full release: add a tip (until one is paid), on the release screen. */
+  tip: boolean;
+  /** For the helper: the poster proposed a lower amount to accept or decline (release screen). */
+  answerProposal: boolean;
   /** The helper's Request payment (BEAV-116): the money is held and the job has started. */
   requestPayment: boolean;
 }
@@ -163,6 +167,12 @@ export function bookingDetailView(
           : booking.helperCancelPreview != null),
       noAccess: poster && status === 'NO_ACCESS_REPORTED',
       release: poster && status === 'PAYMENT_REQUESTED',
+      tip:
+        poster &&
+        (status === 'RELEASED' || status === 'PAID_OUT') &&
+        booking.tip?.status !== 'SUCCEEDED',
+      answerProposal:
+        !poster && status === 'PAYMENT_REQUESTED' && booking.releaseProposal?.status === 'OPEN',
       requestPayment: !poster && booking.canRequestPayment,
     },
   };

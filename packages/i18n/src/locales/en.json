@@ -12,7 +12,6 @@
     "backHome": "Back to the home page"
   },
   "linkTarget": {
-    "release": "Release payment",
     "noAccess": "Your helper couldn't get in",
     "conversation": "Messages",
     "payouts": "Payouts",
@@ -884,7 +883,9 @@
       "cancel": "Cancel or withdraw",
       "noAccess": "Choose what happens next",
       "release": "Release payment",
-      "requestPayment": "Request payment"
+      "requestPayment": "Request payment",
+      "tip": "Add a tip",
+      "answerProposal": "Answer the poster's proposal"
     },
     "safety": "Keep payment and chat in TaskBeavo to stay protected.",
     "amountLabelPoster": "You pay",
@@ -1106,6 +1107,101 @@
       "jirInvalid": "That doesn't look like a JIR. Check it against the invoice.",
       "noteTooLong": "The note can be up to 1000 characters.",
       "tooManyPhotos": "You can add up to 6 photos."
+    },
+    "agreedPrice": "Agreed price",
+    "photosInApp": "Photos of the finished job are taken in the TaskBeavo app. You can request payment here with a note."
+  },
+  "release": {
+    "title": "Release payment",
+    "back": "Back",
+    "loadError": "We couldn't load this booking. Check your connection and try again.",
+    "retry": "Try again",
+    "finished": "Your helper finished the job",
+    "requestedAt": "Payment requested {time}",
+    "photosTitle": "Photos of the finished job",
+    "photoLabel": "Photo {number} of the finished job",
+    "noteTitle": "Your helper's note",
+    "invoiceTitle": "Your helper's invoice",
+    "invoiceJir": "JIR: {jir}",
+    "invoicePhoto": "Photo of the invoice",
+    "amount": "Amount",
+    "tipTitle": "Add a tip? (optional)",
+    "tipNone": "No tip",
+    "tipNote": "A tip goes to your helper in full, and TaskBeavo takes no fee. You pay it by card right after releasing.",
+    "checkFirst": "Not sure? Check with your on-site contact first.",
+    "submit": "Release payment",
+    "lower": "Release a lower amount",
+    "declined": "Your helper declined {amount}. Release the full payment, or contact support if something's wrong.",
+    "confirm": {
+      "title": "Release {amount} to your helper?",
+      "price": "Task price",
+      "tip": "Tip",
+      "tipByCard": "You pay the tip by card right after releasing.",
+      "irreversible": "This can't be undone.",
+      "release": "Release",
+      "cancel": "Cancel"
+    },
+    "partial": {
+      "title": "Release a lower amount",
+      "body": "If only part of the job was done, propose what you think is fair. Nothing moves until your helper accepts; the rest then comes back to your card.",
+      "label": "Amount for your helper (€)",
+      "hint": "More than €0 and less than {price}.",
+      "check": "Continue",
+      "helperGets": "Your helper gets",
+      "keptFee": "TaskBeavo's service fee on it",
+      "refund": "Back to your card",
+      "send": "Send proposal",
+      "cancel": "Cancel",
+      "problems": {
+        "format": "Enter an amount in euros, for example 20 or 20,50.",
+        "range": "Enter more than €0 and less than {price}. To pay the full price, release the payment."
+      }
+    },
+    "proposalOpen": {
+      "title": "Waiting for your helper",
+      "body": "You proposed {released} instead of {price}.",
+      "refund": "If your helper accepts, {refund} comes back to your card.",
+      "withdraw": "Withdraw proposal",
+      "releaseFull": "Release the full {price} instead"
+    },
+    "partialSettled": {
+      "title": "Lower amount agreed",
+      "body": "Your helper accepted {released}.",
+      "refundPending": "{refund} is on its way back to your card.",
+      "refundDone": "{refund} was refunded to your card.",
+      "helper": "You accepted {released}. It's on its way to your bank account."
+    },
+    "released": {
+      "title": "Payment released!",
+      "body": "{amount} is on its way to your helper.",
+      "payout": "Payout to your helper's bank",
+      "payoutTime": "3–5 business days",
+      "backToBooking": "Back to the booking"
+    },
+    "tip": {
+      "title": "Add a tip?",
+      "pay": "Pay {amount} tip",
+      "sheetButton": "Pay tip",
+      "confirming": "Confirming your tip…",
+      "pending": "Your {amount} tip isn't confirmed yet. If you closed the payment, pay it again.",
+      "paid": "You tipped {amount}. Thank you!",
+      "failed": "The tip wasn't paid. You can try again.",
+      "notConfigured": "Card payments aren't set up in this build, so a tip can't be paid here."
+    },
+    "notRequested": "Your helper hasn't requested payment yet. You can release it once they do.",
+    "unavailable": "Releasing isn't possible right now. Go back to the booking to see what's next.",
+    "answer": {
+      "title": "The poster proposed a lower amount",
+      "body": "They propose {released} instead of {price}. If you accept, {released} is paid out to you and the rest goes back to the poster. If you decline, nothing changes.",
+      "accept": "Accept {released}",
+      "decline": "Decline"
+    },
+    "helperWaiting": "Waiting for the poster to release {amount}.",
+    "helperReleased": "The poster released {amount}. It's on its way to your bank account.",
+    "helperTip": "Plus a {amount} tip.",
+    "errors": {
+      "HELPER_CANNOT_TAKE_PAYMENTS": "Your helper can't receive a tip right now. Your payment to them was released.",
+      "PAYMENT_UNAVAILABLE": "We couldn't start the tip payment. Please try again in a moment."
     }
   }
 }

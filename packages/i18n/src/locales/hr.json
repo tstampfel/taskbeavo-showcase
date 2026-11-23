@@ -12,7 +12,6 @@
     "backHome": "Natrag na početnu"
   },
   "linkTarget": {
-    "release": "Oslobodi plaćanje",
     "noAccess": "Pomagač nije mogao ući",
     "conversation": "Poruke",
     "payouts": "Isplate",
@@ -884,7 +883,9 @@
       "cancel": "Otkaži ili raskini",
       "noAccess": "Odaberite što dalje",
       "release": "Oslobodi isplatu",
-      "requestPayment": "Zatraži isplatu"
+      "requestPayment": "Zatraži isplatu",
+      "tip": "Dodaj napojnicu",
+      "answerProposal": "Odgovori na prijedlog naručitelja"
     },
     "safety": "Plaćanje i razgovor zadržite u TaskBeavu kako biste bili zaštićeni.",
     "amountLabelPoster": "Plaćate",
@@ -1106,6 +1107,101 @@
       "jirInvalid": "To ne izgleda kao JIR. Provjerite ga na računu.",
       "noteTooLong": "Napomena može imati najviše 1000 znakova.",
       "tooManyPhotos": "Možete dodati najviše 6 fotografija."
+    },
+    "agreedPrice": "Dogovorena cijena",
+    "photosInApp": "Fotografije završenog posla snimaju se u aplikaciji TaskBeavo. Ovdje možete zatražiti isplatu s porukom."
+  },
+  "release": {
+    "title": "Oslobodi isplatu",
+    "back": "Natrag",
+    "loadError": "Nismo uspjeli učitati ovu rezervaciju. Provjerite vezu i pokušajte ponovno.",
+    "retry": "Pokušaj ponovno",
+    "finished": "Vaš pomagač je završio posao",
+    "requestedAt": "Isplata zatražena {time}",
+    "photosTitle": "Fotografije završenog posla",
+    "photoLabel": "Fotografija {number} završenog posla",
+    "noteTitle": "Poruka vašeg pomagača",
+    "invoiceTitle": "Račun vašeg pomagača",
+    "invoiceJir": "JIR: {jir}",
+    "invoicePhoto": "Fotografija računa",
+    "amount": "Iznos",
+    "tipTitle": "Dodati napojnicu? (neobavezno)",
+    "tipNone": "Bez napojnice",
+    "tipNote": "Napojnica cijela ide vašem pomagaču, a TaskBeavo ne uzima naknadu. Plaćate je karticom odmah nakon oslobađanja.",
+    "checkFirst": "Niste sigurni? Najprije provjerite s kontaktom na mjestu.",
+    "submit": "Oslobodi isplatu",
+    "lower": "Oslobodi manji iznos",
+    "declined": "Vaš pomagač je odbio {amount}. Oslobodite cijelu isplatu ili se obratite podršci ako nešto nije u redu.",
+    "confirm": {
+      "title": "Osloboditi {amount} pomagaču?",
+      "price": "Cijena zadatka",
+      "tip": "Napojnica",
+      "tipByCard": "Napojnicu plaćate karticom odmah nakon oslobađanja.",
+      "irreversible": "Ovo se ne može poništiti.",
+      "release": "Oslobodi",
+      "cancel": "Odustani"
+    },
+    "partial": {
+      "title": "Oslobodi manji iznos",
+      "body": "Ako je obavljen samo dio posla, predložite iznos koji smatrate poštenim. Ništa se ne kreće dok ga pomagač ne prihvati; ostatak se tada vraća na vašu karticu.",
+      "label": "Iznos za pomagača (€)",
+      "hint": "Više od 0 € i manje od {price}.",
+      "check": "Nastavi",
+      "helperGets": "Pomagač dobiva",
+      "keptFee": "Naknada za uslugu TaskBeavo na taj iznos",
+      "refund": "Povrat na vašu karticu",
+      "send": "Pošalji prijedlog",
+      "cancel": "Odustani",
+      "problems": {
+        "format": "Upišite iznos u eurima, na primjer 20 ili 20,50.",
+        "range": "Upišite više od 0 € i manje od {price}. Za punu cijenu oslobodite isplatu."
+      }
+    },
+    "proposalOpen": {
+      "title": "Čeka se odgovor pomagača",
+      "body": "Predložili ste {released} umjesto {price}.",
+      "refund": "Ako pomagač prihvati, {refund} vraća se na vašu karticu.",
+      "withdraw": "Povuci prijedlog",
+      "releaseFull": "Ipak oslobodi punih {price}"
+    },
+    "partialSettled": {
+      "title": "Dogovoren manji iznos",
+      "body": "Vaš pomagač je prihvatio {released}.",
+      "refundPending": "{refund} je na putu natrag na vašu karticu.",
+      "refundDone": "{refund} vraćeno je na vašu karticu.",
+      "helper": "Prihvatili ste {released}. Na putu je do vašeg bankovnog računa."
+    },
+    "released": {
+      "title": "Isplata oslobođena!",
+      "body": "{amount} je na putu do vašeg pomagača.",
+      "payout": "Isplata na bankovni račun pomagača",
+      "payoutTime": "3–5 radnih dana",
+      "backToBooking": "Natrag na rezervaciju"
+    },
+    "tip": {
+      "title": "Dodati napojnicu?",
+      "pay": "Plati napojnicu od {amount}",
+      "sheetButton": "Plati napojnicu",
+      "confirming": "Potvrđujemo napojnicu…",
+      "pending": "Vaša napojnica od {amount} još nije potvrđena. Ako ste zatvorili plaćanje, platite je ponovno.",
+      "paid": "Dali ste napojnicu od {amount}. Hvala!",
+      "failed": "Napojnica nije plaćena. Možete pokušati ponovno.",
+      "notConfigured": "Plaćanje karticom nije postavljeno u ovoj verziji, pa se napojnica ovdje ne može platiti."
+    },
+    "notRequested": "Vaš pomagač još nije zatražio isplatu. Možete je osloboditi kad to učini.",
+    "unavailable": "Oslobađanje sada nije moguće. Vratite se na rezervaciju da vidite što dalje.",
+    "answer": {
+      "title": "Naručitelj je predložio manji iznos",
+      "body": "Predlaže {released} umjesto {price}. Ako prihvatite, {released} isplaćuje se vama, a ostatak se vraća naručitelju. Ako odbijete, ništa se ne mijenja.",
+      "accept": "Prihvati {released}",
+      "decline": "Odbij"
+    },
+    "helperWaiting": "Čeka se da naručitelj oslobodi {amount}.",
+    "helperReleased": "Naručitelj je oslobodio {amount}. Na putu je do vašeg bankovnog računa.",
+    "helperTip": "Uz to napojnica od {amount}.",
+    "errors": {
+      "HELPER_CANNOT_TAKE_PAYMENTS": "Vaš pomagač trenutačno ne može primiti napojnicu. Vaša isplata njemu je oslobođena.",
+      "PAYMENT_UNAVAILABLE": "Nismo uspjeli pokrenuti plaćanje napojnice. Pokušajte ponovno za trenutak."
     }
   }
 }

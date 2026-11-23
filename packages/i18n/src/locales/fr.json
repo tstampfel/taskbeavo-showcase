@@ -12,7 +12,6 @@
     "backHome": "Retour à l’accueil"
   },
   "linkTarget": {
-    "release": "Débloquer le paiement",
     "noAccess": "Votre intervenant n’a pas pu entrer",
     "conversation": "Messages",
     "payouts": "Versements",
@@ -884,7 +883,9 @@
       "cancel": "Annuler ou se rétracter",
       "noAccess": "Choisir la suite",
       "release": "Verser le paiement",
-      "requestPayment": "Demander le paiement"
+      "requestPayment": "Demander le paiement",
+      "tip": "Ajouter un pourboire",
+      "answerProposal": "Répondre à la proposition du demandeur"
     },
     "safety": "Gardez le paiement et la discussion dans TaskBeavo pour rester protégé.",
     "amountLabelPoster": "Vous payez",
@@ -1106,6 +1107,101 @@
       "jirInvalid": "Cela ne ressemble pas à un JIR. Vérifiez-le sur la facture.",
       "noteTooLong": "La note peut contenir jusqu’à 1000 caractères.",
       "tooManyPhotos": "Vous pouvez ajouter jusqu’à 6 photos."
+    },
+    "agreedPrice": "Prix convenu",
+    "photosInApp": "Les photos du travail terminé se prennent dans l’application TaskBeavo. Ici, vous pouvez demander le paiement avec un message."
+  },
+  "release": {
+    "title": "Verser le paiement",
+    "back": "Retour",
+    "loadError": "Nous n’avons pas pu charger cette réservation. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer",
+    "finished": "Votre intervenant a terminé la mission",
+    "requestedAt": "Paiement demandé {time}",
+    "photosTitle": "Photos du travail terminé",
+    "photoLabel": "Photo {number} du travail terminé",
+    "noteTitle": "Message de votre intervenant",
+    "invoiceTitle": "Facture de votre intervenant",
+    "invoiceJir": "JIR : {jir}",
+    "invoicePhoto": "Photo de la facture",
+    "amount": "Montant",
+    "tipTitle": "Ajouter un pourboire ? (facultatif)",
+    "tipNone": "Pas de pourboire",
+    "tipNote": "Le pourboire va entièrement à votre intervenant et TaskBeavo ne prend aucuns frais. Vous le payez par carte juste après le versement.",
+    "checkFirst": "Un doute ? Vérifiez d’abord auprès de votre contact sur place.",
+    "submit": "Verser le paiement",
+    "lower": "Verser un montant inférieur",
+    "declined": "Votre intervenant a refusé {amount}. Versez le paiement complet ou contactez l’assistance en cas de problème.",
+    "confirm": {
+      "title": "Verser {amount} à votre intervenant ?",
+      "price": "Prix de la mission",
+      "tip": "Pourboire",
+      "tipByCard": "Vous payez le pourboire par carte juste après le versement.",
+      "irreversible": "Cette action est irréversible.",
+      "release": "Verser",
+      "cancel": "Annuler"
+    },
+    "partial": {
+      "title": "Verser un montant inférieur",
+      "body": "Si seule une partie du travail a été faite, proposez le montant qui vous semble juste. Rien ne bouge tant que votre intervenant n’a pas accepté ; le reste revient alors sur votre carte.",
+      "label": "Montant pour votre intervenant (€)",
+      "hint": "Plus de 0 € et moins de {price}.",
+      "check": "Continuer",
+      "helperGets": "Votre intervenant reçoit",
+      "keptFee": "Frais de service TaskBeavo sur ce montant",
+      "refund": "Remboursé sur votre carte",
+      "send": "Envoyer la proposition",
+      "cancel": "Annuler",
+      "problems": {
+        "format": "Saisissez un montant en euros, par exemple 20 ou 20,50.",
+        "range": "Saisissez plus de 0 € et moins de {price}. Pour payer le prix complet, versez le paiement."
+      }
+    },
+    "proposalOpen": {
+      "title": "En attente de votre intervenant",
+      "body": "Vous avez proposé {released} au lieu de {price}.",
+      "refund": "Si votre intervenant accepte, {refund} revient sur votre carte.",
+      "withdraw": "Retirer la proposition",
+      "releaseFull": "Verser plutôt les {price} complets"
+    },
+    "partialSettled": {
+      "title": "Montant inférieur convenu",
+      "body": "Votre intervenant a accepté {released}.",
+      "refundPending": "{refund} est en cours de remboursement sur votre carte.",
+      "refundDone": "{refund} a été remboursé sur votre carte.",
+      "helper": "Vous avez accepté {released}. Le montant est en route vers votre compte bancaire."
+    },
+    "released": {
+      "title": "Paiement versé !",
+      "body": "{amount} est en route vers votre intervenant.",
+      "payout": "Virement sur le compte bancaire de votre intervenant",
+      "payoutTime": "3 à 5 jours ouvrés",
+      "backToBooking": "Retour à la réservation"
+    },
+    "tip": {
+      "title": "Ajouter un pourboire ?",
+      "pay": "Payer un pourboire de {amount}",
+      "sheetButton": "Payer le pourboire",
+      "confirming": "Confirmation de votre pourboire…",
+      "pending": "Votre pourboire de {amount} n’est pas encore confirmé. Si vous avez fermé le paiement, payez-le à nouveau.",
+      "paid": "Vous avez donné un pourboire de {amount}. Merci !",
+      "failed": "Le pourboire n’a pas été payé. Vous pouvez réessayer.",
+      "notConfigured": "Les paiements par carte ne sont pas configurés dans cette version, le pourboire ne peut donc pas être payé ici."
+    },
+    "notRequested": "Votre intervenant n’a pas encore demandé le paiement. Vous pourrez le verser dès qu’il l’aura fait.",
+    "unavailable": "Le versement n’est pas possible pour le moment. Revenez à la réservation pour voir la suite.",
+    "answer": {
+      "title": "Le demandeur a proposé un montant inférieur",
+      "body": "Il propose {released} au lieu de {price}. Si vous acceptez, {released} vous est versé et le reste revient au demandeur. Si vous refusez, rien ne change.",
+      "accept": "Accepter {released}",
+      "decline": "Refuser"
+    },
+    "helperWaiting": "En attente du déblocage de {amount} par le demandeur.",
+    "helperReleased": "Le demandeur a versé {amount}. Le montant est en route vers votre compte bancaire.",
+    "helperTip": "Plus un pourboire de {amount}.",
+    "errors": {
+      "HELPER_CANNOT_TAKE_PAYMENTS": "Votre intervenant ne peut pas recevoir de pourboire pour le moment. Votre paiement lui a bien été versé.",
+      "PAYMENT_UNAVAILABLE": "Nous n’avons pas pu lancer le paiement du pourboire. Réessayez dans un instant."
     }
   }
 }

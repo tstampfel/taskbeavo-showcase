@@ -44,7 +44,8 @@ describe('Stripe.js stays on the checkout and payment pages (BEAV-190)', () => {
   });
 
   it('reaches only checkout pages through those modules', () => {
-    for (const allowed of STRIPE_JS_MODULES) {
+    const checkout = STRIPE_JS_MODULES.filter((path) => path.includes('/checkout/'));
+    for (const allowed of checkout) {
       const name = allowed.replace(/^.*\//, '').replace(/\.tsx?$/, '');
       const importers = files
         .filter((f) => new RegExp(`from\\s+'[^']*/${name}'`).test(f.text))
@@ -54,5 +55,12 @@ describe('Stripe.js stays on the checkout and payment pages (BEAV-190)', () => {
         expect(importer).toMatch(/^src\/app\/\[locale\]\/.*\/checkout\/page\.tsx$/);
       }
     }
+  });
+
+  it('loads the tip form only lazily, from the release page, when a tip is paid (BEAV-118)', () => {
+    const statically = files.filter((f) => /from\s+'[^']*\/tip-payment'/.test(f.text));
+    expect(statically.map((f) => f.path)).toEqual([]);
+    const lazily = files.filter((f) => /import\(\s*'[^']*\/tip-payment'\s*\)/.test(f.text));
+    expect(lazily.map((f) => f.path)).toEqual(['src/components/release/booking-release.tsx']);
   });
 });

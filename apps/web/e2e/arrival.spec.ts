@@ -329,10 +329,8 @@ test('at the default text size the button bar is pinned and clear of the focused
   }
 });
 
-for (const [segment, target] of [
-  ['release', 'release'],
-  ['no-access', 'noAccess'],
-] as const) {
+// /release is built (BEAV-118, e2e/release.spec.ts).
+for (const [segment, target] of [['no-access', 'noAccess']] as const) {
   test(`/${segment} stays a placeholder: a card in the centred column, no action`, async ({
     page,
     stubGraphql,
