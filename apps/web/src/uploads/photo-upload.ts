@@ -7,8 +7,8 @@ import {
 
 export type { PhotoUploadState };
 
-/** The web's photos are task photos: evidence is taken in the app (EVIDENCE_NEEDS_APP). */
-export type WebUploadPurpose = 'TASK_PHOTO';
+/** Task photos and a business's invoice; evidence is taken in the app (EVIDENCE_NEEDS_APP). */
+export type WebUploadPurpose = 'TASK_PHOTO' | 'INVOICE';
 
 /**
  * Upload a picked `File` straight to R2 (the shared flow in @taskbeavo/graphql), reporting

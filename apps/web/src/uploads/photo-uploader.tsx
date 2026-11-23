@@ -12,7 +12,7 @@ import { Button } from '../components/ui';
 import { uploadPickedFile, type PhotoUploadState, type WebUploadPurpose } from './photo-upload';
 
 export interface PhotoUploaderProps {
-  /** Task photos only: evidence is taken in the app, and the API refuses it from the web. */
+  /** Task photos and invoices: evidence is taken in the app, and the API refuses it from the web. */
   purpose: WebUploadPurpose;
   /** Called with the READY upload; the screen keeps its `id` to attach it (e.g. postTask). */
   onUploaded?: (upload: UploadFieldsFragment) => void;

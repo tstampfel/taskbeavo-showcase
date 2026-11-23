@@ -27,7 +27,7 @@ test('assetlinks.json is JSON at its exact path, without a redirect', async ({ r
 });
 
 for (const [path, title] of [
-  ['/fr/bookings/7/release', 'Débloquer le paiement'],
+  ['/fr/bookings/7/release', 'Verser le paiement'],
   ['/hr/bookings/7/no-access', 'Pomagač nije mogao ući'],
   ['/en/conversations/3', 'Messages'],
   ['/de/helper/payouts', 'Auszahlungen'],
@@ -52,8 +52,9 @@ test('a link without a locale goes to the visitor’s language', async ({ browse
     await page.goto('/bookings/7/release?confirm=1');
     await expect(page).toHaveURL(/\/de\/bookings\/7\/release\?confirm=1$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Zahlung freigeben');
-    // Only a link home: the page has no button that could release anything.
-    await expect(page.getByRole('main').getByRole('button')).toHaveCount(0);
+    // Opening the link releases nothing: without the booking there is no Release button.
+    await expect(page.getByTestId('release-page')).toBeVisible();
+    await expect(page.getByTestId('release-submit')).toHaveCount(0);
   } finally {
     await context.close();
   }

@@ -457,14 +457,13 @@ function RequestSummary({
   time(at: unknown): string;
 }) {
   const { t } = useTranslation();
+  const requested = request ? t('release.requestedAt', { time: time(request.requestedAt) }) : null;
   return (
     <>
       <View style={styles.gap}>
         <Heading style={[textStyle('h2'), styles.ink]}>{t('release.finished')}</Heading>
         <Text style={[textStyle('small'), styles.muted]}>
-          {request
-            ? `${title} · ${t('release.requestedAt', { time: time(request.requestedAt) })}`
-            : title}
+          {requested ? `${title} · ${requested}` : title}
         </Text>
       </View>
       {request && request.photos.length > 0 && (

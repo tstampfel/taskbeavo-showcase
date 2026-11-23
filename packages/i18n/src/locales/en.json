@@ -12,7 +12,6 @@
     "backHome": "Back to the home page"
   },
   "linkTarget": {
-    "release": "Release payment",
     "noAccess": "Your helper couldn't get in",
     "conversation": "Messages",
     "payouts": "Payouts",

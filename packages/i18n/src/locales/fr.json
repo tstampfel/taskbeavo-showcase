@@ -12,7 +12,6 @@
     "backHome": "Retour à l’accueil"
   },
   "linkTarget": {
-    "release": "Débloquer le paiement",
     "noAccess": "Votre intervenant n’a pas pu entrer",
     "conversation": "Messages",
     "payouts": "Versements",

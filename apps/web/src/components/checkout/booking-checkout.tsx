@@ -2,7 +2,7 @@
 
 import { useApolloClient, useQuery } from '@apollo/client/react';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { loadStripe, type Stripe, type StripePaymentElementOptions } from '@stripe/stripe-js';
+import { loadStripe, type Stripe } from '@stripe/stripe-js';
 import {
   BookingDocument,
   CheckoutSessionDocument,
@@ -26,23 +26,16 @@ import { useRouter } from '../../i18n/navigation';
 import { Button, PinnedFoot } from '../ui';
 import { BookingOutcome, DeclineNote, SecureLine, Summary } from './checkout-parts';
 import styles from './checkout.module.css';
+import { PAYMENT_ELEMENT_OPTIONS } from './payment-element-options';
 import { takeSecret } from './secret-handoff';
+
+export { PAYMENT_ELEMENT_OPTIONS };
 
 // While confirming, the booking is also refetched in case the live event is missed.
 const CONFIRMING_POLL_MS = 5_000;
 const COUNTDOWN_TICK_MS = 15_000;
 // Stripe's redirect back from a bank's page carries these; they're dropped from the URL.
 const STRIPE_RETURN_PARAMS = ['payment_intent', 'payment_intent_client_secret', 'redirect_status'];
-
-/**
- * Stripe Link stays off: it would store a Stripe login on the device, which isn't strictly
- * necessary for the payment (BEAV-190). advancedFraudSignals stays at Stripe's default (on),
- * which is fine because Stripe.js only loads on this page (STRIPE_JS_MODULES in eslint.config.js).
- */
-export const PAYMENT_ELEMENT_OPTIONS = {
-  layout: 'tabs',
-  wallets: { link: 'never' },
-} as const satisfies StripePaymentElementOptions;
 
 let stripePromise: Promise<Stripe | null> | null = null;
 
