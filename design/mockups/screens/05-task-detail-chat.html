@@ -5,6 +5,15 @@
   access details go only to the booked helper while the booking is active (hard rule e), the
   description and photos, and "See offers" for the poster. The booked frames below are the
   booking screens (BEAV-107 and later) and chat (BEAV-104).
+
+  BEAV-104 built the chat of frame 5a as its own page and screen rather than a tab of the
+  booking (apps/mobile src/screens/conversation-screen.tsx, web /[locale]/conversations/[id]):
+  the counterpart as "Marko P.", the task title, the "Keep payment and chat in TaskBeavo"
+  note (before a booking is paid it also says contact details are hidden), bubbles with the
+  time, "Contact details hidden" on masked messages, and the compose box. The poster opens it
+  from each offer and both sides from the booking detail; message pushes open it too. Not
+  built yet: photos in chat, "is typing…" and read ticks (✓✓); the Chat/Details/Proof tabs
+  stay with the booking screens.
 -->
 <div class="screen" id="5a Task detail · Poster · Chat">{{sb}}
  <div class="top"><span class="ibtn">{{i:back}}</span><span class="t">Grocery run for Mama</span><span class="ibtn">{{i:more}}</span></div>

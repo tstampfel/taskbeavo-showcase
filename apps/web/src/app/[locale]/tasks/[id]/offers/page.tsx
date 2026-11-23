@@ -24,7 +24,7 @@ export default async function TaskOffersPage({ params }: PageProps<'/[locale]/ta
   setRequestLocale(locale);
   // OffersView draws the top bar itself (its title counts the offers), so the shell's
   // namespaces come along.
-  const messages = pickMessages(await getMessages(), [...SHELL_NAMESPACES, 'offers']);
+  const messages = pickMessages(await getMessages(), [...SHELL_NAMESPACES, 'offers', 'chat']);
   return (
     <NextIntlClientProvider messages={messages}>
       <OffersView taskId={id} locale={locale} />

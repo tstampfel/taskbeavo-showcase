@@ -12,6 +12,7 @@ import type { Locale } from '@taskbeavo/i18n';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from '../../i18n/navigation';
+import { useOpenConversation } from '../chat/use-open-conversation';
 import { AppShell } from '../shell/app-shell';
 import { Button } from '../ui';
 import { OffersList, offersTitle } from './offers-list';
@@ -24,6 +25,7 @@ import styles from './offers.module.css';
 export function OffersView({ taskId, locale }: { taskId: string; locale: Locale }) {
   const t = useTranslations('offers');
   const router = useRouter();
+  const chat = useOpenConversation((id) => router.push(`/conversations/${id}`));
   const [sort, setSort] = useState<OfferSort>('newest');
   const [comparing, setComparing] = useState(false);
   const offers = useQuery(TaskOffersDocument, {
@@ -90,6 +92,9 @@ export function OffersView({ taskId, locale }: { taskId: string; locale: Locale 
       onSort={setSort}
       onCompare={setComparing}
       onAccept={(offerId) => router.push(`/tasks/${taskId}/offers/${offerId}/checkout`)}
+      onMessage={(offerId) => void chat.open(offerId)}
+      messagePendingFor={chat.pendingFor}
+      messageFailedFor={chat.failedFor}
     />,
   );
 }

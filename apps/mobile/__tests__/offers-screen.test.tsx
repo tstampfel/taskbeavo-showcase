@@ -336,3 +336,70 @@ describe('OffersScreen', () => {
     expect(screen.getAllByText(formatMoney(3_360, locale)).length).toBeGreaterThan(0);
   });
 });
+
+describe('OffersScreen messaging (BEAV-104)', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  function chatClient(opened: string[]) {
+    const link = new ApolloLink(
+      (operation) =>
+        new Observable((observer) => {
+          const name = operation.operationName;
+          if (name?.startsWith('Offer')) return;
+          if (name === 'Task') observer.next({ data: { task } });
+          else if (name === 'OpenConversation') {
+            opened.push(String(operation.variables.offerId));
+            observer.next({
+              data: {
+                openConversation: {
+                  __typename: 'Conversation',
+                  id: 'conv-9',
+                  taskId: TASK,
+                  taskTitle: task.title,
+                  myRole: 'POSTER',
+                  counterpartName: 'Marko P.',
+                  stage: 'OFFER',
+                  canSend: true,
+                  bookingId: null,
+                  lastMessageAt: null,
+                },
+              },
+            });
+          } else observer.next({ data: { taskOffers: OFFERS } });
+          observer.complete();
+        }),
+    );
+    return new ApolloClient({ cache: new InMemoryCache({ typePolicies }), link });
+  }
+
+  it('the Message button opens the conversation with that offer’s helper', async () => {
+    const opened: string[] = [];
+    const onMessage = jest.fn();
+    await render(
+      <ApolloProvider client={chatClient(opened)}>
+        <OffersScreen
+          taskId={TASK}
+          onAccept={jest.fn()}
+          onMessage={onMessage}
+          openRanking={jest.fn()}
+          now={() => NOW}
+        />
+      </ApolloProvider>,
+    );
+    await screen.findByTestId('offers-content');
+
+    await fireEvent.press(screen.getByTestId('offer-message-marko'));
+
+    await waitFor(() => expect(onMessage).toHaveBeenCalledWith('conv-9'));
+    expect(opened).toEqual(['marko']);
+    // Closed offers have no Message button.
+    expect(screen.queryByTestId('offer-message-withdrawn')).toBeNull();
+  });
+
+  it('without onMessage there is no Message button', async () => {
+    await renderScreen();
+    expect(screen.queryByTestId('offer-message-marko')).toBeNull();
+  });
+});

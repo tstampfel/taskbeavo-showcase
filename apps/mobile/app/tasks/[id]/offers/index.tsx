@@ -12,6 +12,9 @@ export default function TaskOffersRoute() {
       openRanking={openRanking}
       // A push or link may open the offers with nothing behind them: back then goes home.
       onBack={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+      onMessage={(conversationId) =>
+        router.push({ pathname: '/conversations/[id]', params: { id: conversationId } })
+      }
       onAccept={(offerId) =>
         router.push({
           pathname: '/tasks/[id]/offers/[offerId]/checkout',

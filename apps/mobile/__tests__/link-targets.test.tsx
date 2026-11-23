@@ -56,13 +56,21 @@ function ReleaseWithoutApi() {
   );
 }
 
+function ConversationWithApi() {
+  return (
+    <MockedProvider mocks={[]}>
+      <Conversation />
+    </MockedProvider>
+  );
+}
+
 const routes = {
   index: () => <Text testID="home">home</Text>,
   'tasks/[id]/index': TaskDetailWithApi,
   'tasks/[id]/offers/[offerId]/checkout': Checkout,
   'bookings/[id]/release': ReleaseWithoutApi,
   'bookings/[id]/no-access': NoAccess,
-  'conversations/[id]': Conversation,
+  'conversations/[id]': ConversationWithApi,
   'helper/payouts/index': Payouts,
   'helper/payouts/return': PayoutsReturn,
   'helper/payouts/refresh': PayoutsRefresh,
@@ -76,7 +84,6 @@ describe('screens opened by links', () => {
 
   it.each([
     ['taskbeavo://bookings/7/no-access', '/bookings/7/no-access', 'noAccess'],
-    ['/conversations/3', '/conversations/3', 'conversation'],
     ['/helper/payouts', '/helper/payouts', 'payouts'],
     ['https://taskbeavo.com/helper/payouts/return', '/helper/payouts/return', 'payouts'],
     ['taskbeavo://helper/payouts/refresh', '/helper/payouts/refresh', 'payouts'],
@@ -86,6 +93,13 @@ describe('screens opened by links', () => {
     expect(screen).toHavePathname(pathname);
     expect(screen.getByTestId(`link-target-${target}`)).toBeOnTheScreen();
     expect(screen.getByRole('header')).toHaveTextContent(catalogues.en.linkTarget[target]);
+  });
+
+  it('a conversation link opens the conversation (BEAV-104)', async () => {
+    await i18n.changeLanguage('en');
+    await renderRouter(routes, { initialUrl: appPathFromLink('taskbeavo://conversations/3') });
+    expect(screen).toHavePathname('/conversations/3');
+    expect(screen.getByTestId(/^conversation-(loading|error)$/)).toBeOnTheScreen();
   });
 
   it('a task link opens the task detail (BEAV-90)', async () => {
