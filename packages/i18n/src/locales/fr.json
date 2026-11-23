@@ -1229,6 +1229,7 @@
     "openPoster": "Écrire au demandeur",
     "openHelper": "Écrire à l’aide",
     "openError": "Nous n’avons pas pu ouvrir la conversation. Réessayez.",
-    "viewBooking": "Voir la réservation"
+    "viewBooking": "Voir la réservation",
+    "accessCodesNote": "Indiquez les codes de porte, de portail et de clé dans les détails d’accès, pas dans le chat : ils sont masqués à la fin de la réservation."
   }
 }

@@ -934,4 +934,5 @@ DRAFT copy, written by me, never machine-translated: en is the source, and hr, d
 
 - `chat.*`: the conversation page and screen (title, stage notes before and after acceptance, closed note, compose box, earlier messages, empty, load and send errors, the masked label, the screen-reader message label) and the Message buttons on offers and the booking (`chat.open`, `chat.openPoster`, `chat.openHelper`, `chat.openError`, `chat.viewBooking`).
 - `errors.CONVERSATION_NOT_FOUND`, `errors.CONVERSATION_CLOSED`, `errors.INVALID_MESSAGE`, `errors.MESSAGE_CONTACT_DETAILS`.
+- `chat.accessCodesNote`: the note above the compose box once the booking is paid (owner decision after review round 2), pointing door, gate and key codes to Access details.
 - `linkTarget.conversation` is gone: the conversation link now opens the real page.

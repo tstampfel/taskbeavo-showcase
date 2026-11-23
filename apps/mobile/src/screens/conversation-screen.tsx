@@ -154,6 +154,11 @@ export function ConversationScreen({
 
   const footer = conversation.canSend ? (
     <View style={styles.compose}>
+      {/* Once messages are no longer masked: codes belong in Access details, which are
+          hidden after the booking ends, while the chat stays readable (owner decision). */}
+      {conversation.stage === 'BOOKED' ? (
+        <Note testID="conversation-access-codes">{t('chat.accessCodesNote')}</Note>
+      ) : null}
       <Input
         label={t('chat.inputLabel', { name: conversation.counterpartName })}
         value={draft}

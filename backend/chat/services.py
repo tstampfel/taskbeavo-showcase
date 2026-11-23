@@ -20,6 +20,7 @@ Never log message text: only verdicts and kinds of contact detail.
 """
 
 import logging
+import re
 from uuid import UUID
 
 from django.db import IntegrityError, transaction
@@ -44,8 +45,10 @@ ADDED_TOPIC = "message.added"
 # Before acceptance a new message is also screened together with the sender's previous few,
 # so a phone number or email sent in pieces ("091", "234 5678") is caught too.
 JOINED_SCREEN_PREVIOUS = 3
-# Contact-filter verdicts that mean "contact details found" in the joined text.
-_FOUND = (Verdict.MASKED, Verdict.NEEDS_REVIEW)
+# A joined run of digits counts as a phone number the way the filter's own rule for split
+# digit groups does: 9 or more digits starting with 0, 00 or +. Bare prices and counts sent
+# one after another ("40", "35", "30") make a long run too, but don't start that way.
+_PHONE_LIKE = re.compile(r"(?<![\d+])(?:\+|0)\d{8,}")
 
 
 def open_conversation(viewer: User, offer_id: str) -> Conversation:
@@ -166,8 +169,10 @@ def _pieces_hold_contact_details(sender: User, conversation: Conversation, store
     Only messages written before acceptance count (a non-blank verdict): after a failed
     checkout the pair's earlier, unfiltered messages may hold a phone number on purpose.
     The pieces are joined once with spaces and once with nothing between them, so both
-    "091" + "234 5678" and "ana.k" + "@example.com" read as one detail. Stored bodies are
-    already masked, so a detail masked in a single message doesn't match again.
+    "091" + "234 5678" and "ana.k" + "@example.com" read as one detail. A joined match counts
+    when the filter masks it, or holds it for review and its digits are phone-like (9 or
+    more starting with 0, 00 or +). Stored bodies are already masked, so a detail masked in a
+    single message doesn't match again.
     """
     previous = list(
         conversation.messages.filter(sender=sender)
@@ -178,10 +183,16 @@ def _pieces_hold_contact_details(sender: User, conversation: Conversation, store
     if not previous:
         return False
     pieces = [body.strip() for body in reversed(previous)] + [stored.strip()]
-    return any(
-        filter_contact_details(separator.join(pieces), sender.locale).verdict in _FOUND
-        for separator in (" ", "")
-    )
+    for separator in (" ", ""):
+        joined = separator.join(pieces)
+        verdict = filter_contact_details(joined, sender.locale).verdict
+        # A clear match counts; a doubtful one only when its digits look like a phone number,
+        # so a run of bare prices or counts isn't refused (review R2-1).
+        if verdict == Verdict.MASKED or (
+            verdict == Verdict.NEEDS_REVIEW and _PHONE_LIKE.search("".join(joined.split()))
+        ):
+            return True
+    return False
 
 
 def _of_participant(

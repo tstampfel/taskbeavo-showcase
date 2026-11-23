@@ -200,6 +200,13 @@ export function ConversationView({
       ) : null}
       {conversation.canSend ? (
         <form className={styles.compose} onSubmit={(event) => void submit(event)}>
+          {/* Once messages are no longer masked: codes belong in Access details, which are
+              hidden after the booking ends, while the chat stays readable (owner decision). */}
+          {conversation.stage === 'BOOKED' ? (
+            <Note icon={<LockIcon />} data-testid="conversation-access-codes">
+              {t('chat.accessCodesNote')}
+            </Note>
+          ) : null}
           <label htmlFor={inputId} className={styles.label}>
             {t('chat.inputLabel', { name: conversation.counterpartName })}
           </label>

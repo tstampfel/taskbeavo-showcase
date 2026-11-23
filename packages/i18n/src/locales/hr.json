@@ -1229,6 +1229,7 @@
     "openPoster": "Pošalji poruku naručitelju",
     "openHelper": "Pošalji poruku pomagaču",
     "openError": "Ne možemo otvoriti razgovor. Pokušajte ponovno.",
-    "viewBooking": "Prikaži rezervaciju"
+    "viewBooking": "Prikaži rezervaciju",
+    "accessCodesNote": "Šifre vrata, kapije i ključa upišite u Upute za pristup, ne u chat: upute se skrivaju kad rezervacija završi."
   }
 }

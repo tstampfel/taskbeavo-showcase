@@ -151,6 +151,28 @@ describe('ConversationScreen', () => {
     expect(onOpenBooking).toHaveBeenCalledWith('b-1');
   });
 
+  it.each(locales)(
+    'after acceptance the composer says where door, gate and key codes go, in %s',
+    async (locale) => {
+      await i18n.changeLanguage(locale);
+      await renderScreen({ conversation: { stage: 'BOOKED', bookingId: 'b-1' } });
+
+      expect(screen.getByTestId('conversation-access-codes')).toHaveTextContent(
+        catalogues[locale].chat.accessCodesNote,
+      );
+    },
+  );
+
+  it('before acceptance there is no access-codes note', async () => {
+    await renderScreen();
+    expect(screen.queryByTestId('conversation-access-codes')).toBeNull();
+  });
+
+  it('a closed booked conversation has no composer and no access-codes note', async () => {
+    await renderScreen({ conversation: { stage: 'BOOKED', canSend: false } });
+    expect(screen.queryByTestId('conversation-access-codes')).toBeNull();
+  });
+
   it('a closed conversation stays readable with no way to write', async () => {
     await renderScreen({ conversation: { canSend: false }, messages: [message('1')] });
 

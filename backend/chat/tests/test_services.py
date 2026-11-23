@@ -183,6 +183,7 @@ def test_a_failed_checkout_brings_the_filter_back() -> None:
         ["Call me on 091", "234", "5678"],
         ["My number: 09", "12345", "678"],
         ["Ring 0912", "345678"],
+        ["+385", "91", "234", "5678"],
         ["Write to ana.k@", "example", ".com"],
     ],
 )
@@ -220,6 +221,25 @@ def test_prices_and_times_in_separate_messages_still_pass(pieces: list[str]) -> 
     for piece in pieces:
         message = services.send_message(offer.helper, str(conversation.pk), piece)
         assert message.body == piece
+
+
+@pytest.mark.parametrize(
+    "numbers",
+    [
+        ["40", "35", "32", "30"],
+        ["120", "100", "90"],
+        ["10", "15", "20", "25"],
+        ["30", "45", "2", "120"],
+    ],
+)
+def test_bare_prices_and_counts_one_after_another_still_pass(numbers: list[str]) -> None:
+    """Haggling or answering "price?", "minutes?", "floor?" with bare numbers makes a long
+    joined run of digits, but not a phone-like one (review R2-1)."""
+    offer, conversation = offer_conversation()
+
+    for number in numbers:
+        message = services.send_message(offer.helper, str(conversation.pk), number)
+        assert message.body == number
 
 
 def test_the_other_sides_messages_are_not_joined_to_the_senders() -> None:

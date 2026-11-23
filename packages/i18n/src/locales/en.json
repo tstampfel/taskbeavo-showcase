@@ -1229,6 +1229,7 @@
     "openPoster": "Message the poster",
     "openHelper": "Message the helper",
     "openError": "We couldn't open the conversation. Try again.",
-    "viewBooking": "View booking"
+    "viewBooking": "View booking",
+    "accessCodesNote": "Put door, gate and key codes in Access details, not in chat: Access details are hidden once the booking ends."
   }
 }

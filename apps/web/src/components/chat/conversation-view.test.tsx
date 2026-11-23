@@ -117,6 +117,21 @@ describe('ConversationView', () => {
     expect(markup).toContain('href="/bookings/b-1"');
   });
 
+  it.each(locales)(
+    'after acceptance the composer says where door, gate and key codes go, in %s',
+    (locale) => {
+      const booked = render(locale, { extra: { stage: 'BOOKED', bookingId: 'b-1' } });
+      const offer = render(locale);
+      const closed = render(locale, { extra: { stage: 'BOOKED', canSend: false } });
+
+      expect(booked).toContain('data-testid="conversation-access-codes"');
+      expect(booked).toContain(escaped(catalogues[locale].chat.accessCodesNote));
+      // Before acceptance messages are masked anyway; a closed chat has no composer.
+      expect(offer).not.toContain('conversation-access-codes');
+      expect(closed).not.toContain('conversation-access-codes');
+    },
+  );
+
   it('a closed conversation stays readable with no way to write', () => {
     const markup = render('en', { extra: { canSend: false }, messages: [message('1')] });
 
